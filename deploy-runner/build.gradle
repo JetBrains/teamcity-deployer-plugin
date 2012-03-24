@@ -1,0 +1,145 @@
+/*
+ * Copyright 2000-2012 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+def TCPathVar = "path.variable.teamcitydistribution"
+
+apply plugin: 'idea'
+
+dependencies {
+  if (project.hasProperty(TCPathVar)) {
+    def teamCityDir = project.getProperties()[TCPathVar]
+
+    teamCityLib = fileTree(teamCityDir + "/webapps/ROOT/WEB-INF/lib").matching {
+      include 'annotations.jar'
+      include 'openapi.jar'
+      include 'util.jar'
+      include 'trove4j.jar'
+    }
+
+    devPackage = fileTree(teamCityDir + "/devPackage").matching {
+      include 'agent-api.jar'
+      include 'common-api.jar'
+      include 'server-api.jar'
+      include 'tests/tests-support.jar'
+    }
+
+    commonApi = fileTree(teamCityDir + "/devPackage").matching {
+      include 'common-api.jar'
+    }
+
+    agentRuntime = zipTree(teamCityDir + "/webapps/ROOT/update/buildAgent.zip").matching {
+      include 'lib/*.jar'
+    }
+
+  } else {
+    throw new StopExecutionException("""TeamCity distribution not available.
+    Please, set path to valid TeamCity distribution in gradle.properties file.""")
+  }
+}
+
+allprojects {
+  tcVersion="7.0-SNAPSHOT"
+}
+
+subprojects {
+
+  apply plugin: 'java'
+
+  repositories {
+    mavenRepo(name: "sonatype-public", urls: "https://oss.sonatype.org/content/groups/public/");
+    mavenCentral()
+  }
+
+  dependencies {
+    compile 'log4j:log4j:1.2.16'
+
+    testCompile 'org.jmock:jmock:2.5.1'
+    testCompile 'org.testng:testng:5.14'
+  }
+
+  clean {
+    delete "target"
+  }
+}
+
+project (":${pluginName}-agent") {
+  configurations {
+    integTestClasspath {
+      extendsFrom testRuntime
+    }
+  }
+
+  dependencies {
+    compile project(":${pluginName}-common")
+    compile devPackage
+    compile teamCityLib
+    compile agentRuntime
+
+    integTestClasspath agentRuntime
+    integTestClasspath 'org.jmock:jmock:2.5.1'
+    integTestClasspath 'org.testng:testng:5.14'
+    integTestClasspath commonApi
+  }
+}
+
+project (":${pluginName}-server") {
+  dependencies {
+    compile project(":${pluginName}-common")
+    compile devPackage
+    compile teamCityLib
+  }
+}
+
+def pluginDistr = new File(buildDir, "${pluginName}")
+
+task initDistrDestinations (dependsOn: [":${pluginName}-agent:dist", ":${pluginName}-server:build"]) << {
+  serverDistr = new File(pluginDistr, 'server')
+  serverDistr.mkdirs()
+
+  copy {
+    from project(":${pluginName}-server").libsDir
+    from project(":${pluginName}-common").libsDir
+    into serverDistr
+  }
+
+  copy {
+    from projectDir
+    include 'teamcity-plugin.xml'
+    into pluginDistr
+  }
+}
+
+task zipAgent(type: Zip, dependsOn: ['initDistrDestinations']) {
+  from project(":${pluginName}-agent").distsDir
+  include "${pluginName}/**"
+  archiveName ="${pluginName}.zip"
+  destinationDir = new File(pluginDistr, 'agent')
+}
+
+task zipPlugin(type: Zip, dependsOn: ['initDistrDestinations',
+                                      'zipAgent']) {
+  from pluginDistr
+  archiveName="${pluginName}.zip"
+}
+
+
+task dist(dependsOn: [ 'zipPlugin' ]) {
+  description = 'Create plugin package for TeamCity'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.0-milestone-9'
+    jarPath = 'wrapper'
+}
