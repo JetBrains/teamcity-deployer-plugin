@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="teamcity-agent-api">
+    <CLASSES>
+      <root url="jar://C:/Program Files/JetBrains/TeamCity/devPackage/agent-api.jar!/" />
+      <root url="jar://C:/Program Files/JetBrains/TeamCity/devPackage/common-api.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="third-parties-libs">
+    <CLASSES>
+      <root url="jar://C:/Program Files/JetBrains/TeamCity/webapps/ROOT/WEB-INF/lib/annotations.jar!/" />
+      <root url="jar://C:/Program Files/JetBrains/TeamCity/webapps/ROOT/WEB-INF/lib/openapi.jar!/" />
+      <root url="jar://C:/Program Files/JetBrains/TeamCity/webapps/ROOT/WEB-INF/lib/util.jar!/" />
+      <root url="jar://C:/Program Files/JetBrains/TeamCity/webapps/ROOT/WEB-INF/lib/trove4j.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

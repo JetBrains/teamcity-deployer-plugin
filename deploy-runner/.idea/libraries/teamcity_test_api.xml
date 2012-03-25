@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="teamcity-test-api">
+    <CLASSES>
+      <root url="jar://C:/Program Files/JetBrains/TeamCity/devPackage/tests/patches-test.jar!/" />
+      <root url="jar://C:/Program Files/JetBrains/TeamCity/devPackage/tests/tests-support.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="Spring" name="Spring">
+      <configuration>
+        <fileset id="fileset1" name="Xml Application Context" removed="false">
+          <file>file://$MODULE_DIR$/deploy-runner-server/src/main/resources/META-INF/build-server-plugin-deploy-runner.xml</file>
+        </fileset>
+      </configuration>
+    </facet>
+  </component>
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/deploy-runner-server">
+      <sourceFolder url="file://$MODULE_DIR$/deploy-runner-server/src/main/resources" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/deploy-runner-server/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/deploy-runner-server/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/deploy-runner-server/src/test/resources" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/deploy-runner-server/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/deploy-runner-server/build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="deploy-runner-common" exported="" />
+    <orderEntry type="library" name="third-parties-libs" level="project" />
+    <orderEntry type="library" name="teamcity-server-api" level="project" />
+    <orderEntry type="library" name="teamcity-runtime-util" level="project" />
+    <orderEntry type="library" name="teamcity-api-source" level="project" />
+    <orderEntry type="library" name="teamcity-test-api" level="project" />
+  </component>
+</module>
+

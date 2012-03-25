@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/deploy-runner.iml" filepath="$PROJECT_DIR$/deploy-runner.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deploy-runner-agent.iml" filepath="$PROJECT_DIR$/deploy-runner-agent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deploy-runner-common.iml" filepath="$PROJECT_DIR$/deploy-runner-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deploy-runner-server.iml" filepath="$PROJECT_DIR$/deploy-runner-server.iml" />
+    </modules>
+  </component>
+</project>
+
