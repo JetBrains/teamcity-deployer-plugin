@@ -23,6 +23,7 @@ task dist(dependsOn: [build,":${pluginName}-common:build"]) {
     copy {
         from project(":${pluginName}-common").libsDir
         from libsDir
+        from configurations.compile.filter({File f -> f.getName().contains("jcifs")})
         into runnerLib
     }
 
