@@ -59,6 +59,7 @@ subprojects {
 
   repositories {
     mavenRepo(name: "sonatype-public", urls: "https://oss.sonatype.org/content/groups/public/");
+    mavenRepo(name: "daisycms", urls: "http://daisycms.org/maven/maven2/deploy/");
     mavenCentral()
   }
 
@@ -86,6 +87,7 @@ project (":${pluginName}-agent") {
     compile devPackage
     compile teamCityLib
     compile agentRuntime
+    compile "org.samba.jcifs:jcifs:1.3.17"
 
     integTestClasspath agentRuntime
     integTestClasspath 'org.jmock:jmock:2.5.1'
