@@ -7,7 +7,7 @@
 
 <l:settingsGroup title="Deployment Target">
     <tr>
-        <th><label for="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>">Target URL: </label></th>
+        <th><label for="my.buildServer.deployer.targetUrl">Target URL: </label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter target url</span>
         </td>
@@ -16,13 +16,13 @@
 
 <l:settingsGroup title="Deployment Credentials">
     <tr>
-        <th><label for="<%=DeployerRunnerConstants.PARAM_USERNAME%>">Username:</label></th>
+        <th><label for="my.buildServer.deployer.username">Username:</label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter username</span>
         </td>
     </tr>
     <tr>
-        <th><label for="<%=DeployerRunnerConstants.PARAM_PASSWORD%>">Password:</label></th>
+        <th><label for="my.buildServer.deployer.password">Password:</label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter password</span>
         </td>
@@ -31,7 +31,7 @@
 
 <l:settingsGroup title="Deployment source">
     <tr>
-        <th><label for="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>">Source directory: </label></th>
+        <th><label for="my.buildServer.deployer.sourcePath">Source directory: </label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter target url</span>
         </td>
