@@ -33,7 +33,7 @@
     <tr>
         <th><label for="my.buildServer.deployer.sourcePath">Source directory: </label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter target url</span>
+            <span class="smallNote">Enter path to source</span>
         </td>
     </tr>
 </l:settingsGroup>
