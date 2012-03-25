@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Created by Kit
@@ -40,11 +41,12 @@ public class DeployerRunner implements AgentBuildRunner {
                     targetWithProtocol = target;
                 }
                 NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", username, password);
+                final String settingsString = "Trying to connect with following parameters:\n" +
+                                            "username=[" + username + "]\n" +
+                                            "password=[" + password + "]\n" +
+                                            "target=[" + targetWithProtocol + "]";
                 try {
-                    Loggers.AGENT.debug("Trying to connect with following parameters:\n" +
-                            "username=[" + username + "]\n" +
-                            "password=[" + password + "]\n" +
-                            "target=[" + targetWithProtocol + "]");
+                    Loggers.AGENT.debug(settingsString);
                     SmbFile destinationDir = new SmbFile(targetWithProtocol, auth);
                     File source = new File(context.getWorkingDirectory(), sourcePath);
                     if (source.isDirectory()) {
@@ -60,6 +62,7 @@ public class DeployerRunner implements AgentBuildRunner {
                         upload(source, destinationDir);
                     }
                 } catch (Exception e) {
+                    Loggers.AGENT.error(settingsString, e);
                     throw new RunBuildException(e);
                 }
             }
@@ -68,7 +71,15 @@ public class DeployerRunner implements AgentBuildRunner {
                 SmbFile destFile = new SmbFile(destinationDir, source.getName());
                 Loggers.AGENT.debug("Uploading source=[" + source.getAbsolutePath() + "] to \n" +
                         "target=[" + destFile.getCanonicalPath() + "]");
-                FileUtil.copy(new FileInputStream(source), destFile.getOutputStream());
+                FileInputStream inputStream = new FileInputStream(source);
+                OutputStream outputStream = destFile.getOutputStream();
+                try {
+                    FileUtil.copy(inputStream, outputStream);
+                    outputStream.flush();
+                } finally {
+                    FileUtil.close(inputStream);
+                    FileUtil.close(outputStream);
+                }
             }
         };
     }
