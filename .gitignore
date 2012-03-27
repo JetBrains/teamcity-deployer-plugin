@@ -1,6 +1,7 @@
 *~
 *.swp
-**/.gradle
-**/build
-**/.idea
-**/*.iml
+.gradle/
+build
+.idea/
+*.iml
+gradle-runner/
