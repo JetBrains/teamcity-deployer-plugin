@@ -90,6 +90,8 @@ project (":${pluginName}-agent") {
     compile "org.samba.jcifs:jcifs:1.3.17"
     compile "com.jcraft:jsch:0.1.47"
 
+    testCompile "org.testng:testng:6.5.1"
+
     integTestClasspath agentRuntime
     integTestClasspath 'org.jmock:jmock:2.5.1'
     integTestClasspath 'org.testng:testng:5.14'

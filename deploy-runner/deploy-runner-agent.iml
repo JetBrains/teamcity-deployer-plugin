@@ -28,6 +28,8 @@
     <orderEntry type="library" name="teamcity-api-source" level="project" />
     <orderEntry type="library" name="teamcity-test-api" level="project" />
     <orderEntry type="library" exported="" name="jcifs-1.3.17" level="project" />
+    <orderEntry type="library" exported="" name="jsch-0.1.47" level="project" />
+    <orderEntry type="library" scope="TEST" name="testng-6.5.1" level="project" />
   </component>
 </module>
 
