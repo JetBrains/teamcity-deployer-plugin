@@ -23,7 +23,7 @@
     </tr>
     <tr>
         <th><label for="my.buildServer.deployer.password">Password:</label></th>
-        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
+        <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter password</span>
         </td>
     </tr>
