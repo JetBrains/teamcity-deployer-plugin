@@ -1,4 +1,4 @@
-package my.buildServer.deployer.agent;
+package my.buildServer.deployer.agent.scp;
 
 import jetbrains.buildServer.agent.AgentBuildRunnerInfo;
 import jetbrains.buildServer.agent.BuildAgentConfiguration;

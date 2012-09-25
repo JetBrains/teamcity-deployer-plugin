@@ -3,5 +3,5 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-  <bean id="scpDeployerRunner" class="my.buildServer.deployer.agent.ScpDeployerRunner"/>
+  <bean id="scpDeployerRunner" class="my.buildServer.deployer.agent.scp.ScpDeployerRunner"/>
 </beans>

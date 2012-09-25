@@ -1,8 +1,7 @@
-package my.buildServer.deployer.agent;
+package my.buildServer.deployer.agent.scp;
 
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.*;
-import my.buildServer.deployer.agent.scp.ScpProcessAdapter;
 import my.buildServer.deployer.common.DeployerRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
