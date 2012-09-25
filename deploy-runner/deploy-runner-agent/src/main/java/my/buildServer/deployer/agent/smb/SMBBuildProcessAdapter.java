@@ -52,7 +52,9 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
     @Override
     public void start() throws RunBuildException {
         String targetWithProtocol;
-        if (!target.startsWith(SMB)) {
+        if (target.startsWith("\\\\")) {
+            targetWithProtocol = SMB + target.substring(2);
+        } else if (!target.startsWith(SMB)) {
             targetWithProtocol = SMB + target;
         } else {
             targetWithProtocol = target;
@@ -62,6 +64,8 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
         if (!targetWithProtocol.endsWith("/")) {
             targetWithProtocol = targetWithProtocol + "/";
         }
+
+        targetWithProtocol = targetWithProtocol.replaceAll("\\\\", "/");
 
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", username, password);
         final String settingsString = "Trying to connect with following parameters:\n" +
