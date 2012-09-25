@@ -13,136 +13,86 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-def TCPathVar = "path.variable.teamcitydistribution"
 
-apply plugin: 'idea'
 
-dependencies {
-  if (project.hasProperty(TCPathVar)) {
-    def teamCityDir = project.getProperties()[TCPathVar]
-
-    teamCityLib = fileTree(teamCityDir + "/webapps/ROOT/WEB-INF/lib").matching {
-      include 'annotations.jar'
-      include 'openapi.jar'
-      include 'util.jar'
-      include 'trove4j.jar'
-    }
-
-    devPackage = fileTree(teamCityDir + "/devPackage").matching {
-      include 'agent-api.jar'
-      include 'common-api.jar'
-      include 'server-api.jar'
-      include 'tests/tests-support.jar'
-    }
-
-    commonApi = fileTree(teamCityDir + "/devPackage").matching {
-      include 'common-api.jar'
-    }
-
-    agentRuntime = zipTree(teamCityDir + "/webapps/ROOT/update/buildAgent.zip").matching {
-      include 'lib/*.jar'
-    }
-
-  } else {
-    throw new StopExecutionException("""TeamCity distribution not available.
-    Please, set path to valid TeamCity distribution in gradle.properties file.""")
-  }
+// 1 - Plugin's Maven repository and coordinates.
+buildscript {
+    repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }
+    dependencies { classpath      'com.github.goldin.plugins:teamcity:0.1.4-SNAPSHOT'  }
 }
-
-allprojects {
-  tcVersion="7.0-SNAPSHOT"
-}
-
+ 
+ 
+ 
+// 2 - Optional, TeamCity version, '7.1.1' by default. All released versions since 6.0 are supported, see below for complete list of versions.
+ext.teamCityVersion = '7.0.4'
+ 
+ 
+// 3 - Applying the plugin.
+apply from: 'https://raw.github.com/evgeny-goldin/gradle-plugins/master/teamcity/teamcity.gradle'
+ 
 subprojects {
+    apply plugin:'java'
+    repositories {
+        mavenRepo(name: "sonatype-public", urls: "https://oss.sonatype.org/content/groups/public/");
+        mavenRepo(name: "daisycms", urls: "http://daisycms.org/maven/maven2/deploy/");
+        mavenCentral()
+    }
 
-  apply plugin: 'java'
-
-  repositories {
-    mavenRepo(name: "sonatype-public", urls: "https://oss.sonatype.org/content/groups/public/");
-    mavenRepo(name: "daisycms", urls: "http://daisycms.org/maven/maven2/deploy/");
-    mavenCentral()
-  }
-
-  dependencies {
-    compile 'log4j:log4j:1.2.16'
-
-    testCompile 'org.jmock:jmock:2.5.1'
-    testCompile 'org.testng:testng:5.14'
-  }
-
-  clean {
-    delete "target"
-  }
+}
+ 
+ 
+// 6 - Configuring the plugin.
+assembleTeamcityPluginConfig {
+ 
+    name        'artifactDeployer'
+    displayName 'Artifact Deployer'
+    description 'Plugin description'
+    downloadUrl 'Plugin download URL'
+    email       'Plugin author e-mail'
+    vendorName  'Plugin vendor name'
+    vendorUrl   'Plugin vendor URL'
+    vendorLogo  'Plugin vendor logo URL'
+ 
+    server      project( ':deploy-runner-server' )
+    agent       project( ':deploy-runner-agent'  )
+    artifacts   project( ':deploy-runner-server' )
 }
 
-project (":${pluginName}-agent") {
+/**
+ * Gradle subproject with agent-side sources of the plugin.
+ */
+project( ':deploy-runner-agent' ) {
+
   configurations {
-    integTestClasspath {
-      extendsFrom testRuntime
-    }
+    compile { extendsFrom teamcityAgent }
+    test { extendsFrom teamcityTest }
   }
 
   dependencies {
-    compile project(":${pluginName}-common")
-    compile devPackage
-    compile teamCityLib
-    compile agentRuntime
+    compile project(":deploy-runner-common")
     compile "org.samba.jcifs:jcifs:1.3.17"
     compile "com.jcraft:jsch:0.1.47"
 
-    testCompile "org.testng:testng:6.5.1"
-
-    integTestClasspath agentRuntime
-    integTestClasspath 'org.jmock:jmock:2.5.1'
-    integTestClasspath 'org.testng:testng:5.14'
-    integTestClasspath commonApi
+    testCompile 'org.testng:testng:5.14'
   }
 }
 
-project (":${pluginName}-server") {
-  dependencies {
-    compile project(":${pluginName}-common")
-    compile devPackage
-    compile teamCityLib
-  }
+ 
+/**
+ * Gradle subproject with server-side sources of the plugin.
+ */
+project( ':deploy-runner-server' ) {
+    configurations { 
+      compile { extendsFrom teamcityServer }
+      test { extendsFrom teamcityTest }
+    }
+    dependencies   {
+     compile project(":deploy-runner-common")
+    }
 }
 
-def pluginDistr = new File(buildDir, "${pluginName}")
-
-task initDistrDestinations (dependsOn: [":${pluginName}-agent:dist", ":${pluginName}-server:build"]) << {
-  serverDistr = new File(pluginDistr, 'server')
-  serverDistr.mkdirs()
-
-  copy {
-    from project(":${pluginName}-server").libsDir
-    from project(":${pluginName}-common").libsDir
-    into serverDistr
-  }
-
-  copy {
-    from projectDir
-    include 'teamcity-plugin.xml'
-    into pluginDistr
-  }
-}
-
-task zipAgent(type: Zip, dependsOn: ['initDistrDestinations']) {
-  from project(":${pluginName}-agent").distsDir
-  include "${pluginName}/**"
-  archiveName ="${pluginName}.zip"
-  destinationDir = new File(pluginDistr, 'agent')
-}
-
-task zipPlugin(type: Zip, dependsOn: ['initDistrDestinations',
-                                      'zipAgent']) {
-  from pluginDistr
-  archiveName="${pluginName}.zip"
-}
-
-
-task dist(dependsOn: [ 'zipPlugin' ]) {
-  description = 'Create plugin package for TeamCity'
-}
+// 5 - Adding 'assembleTeamcityPlugin' task dependencies.
+assembleTeamcityPlugin.dependsOn ':deploy-runner-server:jar', ':deploy-runner-agent:jar'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.0'
