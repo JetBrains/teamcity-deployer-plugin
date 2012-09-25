@@ -51,12 +51,18 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
 
     @Override
     public void start() throws RunBuildException {
-        final String targetWithProtocol;
+        String targetWithProtocol;
         if (!target.startsWith(SMB)) {
             targetWithProtocol = SMB + target;
         } else {
             targetWithProtocol = target;
         }
+
+        // Share and directories names require trailing /
+        if (!targetWithProtocol.endsWith("/")) {
+            targetWithProtocol = targetWithProtocol + "/";
+        }
+
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", username, password);
         final String settingsString = "Trying to connect with following parameters:\n" +
                 "username=[" + username + "]\n" +
