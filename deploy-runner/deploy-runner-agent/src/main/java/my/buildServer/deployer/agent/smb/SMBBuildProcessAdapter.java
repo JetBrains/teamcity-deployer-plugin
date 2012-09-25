@@ -3,10 +3,12 @@ package my.buildServer.deployer.agent.smb;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
 import jetbrains.buildServer.RunBuildException;
+import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProcessAdapter;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.FileUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,12 +24,29 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
     private final BuildRunnerContext context;
     private final String sourcePath;
 
+    private volatile boolean hasFinished;
+
     public SMBBuildProcessAdapter(String target, String username, String password, BuildRunnerContext context, String sourcePath) {
         this.target = target;
         this.username = username;
         this.password = password;
         this.context = context;
         this.sourcePath = sourcePath;
+        hasFinished = false;
+    }
+
+    @NotNull
+    @Override
+    public BuildFinishedStatus waitFor() throws RunBuildException {
+        while (!isInterrupted() && !hasFinished) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RunBuildException(e);
+            }
+        }
+        return hasFinished ? BuildFinishedStatus.FINISHED_SUCCESS :
+                BuildFinishedStatus.INTERRUPTED;
     }
 
     @Override
@@ -62,6 +81,8 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
         } catch (Exception e) {
             Loggers.AGENT.error(settingsString, e);
             throw new RunBuildException(e);
+        } finally {
+            hasFinished = true;
         }
     }
 
