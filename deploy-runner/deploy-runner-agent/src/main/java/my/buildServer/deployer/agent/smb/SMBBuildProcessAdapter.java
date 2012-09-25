@@ -13,10 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/**
-* Created by Kit
-* Date: 21.04.12 - 21:58
-*/
+
 class SMBBuildProcessAdapter extends BuildProcessAdapter {
     public static final String SMB = "smb://";
     private final String target;

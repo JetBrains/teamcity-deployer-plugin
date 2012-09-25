@@ -4,4 +4,5 @@
 
 <beans>
   <bean id="scpDeployerRunner" class="my.buildServer.deployer.agent.scp.ScpDeployerRunner"/>
+  <bean id="smbDeployerRunner" class="my.buildServer.deployer.agent.smb.SmbDeployerRunner"/>
 </beans>
