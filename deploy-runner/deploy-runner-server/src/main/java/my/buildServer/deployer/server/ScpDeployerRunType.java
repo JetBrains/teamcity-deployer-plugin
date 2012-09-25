@@ -3,6 +3,7 @@ package my.buildServer.deployer.server;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
+import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import my.buildServer.deployer.common.DeployerRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,7 +12,11 @@ import java.util.Map;
 
 public class ScpDeployerRunType extends RunType {
 
-    public ScpDeployerRunType(@NotNull final RunTypeRegistry registry) {
+    private final PluginDescriptor myDescriptor;
+
+    public ScpDeployerRunType(@NotNull final RunTypeRegistry registry,
+                              @NotNull final PluginDescriptor descriptor) {
+        myDescriptor = descriptor;
         registry.registerRunType(this);
     }
 
@@ -38,12 +43,12 @@ public class ScpDeployerRunType extends RunType {
 
     @Override
     public String getEditRunnerParamsJspFilePath() {
-        return "editScpDeployerParams.jsp";
+        return myDescriptor.getPluginResourcesPath() + "editScpDeployerParams.jsp";
     }
 
     @Override
     public String getViewRunnerParamsJspFilePath() {
-        return  "viewScpDeployerParams.jsp";
+        return  myDescriptor.getPluginResourcesPath() + "viewScpDeployerParams.jsp";
     }
 
     @Override
