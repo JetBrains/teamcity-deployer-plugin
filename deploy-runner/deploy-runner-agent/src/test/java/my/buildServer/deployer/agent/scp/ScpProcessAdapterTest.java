@@ -2,7 +2,7 @@ package my.buildServer.deployer.agent.scp;
 
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.util.FileUtil;
-import junit.framework.Assert;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
