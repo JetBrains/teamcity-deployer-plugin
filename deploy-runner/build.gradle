@@ -56,6 +56,8 @@ assembleTeamcityPluginConfig {
     vendorName  'Plugin vendor name'
     vendorUrl   'Plugin vendor URL'
     vendorLogo  'Plugin vendor logo URL'
+
+    version     "snapshot-${new Date().format("yyyyMMddHHmmss")}"
  
     server      project( ':deploy-runner-server' )
     agent       project( ':deploy-runner-agent'  )
