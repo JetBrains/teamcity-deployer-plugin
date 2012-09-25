@@ -5,7 +5,10 @@ package my.buildServer.deployer.common;
  * Date: 24.03.12 - 17:09
  */
 public class DeployerRunnerConstants {
-    public static final String DEPLOYER_RUN_TYPE = "deploy-runner";
+    public static final String SCP_RUN_TYPE = "scp-deploy-runner";
+    public static final String SMB_RUN_TYPE = "smb-deploy-runner";
+
+
     public static final String PARAM_USERNAME = "my.buildServer.deployer.username";
     public static final String PARAM_PASSWORD = "my.buildServer.deployer.password";
     public static final String PARAM_TARGET_URL = "my.buildServer.deployer.targetUrl";

@@ -9,11 +9,11 @@ import org.jetbrains.annotations.NotNull;
 * Created by Kit
 * Date: 24.03.12 - 17:31
 */
-class DeployerRunnerInfo implements AgentBuildRunnerInfo {
+class ScpDeployerRunnerInfo implements AgentBuildRunnerInfo {
     @NotNull
     @Override
     public String getType() {
-        return DeployerRunnerConstants.DEPLOYER_RUN_TYPE;
+        return DeployerRunnerConstants.SCP_RUN_TYPE;
     }
 
     @Override

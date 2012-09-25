@@ -10,9 +10,8 @@ import org.jetbrains.annotations.NotNull;
  * Created by Kit
  * Date: 24.03.12 - 17:26
  */
-public class DeployerRunner implements AgentBuildRunner {
+public class ScpDeployerRunner implements AgentBuildRunner {
 
-    public static final String SMB = "smb://";
     private static final String SCP = "spc://";
 
     @NotNull
@@ -30,7 +29,7 @@ public class DeployerRunner implements AgentBuildRunner {
     @NotNull
     @Override
     public AgentBuildRunnerInfo getRunnerInfo() {
-        return new DeployerRunnerInfo();
+        return new ScpDeployerRunnerInfo();
     }
 
 
