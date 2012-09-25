@@ -9,30 +9,26 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by Kit
- * Date: 24.03.12 - 16:52
- */
-public class DeployerRunType extends RunType {
+public class SmbDeployerRunType extends RunType {
 
-    public DeployerRunType(@NotNull final RunTypeRegistry registry) {
+    public SmbDeployerRunType(@NotNull final RunTypeRegistry registry) {
         registry.registerRunType(this);
     }
 
     @NotNull
     @Override
     public String getType() {
-        return DeployerRunnerConstants.DEPLOYER_RUN_TYPE;
+        return DeployerRunnerConstants.SMB_RUN_TYPE;
     }
 
     @Override
     public String getDisplayName() {
-        return "Deployer";
+        return "SMB Deployer";
     }
 
     @Override
     public String getDescription() {
-        return "Runner able to deploy build artifacts to various targets";
+        return "Runner able to deploy build artifacts via SMB (Windows share)";
     }
 
     @Override
@@ -42,12 +38,12 @@ public class DeployerRunType extends RunType {
 
     @Override
     public String getEditRunnerParamsJspFilePath() {
-        return "editDeployerParams.jsp";
+        return "editSmbDeployerParams.jsp";
     }
 
     @Override
     public String getViewRunnerParamsJspFilePath() {
-        return  "viewDeployerParams.jsp";
+        return  "viewSmbDeployerParams.jsp";
     }
 
     @Override
