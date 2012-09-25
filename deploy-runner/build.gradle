@@ -29,7 +29,11 @@ ext.teamCityVersion = '7.0.4'
  
 // 3 - Applying the plugin.
 apply from: 'https://raw.github.com/evgeny-goldin/gradle-plugins/master/teamcity/teamcity.gradle'
- 
+
+allprojects {
+    version = "0.1"
+}
+
 subprojects {
     apply plugin:'java'
     repositories {
