@@ -78,6 +78,7 @@ project( ':deploy-runner-agent' ) {
     compile project(":deploy-runner-common")
     compile "org.samba.jcifs:jcifs:1.3.17"
     compile "com.jcraft:jsch:0.1.47"
+    compile files("lib/ftp4j-1.7.2.jar")
 
     testCompile 'org.testng:testng:5.14'
   }

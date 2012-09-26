@@ -3,6 +3,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans default-autowire="constructor">
-  <bean id="scpDeployerRunType" class="my.buildServer.deployer.server.ScpDeployerRunType"/>
-  <bean id="smbDeployerRunType" class="my.buildServer.deployer.server.SmbDeployerRunType"/>
+    <bean id="scpDeployerRunType" class="my.buildServer.deployer.server.ScpDeployerRunType"/>
+    <bean id="smbDeployerRunType" class="my.buildServer.deployer.server.SmbDeployerRunType"/>
+    <bean id="ftpDeployerRunType" class="my.buildServer.deployer.server.FtpDeployerRunType"/>
 </beans>
