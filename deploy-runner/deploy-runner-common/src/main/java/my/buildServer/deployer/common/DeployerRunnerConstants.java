@@ -9,6 +9,7 @@ public class DeployerRunnerConstants {
     public static final String SMB_RUN_TYPE = "smb-deploy-runner";
     public static final String FTP_RUN_TYPE = "ftp-deploy-runner" ;
     public static final String SFTP_RUN_TYPE = "sftp-deploy-runner";
+    public static final String TOMCAT_RUN_TYPE = "tomcat-deploy-runner";
 
 
     public static final String PARAM_USERNAME = "my.buildServer.deployer.username";
