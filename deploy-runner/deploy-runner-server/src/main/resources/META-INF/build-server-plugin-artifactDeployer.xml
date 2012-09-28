@@ -8,4 +8,5 @@
     <bean id="ftpDeployerRunType" class="my.buildServer.deployer.server.FtpDeployerRunType"/>
     <bean id="sftpDeployerRunType" class="my.buildServer.deployer.server.SftpDeployerRunType"/>
     <bean id="tomcatDeployerRunType" class="my.buildServer.deployer.server.TomcatDeployerRunType"/>
+    <bean id="sshExecRunType" class="my.buildServer.deployer.server.SSHExecRunType"/>
 </beans>

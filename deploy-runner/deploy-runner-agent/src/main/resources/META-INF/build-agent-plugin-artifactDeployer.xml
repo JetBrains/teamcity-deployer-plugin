@@ -8,4 +8,5 @@
     <bean id="ftpDeployerRunner" class="my.buildServer.deployer.agent.ftp.FtpDeployerRunner"/>
     <bean id="sftpDeployerRunner" class="my.buildServer.deployer.agent.sftp.SftpDeployerRunner"/>
     <bean id="tomcatDeployerRunner" class="my.buildServer.deployer.agent.tomcat.TomcatDeployerRunner"/>
+    <bean id="sshExecRunner" class="my.buildServer.deployer.agent.ssh.SSHExecRunner"/>
 </beans>

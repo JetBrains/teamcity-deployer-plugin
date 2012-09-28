@@ -16,15 +16,15 @@
 
 <l:settingsGroup title="Deployment Credentials">
     <tr>
-        <th><label for="my.buildServer.deployer.username">Username:</label></th>
+        <th><label for="my.buildServer.deployer.myUsername">Username:</label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter username</span>
+            <span class="smallNote">Enter myUsername</span>
         </td>
     </tr>
     <tr>
-        <th><label for="my.buildServer.deployer.password">Password:</label></th>
+        <th><label for="my.buildServer.deployer.myPassword">Password:</label></th>
         <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter password</span>
+            <span class="smallNote">Enter myPassword</span>
         </td>
     </tr>
 </l:settingsGroup>
