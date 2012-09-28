@@ -70,7 +70,7 @@ assembleTeamcityPluginConfig {
 project( ':deploy-runner-agent' ) {
 
   configurations {
-    compile { extendsFrom teamcityAgent }
+    compile { extendsFrom teamcityAgentEx }
     test { extendsFrom teamcityTest }
   }
 

@@ -2,7 +2,7 @@
 
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
-<beans>
+<beans default-autowire="constructor">
     <bean id="scpDeployerRunner" class="my.buildServer.deployer.agent.scp.ScpDeployerRunner"/>
     <bean id="smbDeployerRunner" class="my.buildServer.deployer.agent.smb.SmbDeployerRunner"/>
     <bean id="ftpDeployerRunner" class="my.buildServer.deployer.agent.ftp.FtpDeployerRunner"/>
