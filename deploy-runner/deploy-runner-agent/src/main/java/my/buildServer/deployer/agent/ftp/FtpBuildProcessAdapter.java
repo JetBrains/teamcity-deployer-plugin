@@ -2,40 +2,40 @@ package my.buildServer.deployer.agent.ftp;
 
 import it.sauronsoftware.ftp4j.FTPClient;
 import it.sauronsoftware.ftp4j.FTPException;
-import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
-import jcifs.smb.NtlmPasswordAuthentication;
-import jcifs.smb.SmbFile;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProcessAdapter;
 import jetbrains.buildServer.agent.BuildRunnerContext;
+import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
 
 
 class FtpBuildProcessAdapter extends BuildProcessAdapter {
-    public static final String SMB = "smb://";
-    private final String target;
-    private final String username;
-    private final String password;
-    private final BuildRunnerContext context;
-    private final String sourcePath;
+
+    private final String myTarget;
+    private final String myUsername;
+    private final String myPassword;
+    private final BuildRunnerContext myContext;
+    private final List<ArtifactsCollection> myArtifacts;
 
     private volatile boolean hasFinished;
 
-    public FtpBuildProcessAdapter(String target, String username, String password, BuildRunnerContext context, String sourcePath) {
-        this.target = target;
-        this.username = username;
-        this.password = password;
-        this.context = context;
-        this.sourcePath = sourcePath;
+    public FtpBuildProcessAdapter(@NotNull final String target,
+                                  @NotNull final String username,
+                                  @NotNull final String password,
+                                  @NotNull final BuildRunnerContext context,
+                                  @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        myTarget = target;
+        myUsername = username;
+        myPassword = password;
+        myContext = context;
+        myArtifacts = artifactsCollections;
         hasFinished = false;
     }
 
@@ -58,18 +58,35 @@ class FtpBuildProcessAdapter extends BuildProcessAdapter {
 
         FTPClient client = new FTPClient();
         try {
-            client.connect(target);
+            client.connect(myTarget);
 
-            if (StringUtil.isEmpty(username)) {
+            if (StringUtil.isEmpty(myUsername)) {
                 client.login("anonymous", "email@example.com");
             } else {
-                client.login(username, password);
+                client.login(myUsername, myPassword);
             }
 
-            final File workingDirectory = context.getWorkingDirectory();
+            final String remoteRoot = client.currentDirectory();
 
-            File source = new File(workingDirectory, sourcePath);
-            client.upload(source);
+            for (ArtifactsCollection artifactsCollection : myArtifacts) {
+                for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
+                    final File source = fileStringEntry.getKey();
+                    final String destinationDir = fileStringEntry.getValue();
+
+                    try {
+                        client.createDirectory(destinationDir);
+                    } catch (FTPException e) {
+                        // we can safely ignore if dir already exists
+                        if (!e.getMessage().contains("Directory already exists")) {
+                            throw e;
+                        }
+                    }
+                    client.changeDirectory(destinationDir);
+                    client.upload(source);
+                    client.changeDirectory(remoteRoot);
+                }
+            }
+
 
         } catch (Exception e) {
             throw new RunBuildException(e);

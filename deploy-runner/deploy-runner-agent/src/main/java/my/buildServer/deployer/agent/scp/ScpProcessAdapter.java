@@ -5,32 +5,40 @@ import com.jcraft.jsch.*;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProcessAdapter;
+import jetbrains.buildServer.agent.BuildRunnerContext;
+import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Created by Kit
- * Date: 21.04.12 - 22:00
- */
 public class ScpProcessAdapter extends BuildProcessAdapter {
+
+    private final String myTargetString;
+    private final String myUsername;
+    private final String myPassword;
+    private final List<ArtifactsCollection> myArtifacts;
+    private final File myWorkingDirectory;
+
 
     private volatile boolean hasFinished;
     private volatile boolean isInterrupted;
-    private final String myTargetString;
-    private final String mySourcePath;
-    private final String myUsername;
-    private final String myPassword;
-    private File myWorkingDirectory;
 
-    public ScpProcessAdapter(String sourcePath, String targetHost, String username, String password, File workingDirectory) {
-        myTargetString = targetHost;
-        mySourcePath = sourcePath;
+
+    public ScpProcessAdapter(@NotNull final BuildRunnerContext context,
+                             @NotNull final String username,
+                             @NotNull final String password,
+                             @NotNull final String target,
+                             @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        myTargetString = target;
         myUsername = username;
         myPassword = password;
-        myWorkingDirectory = workingDirectory;
+        myWorkingDirectory = context.getWorkingDirectory();
+        myArtifacts = artifactsCollections;
+
         hasFinished = false;
         isInterrupted = false;
     }
@@ -76,7 +84,7 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
 
             createRemotePath(session, escapedRemotePath);
             if (isInterrupted()) return;
-            copy(session, mySourcePath, escapedRemotePath);
+            upload(session, escapedRemotePath);
 
         } catch (Exception e) {
             throw new RunBuildException(e);
@@ -121,36 +129,36 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
         }
     }
 
-    private void copy(final @NotNull Session session,
-                      final @NotNull String sourcePath,
-                      final @NotNull String escapedRemoteBase) throws Exception {
+    private void upload(final @NotNull Session session,
+                        final @NotNull String escapedRemoteBase) throws IOException, JSchException {
+
         assert session.isConnected();
-        final File sourceFile = new File(myWorkingDirectory, sourcePath);
-
-        if (!sourceFile.exists()) {
-            throw new IOException("Source [" + sourceFile.getAbsolutePath() + "] does not exists");
-        }
-
-        ScpOperation operationsChain = ScpOperationChainBuilder.buildChain(sourceFile);
 
         // exec 'scp -rt <remoteBase>' remotely
-        String command= "scp -rt " + (StringUtil.isEmptyOrSpaces(escapedRemoteBase) ? "." : escapedRemoteBase);
-        Channel channel=session.openChannel("exec");
-        ((ChannelExec)channel).setCommand(command);
+        final String command= "scp -rt " + (StringUtil.isEmptyOrSpaces(escapedRemoteBase) ? "." : escapedRemoteBase);
+        final ChannelExec execChannel = (ChannelExec)session.openChannel("exec");
+        execChannel.setCommand(command);
 
         // get I/O streams for remote scp
-        OutputStream out=channel.getOutputStream();
-        InputStream in=channel.getInputStream();
+        final OutputStream out = execChannel.getOutputStream();
+        final InputStream in = execChannel.getInputStream();
 
-        channel.connect();
+        execChannel.connect();
         ScpExecUtil.checkScpAck(in);
 
         try {
-            operationsChain.execute(out, in);
+            for (ArtifactsCollection artifactCollection : myArtifacts) {
+                for (Map.Entry<File, String> filePathEntry : artifactCollection.getFilePathMap().entrySet()) {
+                    final File source = filePathEntry.getKey();
+                    final String dest = filePathEntry.getValue();
+                    final ScpOperation operationChain = ScpOperationChainBuilder.buildChain(source, dest);
+                    operationChain.execute(out, in);
+                }
+            }
         } finally {
             FileUtil.close(out);
             FileUtil.close(in);
-            channel.disconnect();
+            execChannel.disconnect();
         }
     }
 }

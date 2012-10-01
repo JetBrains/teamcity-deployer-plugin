@@ -111,3 +111,10 @@ assembleTeamcityPlugin.dependsOn ':deploy-runner-server:jar', ':deploy-runner-ag
 task wrapper(type: Wrapper) {
     gradleVersion = '1.0'
 }
+
+task copyToProduction(dependsOn: assembleTeamcityPlugin) << {
+    final pluginsDir = "C:\\Job\\TeamCity\\Servers\\TeamCity_7.0.4\\.datadir\\plugins"
+    final archive    = assembleTeamcityPlugin.archive
+
+    copy { from archive; into pluginsDir }
+}

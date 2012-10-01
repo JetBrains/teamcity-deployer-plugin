@@ -31,8 +31,9 @@
 
 <l:settingsGroup title="Deployment source">
     <tr>
-        <th><label for="my.buildServer.deployer.sourcePath">Source directory: </label></th>
-        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>"  className="longField" maxlength="256"/>
+        <th><label for="my.buildServer.deployer.sourcePath">Artifacts path: </label></th>
+        <td>
+            <props:multilineProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" className="longField" cols="30" rows="4" expanded="true" linkTitle="Enter artifacts paths"/>
             <span class="smallNote">Enter path to source</span>
         </td>
     </tr>

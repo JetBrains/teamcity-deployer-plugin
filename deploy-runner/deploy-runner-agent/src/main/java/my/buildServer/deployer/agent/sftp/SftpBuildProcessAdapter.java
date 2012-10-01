@@ -5,31 +5,42 @@ import com.jcraft.jsch.*;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProcessAdapter;
+import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.BuildRunnerContext;
+import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 
 class SftpBuildProcessAdapter extends BuildProcessAdapter {
 
-    private final String target;
-    private final String username;
-    private final String password;
-    private final BuildRunnerContext context;
-    private final String sourcePath;
+    private final String myTarget;
+    private final String myUsername;
+    private final String myPassword;
+    private final BuildRunnerContext myContext;
+    private final List<ArtifactsCollection> myArtifacts;
 
     private volatile boolean hasFinished;
+    private BuildProgressLogger myLogger;
 
-    public SftpBuildProcessAdapter(String target, String username, String password, BuildRunnerContext context, String sourcePath) {
-        this.target = target;
-        this.username = username;
-        this.password = password;
-        this.context = context;
-        this.sourcePath = sourcePath;
+    public SftpBuildProcessAdapter(@NotNull final String target,
+                                   @NotNull final String username,
+                                   @NotNull final String password,
+                                   @NotNull final BuildRunnerContext context,
+                                   @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        myTarget = target;
+        myUsername = username;
+        myPassword = password;
+        myContext = context;
+        myLogger = myContext.getBuild().getBuildLogger();
+        myArtifacts = artifactsCollections;
         hasFinished = false;
     }
 
@@ -49,8 +60,8 @@ class SftpBuildProcessAdapter extends BuildProcessAdapter {
 
     @Override
     public void start() throws RunBuildException {
-        final String host = target.substring(0, target.indexOf(':'));
-        final String remotePath = target.substring(target.indexOf(':')+1);
+        final String host = myTarget.substring(0, myTarget.indexOf(':'));
+        final String remotePath = myTarget.substring(myTarget.indexOf(':')+1);
         final String escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
 
         JSch jsch=new JSch();
@@ -58,19 +69,33 @@ class SftpBuildProcessAdapter extends BuildProcessAdapter {
         Session session = null;
 
         try {
-            session = jsch.getSession(username, host, 22);
-            session.setPassword(password);
+            session = jsch.getSession(myUsername, host, 22);
+            session.setPassword(myPassword);
             session.connect();
 
-            createRemotePath(session, escapedRemotePath);
             if (isInterrupted()) return;
 
-            Channel channel=session.openChannel("sftp");
+            ChannelSftp channel = (ChannelSftp)session.openChannel("sftp");
             channel.connect();
-            ChannelSftp c=(ChannelSftp)channel;
+            myLogger.message("Creating path [" + escapedRemotePath + "]");
+            createRemotePath(channel, escapedRemotePath);
+            channel.cd(escapedRemotePath);
 
-            c.put(new File(context.getWorkingDirectory(), sourcePath).getAbsolutePath(), remotePath);
-            c.disconnect();
+            for (ArtifactsCollection artifactsCollection : myArtifacts) {
+                for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
+                    final File source = fileStringEntry.getKey();
+                    final String destinationPath = fileStringEntry.getValue();
+
+                    myLogger.message(
+                            "Copying [" + source.getAbsolutePath() + "] to [" + destinationPath + "]"
+                    );
+                    myLogger.message("creating artifact path [" + destinationPath + "]");
+                    createRemotePath(channel, destinationPath);
+                    channel.put(source.getAbsolutePath(), destinationPath);
+                }
+
+            }
+            channel.disconnect();
 
         } catch (Exception e) {
             throw new RunBuildException(e);
@@ -82,37 +107,24 @@ class SftpBuildProcessAdapter extends BuildProcessAdapter {
         hasFinished = true;
     }
 
-    private void createRemotePath(final @NotNull Session session,
-                                     final @NotNull String escapedRemoteBase) throws JSchException, IOException {
+    private void createRemotePath(@NotNull final ChannelSftp channel,
+                                  @NotNull final String destination) throws SftpException {
+        final int endIndex = destination.lastIndexOf('/');
+        if (endIndex > 0) {
+            createRemotePath(channel, destination.substring(0, endIndex));
+        }
+        try {
+            myLogger.message("calling stat for [" + destination + "]");
+            channel.stat(destination);
+            myLogger.message("path [" + destination + "] exists");
+        } catch (SftpException e) {
+            // dir does not exist.
+            if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+                myLogger.message("no_such_file caught, calling mkdir [" + destination + "]");
+                channel.mkdir(destination);
+                myLogger.message("created path [" + destination + "]");
+            }
+        }
 
-           if (StringUtil.isEmptyOrSpaces(escapedRemoteBase)) {
-               return;
-           }
-
-           assert session.isConnected();
-
-           final String command= "mkdir -p " + escapedRemoteBase;
-           final ByteArrayOutputStream os = new ByteArrayOutputStream(1024);
-           final ChannelExec execChannel = (ChannelExec) session.openChannel("exec");
-
-           execChannel.setCommand(command);
-           execChannel.setExtOutputStream(os);
-           execChannel.connect();
-
-           WaitFor waitFor = new WaitFor(5000) {
-               @Override
-               protected boolean condition() {
-                   return execChannel.isClosed();
-               }
-           };
-
-           if (!waitFor.isConditionRealized()) {
-               throw new IOException("Timed out waiting for remote command [" + command + "] to execute");
-           }
-
-           if(execChannel.getExitStatus() != 0) {
-               throw new IOException(os.toString());
-           }
-       }
-
+    }
 }

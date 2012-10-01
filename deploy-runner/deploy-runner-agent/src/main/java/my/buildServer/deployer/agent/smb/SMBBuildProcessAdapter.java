@@ -32,18 +32,15 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
     private final String myTarget;
     private final String myUsername;
     private final String myPassword;
-    private final BuildRunnerContext myContext;
     private final List<ArtifactsCollection> myArtifactsCollections;
 
-    public SMBBuildProcessAdapter(@NotNull final String target,
-                                  @NotNull final String username,
+    public SMBBuildProcessAdapter(@NotNull final String username,
                                   @NotNull final String password,
-                                  @NotNull final BuildRunnerContext context,
+                                  @NotNull final String target,
                                   @NotNull final List<ArtifactsCollection> artifactsCollections) {
         myTarget = target;
         myUsername = username;
         myPassword = password;
-        myContext = context;
         myArtifactsCollections = artifactsCollections;
         hasFinished = false;
     }

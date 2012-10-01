@@ -1,28 +1,32 @@
 package my.buildServer.deployer.agent.scp;
 
+import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.*;
+import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import my.buildServer.deployer.agent.base.BaseDeployerRunner;
 import my.buildServer.deployer.common.DeployerRunnerConstants;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /**
  * Created by Kit
  * Date: 24.03.12 - 17:26
  */
-public class ScpDeployerRunner implements AgentBuildRunner {
+public class ScpDeployerRunner extends BaseDeployerRunner {
 
-    private static final String SCP = "spc://";
+    public ScpDeployerRunner(@NotNull final ExtensionHolder extensionHolder) {
+        super(extensionHolder);
+    }
 
-    @NotNull
     @Override
-    public BuildProcess createBuildProcess(@NotNull AgentRunningBuild runningBuild, @NotNull final BuildRunnerContext context) throws RunBuildException {
-
-        final String username = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_USERNAME);
-        final String password = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
-        final String target = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
-        final String sourcePath = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_SOURCE_PATH);
-
-        return new ScpProcessAdapter(sourcePath, target, username, password, context.getWorkingDirectory());
+    protected BuildProcess getDeployerProcess(@NotNull final BuildRunnerContext context,
+                                              @NotNull final String username,
+                                              @NotNull final String password,
+                                              @NotNull final String target,
+                                              @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        return new ScpProcessAdapter(context, username, password, target, artifactsCollections);
     }
 
     @NotNull

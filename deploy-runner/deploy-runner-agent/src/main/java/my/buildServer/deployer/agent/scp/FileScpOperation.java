@@ -1,6 +1,7 @@
 package my.buildServer.deployer.agent.scp;
 
 import jetbrains.buildServer.util.FileUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 
@@ -17,7 +18,8 @@ class FileScpOperation implements ScpOperation {
     }
 
     @Override
-    public void execute(OutputStream out, InputStream in) throws IOException {
+    public void execute(@NotNull final OutputStream out,
+                        @NotNull final InputStream in) throws IOException {
         final String command = "C0755 " + myFile.length() + " " + myFile.getName() + "\n";
         out.write(command.getBytes()); out.flush();
         ScpExecUtil.checkScpAck(in);
