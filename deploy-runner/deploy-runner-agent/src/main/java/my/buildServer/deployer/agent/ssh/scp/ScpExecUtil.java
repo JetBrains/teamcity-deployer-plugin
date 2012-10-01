@@ -1,4 +1,4 @@
-package my.buildServer.deployer.agent.scp;
+package my.buildServer.deployer.agent.ssh.scp;
 
 import java.io.IOException;
 import java.io.InputStream;

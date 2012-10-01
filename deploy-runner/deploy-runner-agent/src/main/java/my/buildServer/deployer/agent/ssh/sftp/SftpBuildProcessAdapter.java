@@ -1,25 +1,23 @@
-package my.buildServer.deployer.agent.sftp;
+package my.buildServer.deployer.agent.ssh.sftp;
 
-import com.intellij.util.WaitFor;
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProcessAdapter;
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
-import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 
-class SftpBuildProcessAdapter extends BuildProcessAdapter {
+public class SftpBuildProcessAdapter extends BuildProcessAdapter {
 
     private final String myTarget;
     private final String myUsername;

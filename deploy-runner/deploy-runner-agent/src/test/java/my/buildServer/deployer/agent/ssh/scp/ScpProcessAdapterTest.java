@@ -1,4 +1,4 @@
-package my.buildServer.deployer.agent.scp;
+package my.buildServer.deployer.agent.ssh.scp;
 
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.util.FileUtil;
@@ -7,9 +7,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Created by Kit
@@ -93,6 +91,6 @@ public class ScpProcessAdapterTest {
     }
 
     private ScpProcessAdapter createScpProcAdapter(String srcPath, String remotePath) {
-        return new ScpProcessAdapter(srcPath, myHost + ":" + remotePath, myUsername, myPassword, myWorkingDir);
+        return null; // new ScpProcessAdapter(srcPath, myHost + ":" + remotePath, myUsername, myPassword, myWorkingDir);
     }
 }

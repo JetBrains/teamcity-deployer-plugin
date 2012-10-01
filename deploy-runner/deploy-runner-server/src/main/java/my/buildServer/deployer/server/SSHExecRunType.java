@@ -5,7 +5,8 @@ import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import my.buildServer.deployer.common.DeployerRunnerConstants;
-import my.buildServer.deployer.common.SSHExecRunnerConstants;
+import my.buildServer.deployer.common.SSHRunnerConstants;
+import my.buildServer.deployer.common.SSHRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -24,7 +25,7 @@ public class SSHExecRunType extends RunType {
     @NotNull
     @Override
     public String getType() {
-        return SSHExecRunnerConstants.SSH_EXEC_RUN_TYPE;
+        return SSHRunnerConstants.SSH_EXEC_RUN_TYPE;
     }
 
     @Override

@@ -53,7 +53,7 @@ public abstract class BaseDeployerRunner implements AgentBuildRunner {
                                                        @NotNull final String username,
                                                        @NotNull final String password,
                                                        @NotNull final String target,
-                                                       @NotNull final List<ArtifactsCollection> artifactsCollections);
+                                                       @NotNull final List<ArtifactsCollection> artifactsCollections) throws RunBuildException;
 
     @NotNull
     @Override

@@ -16,4 +16,5 @@ public class DeployerRunnerConstants {
     public static final String PARAM_PASSWORD = "my.buildServer.deployer.password";
     public static final String PARAM_TARGET_URL = "my.buildServer.deployer.targetUrl";
     public static final String PARAM_SOURCE_PATH = "my.buildServer.deployer.sourcePath";
+    public static final String PARAM_TRANSPORT = "my.buildServer.deployer.useSftp";
 }

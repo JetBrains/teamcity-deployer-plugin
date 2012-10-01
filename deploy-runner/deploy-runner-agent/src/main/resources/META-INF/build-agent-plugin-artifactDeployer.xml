@@ -3,10 +3,9 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans default-autowire="constructor">
-    <bean id="scpDeployerRunner" class="my.buildServer.deployer.agent.scp.ScpDeployerRunner"/>
+    <bean id="sshDeployerRunner" class="my.buildServer.deployer.agent.ssh.SSHDeployerRunner"/>
+    <bean id="sshExecRunner" class="my.buildServer.deployer.agent.ssh.SSHExecRunner"/>
     <bean id="smbDeployerRunner" class="my.buildServer.deployer.agent.smb.SmbDeployerRunner"/>
     <bean id="ftpDeployerRunner" class="my.buildServer.deployer.agent.ftp.FtpDeployerRunner"/>
-    <bean id="sftpDeployerRunner" class="my.buildServer.deployer.agent.sftp.SftpDeployerRunner"/>
     <bean id="tomcatDeployerRunner" class="my.buildServer.deployer.agent.tomcat.TomcatDeployerRunner"/>
-    <bean id="sshExecRunner" class="my.buildServer.deployer.agent.ssh.SSHExecRunner"/>
 </beans>

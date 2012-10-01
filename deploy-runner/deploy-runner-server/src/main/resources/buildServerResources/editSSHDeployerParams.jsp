@@ -1,4 +1,5 @@
 <%@ page import="my.buildServer.deployer.common.DeployerRunnerConstants" %>
+<%@ page import="my.buildServer.deployer.common.SSHRunnerConstants" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -10,6 +11,17 @@
         <th><label for="my.buildServer.deployer.targetUrl">Target: </label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter target url in form {hostname|ip_address}[:path/to/target]</span>
+        </td>
+    </tr>
+
+    <tr>
+        <th><label for="my.buildServer.deployer.ssh.transport">Transport protocol: </label></th>
+        <td>
+            <props:selectProperty name="<%=SSHRunnerConstants.PARAM_TRANSPORT%>">
+                <props:option value="<%=SSHRunnerConstants.TRANSPORT_SCP%>">SCP</props:option>
+                <props:option value="<%=SSHRunnerConstants.TRANSPORT_SFTP%>">SFTP</props:option>
+            </props:selectProperty>
+            <span class="smallNote">Use SFTP protocol instead of SCP (default)</span>
         </td>
     </tr>
 </l:settingsGroup>

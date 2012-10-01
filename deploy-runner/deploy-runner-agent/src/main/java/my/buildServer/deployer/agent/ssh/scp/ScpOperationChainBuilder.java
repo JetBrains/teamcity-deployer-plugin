@@ -1,4 +1,4 @@
-package my.buildServer.deployer.agent.scp;
+package my.buildServer.deployer.agent.ssh.scp;
 
 import org.jetbrains.annotations.NotNull;
 

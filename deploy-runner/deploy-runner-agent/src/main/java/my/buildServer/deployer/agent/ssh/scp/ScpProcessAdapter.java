@@ -1,4 +1,4 @@
-package my.buildServer.deployer.agent.scp;
+package my.buildServer.deployer.agent.ssh.scp;
 
 import com.intellij.util.WaitFor;
 import com.jcraft.jsch.*;

@@ -10,30 +10,30 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SftpDeployerRunType extends RunType {
+public class SSHDeployerRunType extends RunType {
 
     private final PluginDescriptor myDescriptor;
 
-    public SftpDeployerRunType(@NotNull final RunTypeRegistry registry,
-                               @NotNull final PluginDescriptor descriptor) {
-        registry.registerRunType(this);
+    public SSHDeployerRunType(@NotNull final RunTypeRegistry registry,
+                              @NotNull final PluginDescriptor descriptor) {
         myDescriptor = descriptor;
+        registry.registerRunType(this);
     }
 
     @NotNull
     @Override
     public String getType() {
-        return DeployerRunnerConstants.SFTP_RUN_TYPE;
+        return DeployerRunnerConstants.SCP_RUN_TYPE;
     }
 
     @Override
     public String getDisplayName() {
-        return "SFTP Deployer";
+        return "SSH Deployer";
     }
 
     @Override
     public String getDescription() {
-        return "Runner able to deploy build artifacts via SFTP (SSH file transfer protocol)";
+        return "Runner able to deploy build artifacts via SSH";
     }
 
     @Override
@@ -43,12 +43,12 @@ public class SftpDeployerRunType extends RunType {
 
     @Override
     public String getEditRunnerParamsJspFilePath() {
-        return  myDescriptor.getPluginResourcesPath() + "editSftpDeployerParams.jsp";
+        return myDescriptor.getPluginResourcesPath() + "editSSHDeployerParams.jsp";
     }
 
     @Override
     public String getViewRunnerParamsJspFilePath() {
-        return  myDescriptor.getPluginResourcesPath() + "viewSftpDeployerParams.jsp";
+        return  myDescriptor.getPluginResourcesPath() + "viewSSHDeployerParams.jsp";
     }
 
     @Override

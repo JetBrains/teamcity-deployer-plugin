@@ -1,16 +1,19 @@
-package my.buildServer.deployer.agent.sftp;
+package my.buildServer.deployer.agent.ssh;
 
 import jetbrains.buildServer.agent.AgentBuildRunnerInfo;
 import jetbrains.buildServer.agent.BuildAgentConfiguration;
 import my.buildServer.deployer.common.DeployerRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
-
-class SftpDeployerRunnerInfo implements AgentBuildRunnerInfo {
+/**
+* Created by Kit
+* Date: 24.03.12 - 17:31
+*/
+class SSHDeployerRunnerInfo implements AgentBuildRunnerInfo {
     @NotNull
     @Override
     public String getType() {
-        return DeployerRunnerConstants.SFTP_RUN_TYPE;
+        return DeployerRunnerConstants.SCP_RUN_TYPE;
     }
 
     @Override
