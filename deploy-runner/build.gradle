@@ -88,6 +88,9 @@ project( ':deploy-runner-agent' ) {
     compile files("lib/ftp4j-1.7.2.jar")
 
     testCompile 'org.testng:testng:5.14'
+    testCompile 'org.apache.sshd:apache-sshd:0.7.0'
+    testCompile 'org.apache.ftpserver:ftpserver-core:1.0.6'
+
   }
 }
 
