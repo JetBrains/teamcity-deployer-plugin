@@ -9,7 +9,7 @@
     <tr>
         <th><label for="my.buildServer.deployer.targetUrl">Target URL: </label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter target url</span>
+            <span class="smallNote">Enter target url, e.g. \\host\share\subdir</span>
         </td>
     </tr>
 </l:settingsGroup>
@@ -18,13 +18,13 @@
     <tr>
         <th><label for="my.buildServer.deployer.myUsername">Username:</label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter myUsername</span>
+            <span class="smallNote">Enter username</span>
         </td>
     </tr>
     <tr>
         <th><label for="my.buildServer.deployer.myPassword">Password:</label></th>
         <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter myPassword</span>
+            <span class="smallNote">Enter password</span>
         </td>
     </tr>
 </l:settingsGroup>
@@ -34,7 +34,7 @@
         <th><label for="my.buildServer.deployer.sourcePath">Artifacts path: </label></th>
         <td>
             <props:multilineProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" className="longField" cols="30" rows="4" expanded="true" linkTitle="Enter artifacts paths"/>
-            <span class="smallNote">Enter path to source</span>
+            <span class="smallNote">New line or comma separated paths to build artifacts. Ant-style wildcards like dir/**/*.zip and target directories like *.zip => winFiles,unix/distro.tgz => linuxFiles, where winFiles and linuxFiles are target directories are supported.</span>
         </td>
     </tr>
 </l:settingsGroup>
