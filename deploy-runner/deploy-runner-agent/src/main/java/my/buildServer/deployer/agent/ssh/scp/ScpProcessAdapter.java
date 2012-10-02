@@ -68,32 +68,49 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
     }
 
     @Override
+    public boolean isFinished() {
+        return hasFinished;
+    }
+
+    @Override
     public void start() throws RunBuildException {
-        final String host = myTargetString.substring(0, myTargetString.indexOf(':'));
-        final String remotePath = myTargetString.substring(myTargetString.indexOf(':')+1);
-        final String escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
-
-        JSch jsch=new JSch();
-        JSch.setConfig("StrictHostKeyChecking", "no");
-        Session session = null;
-
         try {
-            session = jsch.getSession(myUsername, host, 22);
-            session.setPassword(myPassword);
-            session.connect();
+            final String host;
+            final String escapedRemotePath;
 
-            createRemotePath(session, escapedRemotePath);
-            if (isInterrupted()) return;
-            upload(session, escapedRemotePath);
-
-        } catch (Exception e) {
-            throw new RunBuildException(e);
-        } finally {
-            if (session != null) {
-                session.disconnect();
+            final int delimeterIndex = myTargetString.indexOf(':');
+            if (delimeterIndex > 0) {
+                host = myTargetString.substring(0, delimeterIndex);
+                final String remotePath = myTargetString.substring(delimeterIndex +1);
+                escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+            } else {
+                host = myTargetString;
+                escapedRemotePath = "";
             }
+
+            JSch jsch=new JSch();
+            JSch.setConfig("StrictHostKeyChecking", "no");
+            Session session = null;
+
+            try {
+                session = jsch.getSession(myUsername, host, 22);
+                session.setPassword(myPassword);
+                session.connect();
+
+                createRemotePath(session, escapedRemotePath);
+                if (isInterrupted()) return;
+                upload(session, escapedRemotePath);
+
+            } catch (Exception e) {
+                throw new RunBuildException(e);
+            } finally {
+                if (session != null) {
+                    session.disconnect();
+                }
+            }
+        } finally {
+            hasFinished = true;
         }
-        hasFinished = true;
     }
 
     private void createRemotePath(final @NotNull Session session,

@@ -1,64 +1,127 @@
 package my.buildServer.deployer.agent.ssh.scp;
 
+import com.intellij.openapi.util.SystemInfo;
 import jetbrains.buildServer.RunBuildException;
+import jetbrains.buildServer.TempFiles;
+import jetbrains.buildServer.agent.BuildProcess;
+import jetbrains.buildServer.agent.BuildRunnerContext;
+import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.util.FileUtil;
-import org.testng.Assert;
+import jetbrains.buildServer.util.WaitFor;
+import org.apache.sshd.SshServer;
+import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
+import org.apache.sshd.server.PasswordAuthenticator;
+import org.apache.sshd.server.command.ScpCommandFactory;
+import org.apache.sshd.server.filesystem.NativeFileSystemFactory;
+import org.apache.sshd.server.session.ServerSession;
+import org.apache.sshd.server.shell.ProcessShellFactory;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
-/**
- * Created by Kit
- * Date: 21.04.12 - 22:27
- */
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
 public class ScpProcessAdapterTest {
 
+    private static final int PORT_NUM = 22;
     final String myUsername = "testuser";
     final String myPassword = "testpassword";
-    final String myHost = "192.168.56.102";
 
-    File myWorkingDir = null;
+    private TempFiles myTempFiles;
+    private File myWorkingDir = null;
+    private File myRemoteDir = null;
+
+    private String oldUserDir = null;
+    private SshServer myServer;
+    private BuildRunnerContext myContext;
+    private List<ArtifactsCollection> myArtifactsCollections;
+
 
     @BeforeMethod
     public void setUp() throws Exception {
-        myWorkingDir = FileUtil.createTempDirectory("test", "workingDir");
+        myTempFiles = new TempFiles();
+
+        myWorkingDir = myTempFiles.createTempDir();
+        myRemoteDir = myTempFiles.createTempDir();
+
+        myServer = SshServer.setUpDefaultServer();
+        myServer.setPort(PORT_NUM);
+        myServer.setCommandFactory(new ScpCommandFactory());
+        myServer.setShellFactory(new ProcessShellFactory(new String[] { SystemInfo.isWindows ? "cmd" : "sh" }));
+        myServer.setPasswordAuthenticator(new PasswordAuthenticator() {
+            @Override
+            public boolean authenticate(String username, String password, ServerSession session) {
+                return myUsername.equals(username) && myPassword.equals(password);
+            }
+        });
+
+        File keyFile = new File("src/test/resources/hostkey.pem");
+        if (!keyFile.exists()) {
+            keyFile = new File("deploy-runner-agent/src/test/resources/hostkey.pem");
+        }
+        myServer.setKeyPairProvider(new FileKeyPairProvider(new String[] { keyFile.getCanonicalPath() }));
+        myServer.setFileSystemFactory(new NativeFileSystemFactory());
+
+        // myServer.setSubsystemFactories(Arrays.<NamedFactory<Command>>asList(new SftpSubsystem.Factory()));
+
+        myServer.start();
+
+        Mockery mockeryCtx = new Mockery();
+        myContext = mockeryCtx.mock(BuildRunnerContext.class);
+        mockeryCtx.checking(new Expectations() {{
+            allowing(myContext).getWorkingDirectory(); will(returnValue(myWorkingDir));
+        }});
+
+        // need to change user.dir, so that NativeFileSystemFactory works inside temp directory
+        oldUserDir = System.getProperty("user.dir");
+        System.setProperty("user.dir", myRemoteDir.getAbsolutePath());
+
+        myArtifactsCollections = new ArrayList<ArtifactsCollection>();
     }
 
     @AfterMethod
     public void tearDown() throws Exception {
-        FileUtil.delete(myWorkingDir);
+        myTempFiles.cleanup();
+        myServer.stop(true);
+        System.setProperty("user.dir", oldUserDir);
     }
 
-    @Test
+    @Test(timeOut = 5000)
     public void testSimpleTransfer() throws Exception {
-        final File f = new File(myWorkingDir, "file.txt");
-        FileUtil.writeFile(f, "Some sample text");
-        String remotePath = "";
-        ScpProcessAdapter scpProcess = createScpProcAdapter(f.getName(), remotePath);
-        scpProcess.start();
+        myArtifactsCollections.add(buildArtifactsCollection("dest1", "dest2"));
+        final BuildProcess process = new ScpProcessAdapter(myContext, myUsername, myPassword, "127.0.0.1", myArtifactsCollections);
+        runProcess(process, 5000);
+        assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
 
     @Test
     public void testTransferToRelativePath() throws Exception {
-        final File f = new File(myWorkingDir, "file.txt");
-        FileUtil.writeFile(f, "Some sample text\n");
-        String remotePath = "subdir/sub/sub";
-        ScpProcessAdapter scpProcess = createScpProcAdapter(f.getName(), remotePath);
-        scpProcess.start();
+        final String subPath = "test_path/subdir";
+        myArtifactsCollections.add(buildArtifactsCollection("dest1", "dest2"));
+        final BuildProcess process = new ScpProcessAdapter(myContext, myUsername, myPassword, "127.0.0.1:"+subPath, myArtifactsCollections);
+        runProcess(process, 5000);
+        assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
     }
+
+
 
     @Test
     public void testTransferAbsPath() throws Exception {
-        final File f = new File(myWorkingDir, "file.txt");
-        FileUtil.writeFile(f, "Some sample text\n");
-        String remotePath = "/home/testuser/subdir/sub/sub";
-        ScpProcessAdapter scpProcess = createScpProcAdapter(f.getName(), remotePath);
-
-        scpProcess.start();
+        final File absDestination = new File(myTempFiles.createTempDir(), "sub/path");
+        final String absPath = absDestination.getCanonicalPath();
+        myArtifactsCollections.add(buildArtifactsCollection("dest1", "dest2"));
+        final BuildProcess process = new ScpProcessAdapter(myContext, myUsername, myPassword, "127.0.0.1:"+absPath, myArtifactsCollections);
+        runProcess(process, 5000);
+        assertCollectionsTransferred(absDestination, myArtifactsCollections);
     }
-
+/*
     @Test
     public void testTransferToAbsPath_NotAllowed() throws Exception {
         final File f = new File(myWorkingDir, "file.txt");
@@ -91,6 +154,42 @@ public class ScpProcessAdapterTest {
     }
 
     private ScpProcessAdapter createScpProcAdapter(String srcPath, String remotePath) {
-        return null; // new ScpProcessAdapter(srcPath, myHost + ":" + remotePath, myUsername, myPassword, myWorkingDir);
+        return null;
     }
+    */
+
+    private void runProcess(final BuildProcess process, final int timeout) throws RunBuildException {
+        process.start();
+        new WaitFor(timeout) {
+            @Override
+            protected boolean condition() {
+                return process.isFinished();
+            }
+        };
+        assertTrue(process.isFinished(), "Failed to finish test in time");
+    }
+
+    private ArtifactsCollection buildArtifactsCollection(String... destinationDirs) throws IOException {
+
+        final Map<File, String> filePathMap = new HashMap<File, String>();
+        for (String destinationDir : destinationDirs) {
+            final File content = myTempFiles.createTempFile(100);
+            filePathMap.put(content, destinationDir);
+        }
+        return new ArtifactsCollection("dirFrom/**", "dirTo", filePathMap);
+    }
+
+    private void assertCollectionsTransferred(File remoteBase, List<ArtifactsCollection> artifactsCollections) throws IOException {
+
+        for (ArtifactsCollection artifactsCollection : artifactsCollections) {
+            for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
+                final File source = fileStringEntry.getKey();
+                final String targetPath = fileStringEntry.getValue() + File.separator + source.getName();
+                final File target = new File(remoteBase, targetPath);
+                assertTrue(target.exists(), "Destination file [" + targetPath + "] does not exist");
+                assertEquals(FileUtil.readText(target), FileUtil.readText(source), "wrong content");
+            }
+        }
+    }
+
 }
