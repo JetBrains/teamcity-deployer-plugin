@@ -44,7 +44,6 @@ public abstract class BaseSSHTransferTest {
     protected BuildRunnerContext myContext;
 
     private TempFiles myTempFiles;
-    private File myWorkingDir = null;
     private File myRemoteDir = null;
     private String oldUserDir = null;
     private SshServer myServer;
@@ -54,7 +53,7 @@ public abstract class BaseSSHTransferTest {
     public void setUp() throws Exception {
         myTempFiles = new TempFiles();
 
-        myWorkingDir = myTempFiles.createTempDir();
+
         myRemoteDir = myTempFiles.createTempDir();
 
         myServer = SshServer.setUpDefaultServer();
@@ -82,9 +81,10 @@ public abstract class BaseSSHTransferTest {
         myContext = mockeryCtx.mock(BuildRunnerContext.class);
         final AgentRunningBuild build = mockeryCtx.mock(AgentRunningBuild.class);
         final BuildProgressLogger logger = new NullBuildProgressLogger();
+        final File workingDir = myTempFiles.createTempDir();
 
         mockeryCtx.checking(new Expectations() {{
-            allowing(myContext).getWorkingDirectory(); will(returnValue(myWorkingDir));
+            allowing(myContext).getWorkingDirectory(); will(returnValue(workingDir));
             allowing(myContext).getBuild(); will(returnValue(build));
             allowing(build).getBuildLogger(); will(returnValue(logger));
         }});
