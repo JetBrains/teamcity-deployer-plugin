@@ -1,17 +1,21 @@
 package my.buildServer.deployer.agent.ssh.scp;
 
-import com.intellij.util.WaitFor;
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProcessAdapter;
-import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -21,22 +25,19 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
     private final String myUsername;
     private final String myPassword;
     private final List<ArtifactsCollection> myArtifacts;
-    private final File myWorkingDirectory;
 
 
     private volatile boolean hasFinished;
     private volatile boolean isInterrupted;
 
 
-    public ScpProcessAdapter(@NotNull final BuildRunnerContext context,
-                             @NotNull final String username,
+    public ScpProcessAdapter(@NotNull final String username,
                              @NotNull final String password,
                              @NotNull final String target,
                              @NotNull final List<ArtifactsCollection> artifactsCollections) {
         myTargetString = target;
         myUsername = username;
         myPassword = password;
-        myWorkingDirectory = context.getWorkingDirectory();
         myArtifacts = artifactsCollections;
 
         hasFinished = false;
@@ -78,11 +79,16 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
             final String host;
             final String escapedRemotePath;
 
-            final int delimeterIndex = myTargetString.indexOf(':');
-            if (delimeterIndex > 0) {
-                host = myTargetString.substring(0, delimeterIndex);
-                final String remotePath = myTargetString.substring(delimeterIndex +1);
-                escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+            final int delimiterIndex = myTargetString.indexOf(':');
+            if (delimiterIndex > 0) {
+                host = myTargetString.substring(0, delimiterIndex);
+                final String remotePath = myTargetString.substring(delimiterIndex +1);
+
+                if (new File(remotePath).isAbsolute()) {
+                    escapedRemotePath = "/" + remotePath.trim().replaceAll("\\\\", "/");
+                } else {
+                    escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+                }
             } else {
                 host = myTargetString;
                 escapedRemotePath = "";
@@ -114,36 +120,33 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
     }
 
     private void createRemotePath(final @NotNull Session session,
-                                  final @NotNull String escapedRemoteBase) throws JSchException, IOException {
-
-        if (StringUtil.isEmptyOrSpaces(escapedRemoteBase)) {
+                                  final @NotNull String escapedRemotePath) throws JSchException, IOException {
+        if (StringUtil.isEmptyOrSpaces(escapedRemotePath)) {
             return;
         }
 
         assert session.isConnected();
 
-        final String command= "mkdir -p " + escapedRemoteBase;
-        final ByteArrayOutputStream os = new ByteArrayOutputStream(1024);
-        final ChannelExec execChannel = (ChannelExec) session.openChannel("exec");
-
+        final String command= "scp -rt .";
+        final ChannelExec execChannel = (ChannelExec)session.openChannel("exec");
         execChannel.setCommand(command);
-        execChannel.setExtOutputStream(os);
+
+        // get I/O streams for remote scp
+        final OutputStream out = execChannel.getOutputStream();
+        final InputStream in = execChannel.getInputStream();
+
         execChannel.connect();
+        ScpExecUtil.checkScpAck(in);
 
-        WaitFor waitFor = new WaitFor(5000) {
-            @Override
-            protected boolean condition() {
-                return execChannel.isClosed();
-            }
-        };
-
-        if (!waitFor.isConditionRealized()) {
-            throw new IOException("Timed out waiting for remote command [" + command + "] to execute");
+        try {
+            final ScpOperation createPathOperation = ScpOperationBuilder.getCreatePathOperation(escapedRemotePath);
+            createPathOperation.execute(out, in);
+        } finally {
+            FileUtil.close(out);
+            FileUtil.close(in);
+            execChannel.disconnect();
         }
 
-        if(execChannel.getExitStatus() != 0) {
-            throw new IOException(os.toString());
-        }
     }
 
     private void upload(final @NotNull Session session,
@@ -167,8 +170,8 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
             for (ArtifactsCollection artifactCollection : myArtifacts) {
                 for (Map.Entry<File, String> filePathEntry : artifactCollection.getFilePathMap().entrySet()) {
                     final File source = filePathEntry.getKey();
-                    final String dest = filePathEntry.getValue();
-                    final ScpOperation operationChain = ScpOperationChainBuilder.buildChain(source, dest);
+                    final String destination = filePathEntry.getValue();
+                    final ScpOperation operationChain = ScpOperationBuilder.getCopyFileOperation(source, destination);
                     operationChain.execute(out, in);
                 }
             }

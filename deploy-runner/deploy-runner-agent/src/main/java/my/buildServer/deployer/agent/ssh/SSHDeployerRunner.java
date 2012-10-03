@@ -9,7 +9,6 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import my.buildServer.deployer.agent.base.BaseDeployerRunner;
 import my.buildServer.deployer.agent.ssh.scp.ScpProcessAdapter;
 import my.buildServer.deployer.agent.ssh.sftp.SftpBuildProcessAdapter;
-import my.buildServer.deployer.common.DeployerRunnerConstants;
 import my.buildServer.deployer.common.SSHRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,7 +33,7 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
         final String transport = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_TRANSPORT);
 
         if (SSHRunnerConstants.TRANSPORT_SCP.equals(transport)) {
-            return new ScpProcessAdapter(context, username, password, target, artifactsCollections);
+            return new ScpProcessAdapter(username, password, target, artifactsCollections);
         } else if (SSHRunnerConstants.TRANSPORT_SFTP.equals(transport)) {
             return new SftpBuildProcessAdapter(target, username, password, context, artifactsCollections);
         } else {

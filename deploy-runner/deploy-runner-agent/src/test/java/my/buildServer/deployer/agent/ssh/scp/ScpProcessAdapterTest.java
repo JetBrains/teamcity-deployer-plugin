@@ -96,7 +96,7 @@ public class ScpProcessAdapterTest {
     @Test(timeOut = 5000)
     public void testSimpleTransfer() throws Exception {
         myArtifactsCollections.add(buildArtifactsCollection("dest1", "dest2"));
-        final BuildProcess process = new ScpProcessAdapter(myContext, myUsername, myPassword, "127.0.0.1", myArtifactsCollections);
+        final BuildProcess process = new ScpProcessAdapter(myUsername, myPassword, "127.0.0.1", myArtifactsCollections);
         runProcess(process, 5000);
         assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
@@ -105,7 +105,7 @@ public class ScpProcessAdapterTest {
     public void testTransferToRelativePath() throws Exception {
         final String subPath = "test_path/subdir";
         myArtifactsCollections.add(buildArtifactsCollection("dest1", "dest2"));
-        final BuildProcess process = new ScpProcessAdapter(myContext, myUsername, myPassword, "127.0.0.1:"+subPath, myArtifactsCollections);
+        final BuildProcess process = new ScpProcessAdapter(myUsername, myPassword, "127.0.0.1:"+subPath, myArtifactsCollections);
         runProcess(process, 5000);
         assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
     }
@@ -113,50 +113,28 @@ public class ScpProcessAdapterTest {
 
 
     @Test
-    public void testTransferAbsPath() throws Exception {
+    public void testTransferAbsoluteBasePath() throws Exception {
         final File absDestination = new File(myTempFiles.createTempDir(), "sub/path");
         final String absPath = absDestination.getCanonicalPath();
         myArtifactsCollections.add(buildArtifactsCollection("dest1", "dest2"));
-        final BuildProcess process = new ScpProcessAdapter(myContext, myUsername, myPassword, "127.0.0.1:"+absPath, myArtifactsCollections);
+        final BuildProcess process = new ScpProcessAdapter(myUsername, myPassword, "127.0.0.1:"+absPath, myArtifactsCollections);
         runProcess(process, 5000);
         assertCollectionsTransferred(absDestination, myArtifactsCollections);
     }
-/*
+
+
     @Test
-    public void testTransferToAbsPath_NotAllowed() throws Exception {
-        final File f = new File(myWorkingDir, "file.txt");
-        FileUtil.writeFile(f, "Some sample text\n");
-        String remotePath = "/dir/sub/sub";
-        ScpProcessAdapter scpProcess = createScpProcAdapter(f.getName(), remotePath);
-        try {
-            scpProcess.start();
-            Assert.fail("Should have thrown an exception");
-        } catch (RunBuildException e) {
-            Assert.assertEquals("mkdir: cannot create directory `/dir': Permission denied\n", e.getCause().getMessage());
+        public void testTransferAbsoluteCollectionPath() throws Exception {
+        final String subPath = "test_path/subdir";
+        myArtifactsCollections.add(buildArtifactsCollection(new File(myRemoteDir,"dest1").getCanonicalPath(),
+                                                            new File(myRemoteDir,"dest2").getCanonicalPath(),
+                                                            new File(myRemoteDir,"dest3").getCanonicalPath()));
+        final BuildProcess process = new ScpProcessAdapter(myUsername, myPassword, "127.0.0.1:" + subPath, myArtifactsCollections);
+        runProcess(process, 5000);
+        assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
         }
-    }
 
-    @Test
-    public void testMultiTransfer() throws Exception {
-        final File dir = new File(myWorkingDir, "dir");
-        final File sub1 = new File(dir, "sub1");
-        final File sub2 = new File(sub1, "sub2");
-        Assert.assertTrue(sub2.mkdirs());
 
-        final File f1 = new File(sub1, "file1.txt");
-        FileUtil.writeFile(f1, "Some sample text #1\n");
-
-        final File f2 = new File(sub2, "file2.txt");
-        FileUtil.writeFile(f2, "Some sample text #2\n");
-
-        ScpProcessAdapter scpProcess = createScpProcAdapter("dir/sub1", "sub0");
-        scpProcess.start();
-    }
-
-    private ScpProcessAdapter createScpProcAdapter(String srcPath, String remotePath) {
-        return null;
-    }
-    */
 
     private void runProcess(final BuildProcess process, final int timeout) throws RunBuildException {
         process.start();
@@ -185,7 +163,12 @@ public class ScpProcessAdapterTest {
             for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
                 final File source = fileStringEntry.getKey();
                 final String targetPath = fileStringEntry.getValue() + File.separator + source.getName();
-                final File target = new File(remoteBase, targetPath);
+                final File target;
+                if (new File(targetPath).isAbsolute()) {
+                    target = new File(targetPath);
+                } else {
+                    target = new File(remoteBase, targetPath);
+                }
                 assertTrue(target.exists(), "Destination file [" + targetPath + "] does not exist");
                 assertEquals(FileUtil.readText(target), FileUtil.readText(source), "wrong content");
             }
