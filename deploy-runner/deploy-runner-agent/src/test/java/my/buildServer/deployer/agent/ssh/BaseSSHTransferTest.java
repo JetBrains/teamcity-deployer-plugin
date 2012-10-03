@@ -1,12 +1,10 @@
 package my.buildServer.deployer.agent.ssh;
 
 import com.intellij.openapi.util.SystemInfo;
-import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
-import jetbrains.buildServer.util.FileUtil;
-import jetbrains.buildServer.util.WaitFor;
+import my.buildServer.deployer.agent.util.DeployTestUtils;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
@@ -24,11 +22,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Nikita.Skvortsov
@@ -105,29 +101,29 @@ public abstract class BaseSSHTransferTest {
 
     @Test
     public void testSimpleTransfer() throws Exception {
-        myArtifactsCollections.add(buildArtifactsCollection("dest1", "dest2"));
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
         final BuildProcess process = getProcess("127.0.0.1");
-        runProcess(process, 5000);
-        assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
 
     @Test
     public void testTransferToRelativePath() throws Exception {
         final String subPath = "test_path/subdir";
-        myArtifactsCollections.add(buildArtifactsCollection("dest1", "dest2"));
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
         final BuildProcess process = getProcess("127.0.0.1:" + subPath);
-        runProcess(process, 5000);
-        assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
     }
 
     @Test
     public void testTransferAbsoluteBasePath() throws Exception {
         final File absDestination = new File(myTempFiles.createTempDir(), "sub/path");
         final String absPath = absDestination.getCanonicalPath();
-        myArtifactsCollections.add(buildArtifactsCollection("dest1", "dest2"));
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
         final BuildProcess process = getProcess("127.0.0.1:" + absPath);
-        runProcess(process, 5000);
-        assertCollectionsTransferred(absDestination, myArtifactsCollections);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(absDestination, myArtifactsCollections);
     }
 
     @Test
@@ -135,51 +131,10 @@ public abstract class BaseSSHTransferTest {
         final String subPath = "test_path/subdir";
         final File tempDir1 = myTempFiles.createTempDir();
         final File tempDir2 = myTempFiles.createTempDir();
-        myArtifactsCollections.add(buildArtifactsCollection(new File(tempDir1,"dest1").getCanonicalPath(),
-                                                            new File(tempDir1,"dest2").getCanonicalPath(),
-                                                            new File(tempDir2,"dest3").getCanonicalPath()));
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, new File(tempDir1, "dest1").getCanonicalPath(), new File(tempDir1, "dest2").getCanonicalPath(), new File(tempDir2, "dest3").getCanonicalPath()));
         final BuildProcess process = getProcess("127.0.0.1:" + subPath);
-        runProcess(process, 5000);
-        assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
-        }
-
-    private void runProcess(final BuildProcess process, final int timeout) throws RunBuildException {
-        process.start();
-        new WaitFor(timeout) {
-            @Override
-            protected boolean condition() {
-                return process.isFinished();
-            }
-        };
-        assertTrue(process.isFinished(), "Failed to finish test in time");
-    }
-
-    private ArtifactsCollection buildArtifactsCollection(String... destinationDirs) throws IOException {
-
-        final Map<File, String> filePathMap = new HashMap<File, String>();
-        for (String destinationDir : destinationDirs) {
-            final File content = myTempFiles.createTempFile(100);
-            filePathMap.put(content, destinationDir);
-        }
-        return new ArtifactsCollection("dirFrom/**", "dirTo", filePathMap);
-    }
-
-    private void assertCollectionsTransferred(File remoteBase, List<ArtifactsCollection> artifactsCollections) throws IOException {
-
-        for (ArtifactsCollection artifactsCollection : artifactsCollections) {
-            for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
-                final File source = fileStringEntry.getKey();
-                final String targetPath = fileStringEntry.getValue() + File.separator + source.getName();
-                final File target;
-                if (new File(targetPath).isAbsolute()) {
-                    target = new File(targetPath);
-                } else {
-                    target = new File(remoteBase, targetPath);
-                }
-                assertTrue(target.exists(), "Destination file [" + targetPath + "] does not exist");
-                assertEquals(FileUtil.readText(target), FileUtil.readText(source), "wrong content");
-            }
-        }
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
 
     protected abstract BuildProcess getProcess(String targetBasePath);
