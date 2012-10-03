@@ -1,5 +1,6 @@
 package my.buildServer.deployer.agent.ssh.sftp;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
@@ -22,7 +23,6 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
     private final String myTarget;
     private final String myUsername;
     private final String myPassword;
-    private final BuildRunnerContext myContext;
     private final List<ArtifactsCollection> myArtifacts;
 
     private volatile boolean hasFinished;
@@ -36,8 +36,7 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
         myTarget = target;
         myUsername = username;
         myPassword = password;
-        myContext = context;
-        myLogger = myContext.getBuild().getBuildLogger();
+        myLogger = context.getBuild().getBuildLogger();
         myArtifacts = artifactsCollections;
         hasFinished = false;
     }
@@ -57,10 +56,25 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
     }
 
     @Override
+    public boolean isFinished() {
+        return hasFinished;
+    }
+
+    @Override
     public void start() throws RunBuildException {
-        final String host = myTarget.substring(0, myTarget.indexOf(':'));
-        final String remotePath = myTarget.substring(myTarget.indexOf(':')+1);
-        final String escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+        final String host;
+        final String escapedRemotePath;
+
+        final int delimiterIndex = myTarget.indexOf(':');
+        if (delimiterIndex > 0) {
+            host = myTarget.substring(0, delimiterIndex);
+            final String remotePath = myTarget.substring(delimiterIndex +1);
+
+            escapedRemotePath = escapePathForSSH(remotePath);
+        } else {
+            host = myTarget;
+            escapedRemotePath = "";
+        }
 
         JSch jsch=new JSch();
         JSch.setConfig("StrictHostKeyChecking", "no");
@@ -75,14 +89,16 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
 
             ChannelSftp channel = (ChannelSftp)session.openChannel("sftp");
             channel.connect();
-            myLogger.message("Creating path [" + escapedRemotePath + "]");
-            createRemotePath(channel, escapedRemotePath);
-            channel.cd(escapedRemotePath);
+            if (!StringUtil.isEmpty(escapedRemotePath)) {
+                myLogger.message("Creating path [" + escapedRemotePath + "]");
+                createRemotePath(channel, escapedRemotePath);
+                channel.cd(escapedRemotePath);
+            }
 
             for (ArtifactsCollection artifactsCollection : myArtifacts) {
                 for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
                     final File source = fileStringEntry.getKey();
-                    final String destinationPath = fileStringEntry.getValue();
+                    final String destinationPath = escapePathForSSH(fileStringEntry.getValue());
 
                     myLogger.message(
                             "Copying [" + source.getAbsolutePath() + "] to [" + destinationPath + "]"
@@ -125,4 +141,15 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
         }
 
     }
+
+    private String escapePathForSSH(String remotePath) {
+        String escapedRemotePath;
+        if (new File(remotePath).isAbsolute()) {
+            escapedRemotePath = "/" + remotePath.trim().replaceAll("\\\\", "/");
+        } else {
+            escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+        }
+        return escapedRemotePath;
+    }
+
 }
