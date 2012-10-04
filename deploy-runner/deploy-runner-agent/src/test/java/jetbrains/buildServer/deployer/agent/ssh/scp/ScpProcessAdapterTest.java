@@ -11,5 +11,6 @@ public class ScpProcessAdapterTest extends BaseSSHTransferTest {
         return new ScpProcessAdapter(myUsername, myPassword, targetBasePath, myArtifactsCollections);
     }
 
+    // dummy
 
 }
