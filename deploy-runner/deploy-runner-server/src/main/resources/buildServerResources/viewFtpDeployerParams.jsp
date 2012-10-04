@@ -1,4 +1,4 @@
-<%@ page import="my.buildServer.deployer.common.DeployerRunnerConstants" %>
+<%@ page import="jetbrains.buildServer.deployer.common.DeployerRunnerConstants" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
