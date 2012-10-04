@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans default-autowire="constructor">
+    <bean id="scpDeployerRunType" class="jetbrains.buildServer.deployer.server.SSHDeployerRunType"/>
+    <bean id="smbDeployerRunType" class="jetbrains.buildServer.deployer.server.SmbDeployerRunType"/>
+    <bean id="ftpDeployerRunType" class="jetbrains.buildServer.deployer.server.FtpDeployerRunType"/>
+    <bean id="tomcatDeployerRunType" class="jetbrains.buildServer.deployer.server.TomcatDeployerRunType"/>
+    <bean id="sshExecRunType" class="jetbrains.buildServer.deployer.server.SSHExecRunType"/>
+</beans>
