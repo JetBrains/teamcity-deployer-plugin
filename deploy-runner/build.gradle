@@ -25,6 +25,7 @@ buildscript {
 
 
 ext.teamCityVersion = '7.0.4'
+ext.pluginVersion = new Date().format("yyyyMMddHHmmss");
 
 
 
@@ -57,7 +58,7 @@ assembleTeamcityPluginConfig {
     vendorUrl   'Plugin vendor URL'
     vendorLogo  'Plugin vendor logo URL'
 
-    version     "snapshot-${new Date().format("yyyyMMddHHmmss")}"
+    version     "snapshot-${pluginVersion}"
 
     server      project( ':deploy-runner-server' )
     agent       project( ':deploy-runner-agent'  )
