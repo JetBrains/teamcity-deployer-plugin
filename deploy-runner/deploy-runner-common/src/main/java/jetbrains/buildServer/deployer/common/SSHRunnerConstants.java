@@ -9,6 +9,7 @@ public class SSHRunnerConstants {
     public static final String SSH_EXEC_RUN_TYPE = "ssh-exec-runner";
 
     public static final String PARAM_HOST = "jetbrains.buildServer.sshexec.host";
+    public static final String PARAM_PORT = "jetbrains.buildServer.sshexec.port";
     public static final String PARAM_USERNAME = "jetbrains.buildServer.sshexec.username";
     public static final String PARAM_PASSWORD = "jetbrains.buildServer.sshexec.password";
     public static final String PARAM_COMMAND = "jetbrains.buildServer.sshexec.command";
