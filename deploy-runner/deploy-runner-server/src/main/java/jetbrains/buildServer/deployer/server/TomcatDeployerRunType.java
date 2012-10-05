@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.server;
 
+import com.intellij.openapi.util.text.StringUtil;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
@@ -54,5 +55,20 @@ public class TomcatDeployerRunType extends RunType {
     @Override
     public Map<String, String> getDefaultRunnerProperties() {
         return new HashMap<String, String>();
+    }
+
+    @NotNull
+    @Override
+    public String describeParameters(@NotNull Map<String, String> parameters) {
+        final StringBuilder result = new StringBuilder();
+        result.append("Target Tomcat url: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
+        result.append('\n');
+        result.append("WAR archive: ").append(parameters.get(DeployerRunnerConstants.PARAM_SOURCE_PATH));
+        final String customContext = parameters.get(DeployerRunnerConstants.PARAM_TOMCAT_CONTEXT_PATH);
+        if (StringUtil.isNotEmpty(customContext)) {
+            result.append('\n');
+            result.append("Web app context: ").append(customContext);
+        }
+        return result.toString();
     }
 }
