@@ -8,6 +8,6 @@ public class ScpProcessAdapterTest extends BaseSSHTransferTest {
 
     @Override
     protected ScpProcessAdapter getProcess(String targetBasePath) {
-        return new ScpProcessAdapter(myUsername, myPassword, targetBasePath, myArtifactsCollections);
+        return new ScpProcessAdapter(myUsername, myPassword, targetBasePath, PORT_NUM, myContext, myArtifactsCollections);
     }
 }

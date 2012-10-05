@@ -12,6 +12,7 @@ import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.List;
@@ -21,19 +22,22 @@ import java.util.Map;
 public class SftpBuildProcessAdapter extends BuildProcessAdapter {
 
     private final String myTarget;
+    private final int myPort;
     private final String myUsername;
     private final String myPassword;
     private final List<ArtifactsCollection> myArtifacts;
 
     private volatile boolean hasFinished;
-    private BuildProgressLogger myLogger;
+    private final BuildProgressLogger myLogger;
 
-    public SftpBuildProcessAdapter(@NotNull final String target,
-                                   @NotNull final String username,
+    public SftpBuildProcessAdapter(@NotNull final String username,
                                    @NotNull final String password,
+                                   @NotNull final String target,
+                                   final int port,
                                    @NotNull final BuildRunnerContext context,
                                    @NotNull final List<ArtifactsCollection> artifactsCollections) {
         myTarget = target;
+        myPort = port;
         myUsername = username;
         myPassword = password;
         myLogger = context.getBuild().getBuildLogger();
@@ -81,7 +85,7 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
         Session session = null;
 
         try {
-            session = jsch.getSession(myUsername, host, 22);
+            session = jsch.getSession(myUsername, host, myPort);
             session.setPassword(myPassword);
             session.connect();
 
@@ -90,24 +94,23 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
             ChannelSftp channel = (ChannelSftp)session.openChannel("sftp");
             channel.connect();
             if (!StringUtil.isEmpty(escapedRemotePath)) {
-                myLogger.message("Creating path [" + escapedRemotePath + "]");
                 createRemotePath(channel, escapedRemotePath);
                 channel.cd(escapedRemotePath);
             }
 
+            myLogger.message("Starting upload via SFTP to " +
+                                    (jetbrains.buildServer.util.StringUtil.isNotEmpty(escapedRemotePath) ?
+                                    "[" + escapedRemotePath + "] on " : "") + "] on host [" + host + ":" + myPort + "]");
             for (ArtifactsCollection artifactsCollection : myArtifacts) {
+                int count = 0;
                 for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
                     final File source = fileStringEntry.getKey();
                     final String destinationPath = escapePathForSSH(fileStringEntry.getValue());
-
-                    myLogger.message(
-                            "Copying [" + source.getAbsolutePath() + "] to [" + destinationPath + "]"
-                    );
-                    myLogger.message("creating artifact path [" + destinationPath + "]");
                     createRemotePath(channel, destinationPath);
                     channel.put(source.getAbsolutePath(), destinationPath);
+                    count++;
                 }
-
+                myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
             }
             channel.disconnect();
 
@@ -128,15 +131,11 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
             createRemotePath(channel, destination.substring(0, endIndex));
         }
         try {
-            myLogger.message("calling stat for [" + destination + "]");
             channel.stat(destination);
-            myLogger.message("path [" + destination + "] exists");
         } catch (SftpException e) {
             // dir does not exist.
             if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-                myLogger.message("no_such_file caught, calling mkdir [" + destination + "]");
                 channel.mkdir(destination);
-                myLogger.message("created path [" + destination + "]");
             }
         }
 

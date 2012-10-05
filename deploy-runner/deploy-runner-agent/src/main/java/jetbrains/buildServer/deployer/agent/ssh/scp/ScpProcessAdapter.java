@@ -7,6 +7,8 @@ import com.jcraft.jsch.Session;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProcessAdapter;
+import jetbrains.buildServer.agent.BuildProgressLogger;
+import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
@@ -29,17 +31,22 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
 
     private volatile boolean hasFinished;
     private volatile boolean isInterrupted;
+    private final int myPort;
+    private final BuildProgressLogger myLogger;
 
 
     public ScpProcessAdapter(@NotNull final String username,
                              @NotNull final String password,
                              @NotNull final String target,
+                             final int port,
+                             @NotNull final BuildRunnerContext context,
                              @NotNull final List<ArtifactsCollection> artifactsCollections) {
         myTargetString = target;
         myUsername = username;
         myPassword = password;
         myArtifacts = artifactsCollections;
-
+        myPort = port;
+        myLogger = context.getBuild().getBuildLogger();
         hasFinished = false;
         isInterrupted = false;
     }
@@ -99,12 +106,15 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
             Session session = null;
 
             try {
-                session = jsch.getSession(myUsername, host, 22);
+                session = jsch.getSession(myUsername, host, myPort);
                 session.setPassword(myPassword);
                 session.connect();
 
                 createRemotePath(session, escapedRemotePath);
                 if (isInterrupted()) return;
+                myLogger.message("Starting upload via SCP to " +
+                        (StringUtil.isNotEmpty(escapedRemotePath) ?
+                        "[" + escapedRemotePath + "] on " : "") + "host [" + host + ":" + myPort + "]");
                 upload(session, escapedRemotePath);
 
             } catch (Exception e) {

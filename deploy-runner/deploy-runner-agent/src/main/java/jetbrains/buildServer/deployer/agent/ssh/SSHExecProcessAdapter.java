@@ -13,6 +13,7 @@ import java.io.*;
 class SSHExecProcessAdapter extends BuildProcessAdapter {
 
     private final String myHost;
+    private final int myPort;
     private final String myUsername;
     private final String myPassword;
     private final String myCommands;
@@ -21,12 +22,15 @@ class SSHExecProcessAdapter extends BuildProcessAdapter {
     private volatile boolean hasFinished;
 
 
+
     public SSHExecProcessAdapter(@NotNull final String host,
+                                 final int port,
                                  @NotNull final String username,
                                  @NotNull final String password,
                                  @NotNull final String commands,
                                  @NotNull final BuildProgressLogger buildLogger) {
         myHost = host;
+        myPort = port;
         myUsername = username;
         myPassword = password;
         myCommands = commands;
@@ -58,7 +62,7 @@ class SSHExecProcessAdapter extends BuildProcessAdapter {
 
         try {
 
-            session = jsch.getSession(myUsername, myHost, 22);
+            session = jsch.getSession(myUsername, myHost, myPort);
             session.setPassword(myPassword);
             session.connect();
 

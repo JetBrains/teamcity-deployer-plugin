@@ -32,7 +32,7 @@ import java.util.List;
  */
 public abstract class BaseSSHTransferTest {
 
-    private static final int PORT_NUM = 22;
+    protected static final int PORT_NUM = 15655;
 
     protected String myUsername = "testuser";
     protected final String myPassword = "testpassword";

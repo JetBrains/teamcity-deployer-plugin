@@ -40,7 +40,7 @@
     <tr>
         <th><label for="jetbrains.buildServer.sshexec.command">Commands: </label></th>
         <td>
-            <props:textProperty name="<%=SSHRunnerConstants.PARAM_COMMAND%>"  className="longField" rows="4" expandable="true"/>
+            <props:multilineProperty name="<%=SSHRunnerConstants.PARAM_COMMAND%>"  className="longField" rows="4" cols="30" expanded="true" linkTitle="Enter remote commands"/>
             <span class="smallNote">Enter newline delimited set of commands to run</span>
         </td>
     </tr>
