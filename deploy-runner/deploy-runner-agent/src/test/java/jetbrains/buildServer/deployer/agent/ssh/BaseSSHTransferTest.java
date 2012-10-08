@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.testng.Assert.assertTrue;
+
 /**
  * Created by Nikita.Skvortsov
  * Date: 10/3/12, 3:13 PM
@@ -127,7 +129,7 @@ public abstract class BaseSSHTransferTest {
     }
 
     @Test
-        public void testTransferAbsoluteCollectionPath() throws Exception {
+    public void testTransferAbsoluteCollectionPath() throws Exception {
         final String subPath = "test_path/subdir";
         final File tempDir1 = myTempFiles.createTempDir();
         final File tempDir2 = myTempFiles.createTempDir();
@@ -136,6 +138,23 @@ public abstract class BaseSSHTransferTest {
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
+
+    @Test
+    public void testTransferToExistingPath() throws Exception {
+        final String uploadDestination = "some/path";
+        final String artifactDestination = "dest1/sub";
+
+        final File existingPath = new File(myRemoteDir, uploadDestination);
+        assertTrue(existingPath.mkdirs());
+        final File existingDestination = new File(existingPath, artifactDestination);
+        assertTrue(existingDestination.mkdirs());
+
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, artifactDestination, "dest2"));
+        final BuildProcess process = getProcess("127.0.0.1:" + uploadDestination);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(existingPath, myArtifactsCollections);
+    }
+
 
     protected abstract BuildProcess getProcess(String targetBasePath);
 }

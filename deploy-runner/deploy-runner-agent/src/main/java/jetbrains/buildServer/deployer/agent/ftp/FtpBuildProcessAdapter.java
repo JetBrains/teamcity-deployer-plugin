@@ -129,10 +129,21 @@ class FtpBuildProcessAdapter extends BuildProcessAdapter {
         final String normalisedPath = path.trim().replaceAll("\\\\","/");
         final StringTokenizer pathTokenizer = new StringTokenizer(normalisedPath, "/");
         final StringBuilder sb = new StringBuilder(pathTokenizer.nextToken());
-        client.createDirectory(sb.toString());
+        createDirSkipExisting(client, sb.toString());
         while(pathTokenizer.hasMoreTokens()) {
             sb.append('/').append(pathTokenizer.nextToken());
-            client.createDirectory(sb.toString());
+            createDirSkipExisting(client, sb.toString());
+        }
+    }
+
+    private void createDirSkipExisting(FTPClient client, final String directoryName) throws IOException, FTPIllegalReplyException, FTPException {
+        try {
+            client.createDirectory(directoryName);
+        } catch (FTPException e) {
+            // we can safely ignore if dir already exists
+            if (!e.getMessage().contains("already exists")) {
+                throw e;
+            }
         }
     }
 }

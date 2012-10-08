@@ -21,6 +21,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.testng.Assert.assertTrue;
+
 /**
  * Created by Nikita.Skvortsov
  * Date: 10/3/12, 4:22 PM
@@ -109,6 +111,22 @@ public class FtpBuildProcessAdapterTest {
         final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT + "/" + subPath);
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
+    }
+
+    @Test
+    public void testTransferToExistingPath() throws Exception {
+        final String uploadDestination = "some/path";
+        final String artifactDestination = "dest1/sub";
+
+        final File existingPath = new File(myRemoteDir, uploadDestination);
+        assertTrue(existingPath.mkdirs());
+        final File existingDestination = new File(existingPath, artifactDestination);
+        assertTrue(existingDestination.mkdirs());
+
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, artifactDestination, "dest2"));
+        final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT + "/" + uploadDestination);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(existingPath, myArtifactsCollections);
     }
 
 
