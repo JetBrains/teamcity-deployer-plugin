@@ -21,7 +21,7 @@
                 <props:option value="<%=SSHRunnerConstants.TRANSPORT_SCP%>">SCP</props:option>
                 <props:option value="<%=SSHRunnerConstants.TRANSPORT_SFTP%>">SFTP</props:option>
             </props:selectProperty>
-            <span class="smallNote">Use SFTP protocol instead of SCP (default)</span>
+            <span class="smallNote">Select SSH transfer protocol to use</span>
         </td>
     </tr>
     <tr>

@@ -1,5 +1,7 @@
 package jetbrains.buildServer.deployer.server;
 
+import com.intellij.openapi.util.text.StringUtil;
+import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
@@ -54,5 +56,20 @@ public class SSHDeployerRunType extends RunType {
     @Override
     public Map<String, String> getDefaultRunnerProperties() {
         return new HashMap<String, String>();
+    }
+
+    @NotNull
+    @Override
+    public String describeParameters(@NotNull Map<String, String> parameters) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Target: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
+        final String port = parameters.get(SSHRunnerConstants.PARAM_PORT);
+        if (StringUtil.isNotEmpty(port)) {
+            sb.append(" Port: ").append(port);
+        }
+        sb.append('\n');
+        sb.append("Protocol: ").append(parameters.get(SSHRunnerConstants.PARAM_TRANSPORT)).append('\n');
+        sb.append("Artifacts paths: ").append(parameters.get(DeployerRunnerConstants.PARAM_SOURCE_PATH));
+        return sb.toString();
     }
 }
