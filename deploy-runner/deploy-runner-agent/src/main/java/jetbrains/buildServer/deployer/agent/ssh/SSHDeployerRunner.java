@@ -20,6 +20,8 @@ import java.util.List;
  */
 public class SSHDeployerRunner extends BaseDeployerRunner {
 
+
+
     public SSHDeployerRunner(@NotNull final ExtensionHolder extensionHolder) {
         super(extensionHolder);
     }
@@ -31,11 +33,18 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
                                               @NotNull final String target,
                                               @NotNull final List<ArtifactsCollection> artifactsCollections) throws RunBuildException {
         final String transport = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_TRANSPORT);
+        final String portStr = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_PORT);
+        int port;
+        try {
+            port = Integer.parseInt(portStr);
+        } catch (NumberFormatException e) {
+            port = 22;
+        }
 
         if (SSHRunnerConstants.TRANSPORT_SCP.equals(transport)) {
-            return new ScpProcessAdapter(username, password, target, artifactsCollections);
+            return new ScpProcessAdapter(username, password, target, port, context, artifactsCollections);
         } else if (SSHRunnerConstants.TRANSPORT_SFTP.equals(transport)) {
-            return new SftpBuildProcessAdapter(target, username, password, context, artifactsCollections);
+            return new SftpBuildProcessAdapter(username, password, target, port, context, artifactsCollections);
         } else {
             throw new RunBuildException("Unknown ssh transport [" + transport + "]");
         }

@@ -1,5 +1,7 @@
 package jetbrains.buildServer.deployer.server;
 
+import com.intellij.openapi.util.text.StringUtil;
+import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
@@ -23,7 +25,7 @@ public class SSHDeployerRunType extends RunType {
     @NotNull
     @Override
     public String getType() {
-        return DeployerRunnerConstants.SCP_RUN_TYPE;
+        return DeployerRunnerConstants.SSH_RUN_TYPE;
     }
 
     @Override
@@ -54,5 +56,19 @@ public class SSHDeployerRunType extends RunType {
     @Override
     public Map<String, String> getDefaultRunnerProperties() {
         return new HashMap<String, String>();
+    }
+
+    @NotNull
+    @Override
+    public String describeParameters(@NotNull Map<String, String> parameters) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Target: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
+        final String port = parameters.get(SSHRunnerConstants.PARAM_PORT);
+        if (StringUtil.isNotEmpty(port)) {
+            sb.append('\n').append(" Port: ").append(port);
+        }
+        final Map<String, String> transportTypeValues = new SSHRunnerConstants().getTransportTypeValues();
+        sb.append('\n').append("Protocol: ").append(transportTypeValues.get(parameters.get(SSHRunnerConstants.PARAM_TRANSPORT)));
+        return sb.toString();
     }
 }

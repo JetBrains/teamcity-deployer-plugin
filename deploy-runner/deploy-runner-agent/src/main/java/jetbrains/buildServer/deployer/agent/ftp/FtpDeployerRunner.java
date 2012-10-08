@@ -21,7 +21,7 @@ public class FtpDeployerRunner extends BaseDeployerRunner {
                                               @NotNull final String password,
                                               @NotNull final String target,
                                               @NotNull final List<ArtifactsCollection> artifactsCollections) {
-        return new FtpBuildProcessAdapter(target, username, password, artifactsCollections);
+        return new FtpBuildProcessAdapter(context, target, username, password, artifactsCollections);
     }
 
     @NotNull

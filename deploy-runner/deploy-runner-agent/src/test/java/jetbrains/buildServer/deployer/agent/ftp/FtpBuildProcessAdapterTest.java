@@ -13,6 +13,8 @@ import org.apache.ftpserver.usermanager.ClearTextPasswordEncryptor;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.ftpserver.usermanager.impl.BaseUser;
 import org.apache.ftpserver.usermanager.impl.WritePermission;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -20,6 +22,8 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.testng.Assert.assertTrue;
 
 /**
  * Created by Nikita.Skvortsov
@@ -36,6 +40,7 @@ public class FtpBuildProcessAdapterTest {
     private final String myUsername = "myUsername";
     private final String myPassword = "myPassword";
     private List<ArtifactsCollection> myArtifactsCollections;
+    private BuildRunnerContext myContext;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -76,6 +81,18 @@ public class FtpBuildProcessAdapterTest {
 
         // start the server
         myServer.start();
+
+        Mockery mockeryCtx = new Mockery();
+        myContext = mockeryCtx.mock(BuildRunnerContext.class);
+        final AgentRunningBuild build = mockeryCtx.mock(AgentRunningBuild.class);
+        final BuildProgressLogger logger = new NullBuildProgressLogger();
+        final File workingDir = myTempFiles.createTempDir();
+
+        mockeryCtx.checking(new Expectations() {{
+            allowing(myContext).getWorkingDirectory(); will(returnValue(workingDir));
+            allowing(myContext).getBuild(); will(returnValue(build));
+            allowing(build).getBuildLogger(); will(returnValue(logger));
+        }});
     }
 
     @AfterMethod
@@ -111,8 +128,24 @@ public class FtpBuildProcessAdapterTest {
         DeployTestUtils.assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
     }
 
+    @Test
+    public void testTransferToExistingPath() throws Exception {
+        final String uploadDestination = "some/path";
+        final String artifactDestination = "dest1/sub";
+
+        final File existingPath = new File(myRemoteDir, uploadDestination);
+        assertTrue(existingPath.mkdirs());
+        final File existingDestination = new File(existingPath, artifactDestination);
+        assertTrue(existingDestination.mkdirs());
+
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, artifactDestination, "dest2"));
+        final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT + "/" + uploadDestination);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(existingPath, myArtifactsCollections);
+    }
+
 
     private BuildProcess getProcess(String target) {
-        return new FtpBuildProcessAdapter(target, myUsername, myPassword, myArtifactsCollections);
+        return new FtpBuildProcessAdapter(myContext, target, myUsername, myPassword, myArtifactsCollections);
     }
 }

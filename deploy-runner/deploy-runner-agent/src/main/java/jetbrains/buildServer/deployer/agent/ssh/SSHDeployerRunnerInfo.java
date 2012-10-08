@@ -13,7 +13,7 @@ class SSHDeployerRunnerInfo implements AgentBuildRunnerInfo {
     @NotNull
     @Override
     public String getType() {
-        return DeployerRunnerConstants.SCP_RUN_TYPE;
+        return DeployerRunnerConstants.SSH_RUN_TYPE;
     }
 
     @Override

@@ -15,8 +15,9 @@ public class TomcatDeployerRunner implements AgentBuildRunner {
         final String password = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
         final String target = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
         final String sourcePath = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_SOURCE_PATH);
+        final String contextPath = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TOMCAT_CONTEXT_PATH);
 
-        return new TomcatBuildProcessAdapter(target, username, password, context, sourcePath);
+        return new TomcatBuildProcessAdapter(target, username, password, context, sourcePath, contextPath);
     }
 
     @NotNull

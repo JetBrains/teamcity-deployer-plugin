@@ -55,4 +55,12 @@ public class SmbDeployerRunType extends RunType {
     public Map<String, String> getDefaultRunnerProperties() {
         return new HashMap<String, String>();
     }
+
+    @NotNull
+    @Override
+    public String describeParameters(@NotNull Map<String, String> parameters) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Target SMB share: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
+        return sb.toString();
+    }
 }
