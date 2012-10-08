@@ -100,7 +100,7 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
 
             myLogger.message("Starting upload via SFTP to " +
                                     (jetbrains.buildServer.util.StringUtil.isNotEmpty(escapedRemotePath) ?
-                                    "[" + escapedRemotePath + "] on " : "") + " host [" + host + ":" + myPort + "]");
+                                    "[" + escapedRemotePath + "] on " : "") + "host [" + host + ":" + myPort + "]");
             for (ArtifactsCollection artifactsCollection : myArtifacts) {
                 int count = 0;
                 for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
