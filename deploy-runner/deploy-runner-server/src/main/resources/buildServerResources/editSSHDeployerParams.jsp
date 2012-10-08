@@ -5,6 +5,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="forms" tagdir="/WEB-INF/tags/forms" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
+<jsp:useBean id="runnerConst" scope="request" class="jetbrains.buildServer.deployer.common.SSHRunnerConstants"/>
 
 <l:settingsGroup title="Deployment Target">
     <tr>
@@ -18,8 +19,9 @@
         <th><label for="jetbrains.buildServer.deployer.ssh.transport">Transport protocol: </label></th>
         <td>
             <props:selectProperty name="<%=SSHRunnerConstants.PARAM_TRANSPORT%>">
-                <props:option value="<%=SSHRunnerConstants.TRANSPORT_SCP%>">SCP</props:option>
-                <props:option value="<%=SSHRunnerConstants.TRANSPORT_SFTP%>">SFTP</props:option>
+                <c:forEach var="type" items="${runnerConst.transportTypeValues}">
+                    <props:option value="${type.key}"><c:out value="${type.value}"/></props:option>
+                </c:forEach>
             </props:selectProperty>
             <span class="smallNote">Select SSH transfer protocol to use</span>
         </td>

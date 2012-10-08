@@ -60,8 +60,7 @@ public class SmbDeployerRunType extends RunType {
     @Override
     public String describeParameters(@NotNull Map<String, String> parameters) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Target SMB share: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL)).append('\n');
-        sb.append("Artifacts paths: ").append(parameters.get(DeployerRunnerConstants.PARAM_SOURCE_PATH));
+        sb.append("Target SMB share: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
         return sb.toString();
     }
 }

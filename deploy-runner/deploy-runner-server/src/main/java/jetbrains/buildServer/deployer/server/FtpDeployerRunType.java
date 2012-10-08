@@ -60,8 +60,7 @@ public class FtpDeployerRunType extends RunType {
     @Override
     public String describeParameters(@NotNull Map<String, String> parameters) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Target FTP server: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL)).append('\n');
-        sb.append("Artifacts paths: ").append(parameters.get(DeployerRunnerConstants.PARAM_SOURCE_PATH));
+        sb.append("Target FTP server: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
         return sb.toString();
     }
 }

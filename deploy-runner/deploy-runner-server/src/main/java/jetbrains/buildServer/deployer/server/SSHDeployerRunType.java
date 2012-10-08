@@ -65,11 +65,10 @@ public class SSHDeployerRunType extends RunType {
         sb.append("Target: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
         final String port = parameters.get(SSHRunnerConstants.PARAM_PORT);
         if (StringUtil.isNotEmpty(port)) {
-            sb.append(" Port: ").append(port);
+            sb.append('\n').append(" Port: ").append(port);
         }
-        sb.append('\n');
-        sb.append("Protocol: ").append(parameters.get(SSHRunnerConstants.PARAM_TRANSPORT)).append('\n');
-        sb.append("Artifacts paths: ").append(parameters.get(DeployerRunnerConstants.PARAM_SOURCE_PATH));
+        final Map<String, String> transportTypeValues = new SSHRunnerConstants().getTransportTypeValues();
+        sb.append('\n').append("Protocol: ").append(transportTypeValues.get(parameters.get(SSHRunnerConstants.PARAM_TRANSPORT)));
         return sb.toString();
     }
 }

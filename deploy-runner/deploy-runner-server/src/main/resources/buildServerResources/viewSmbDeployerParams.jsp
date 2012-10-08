@@ -4,17 +4,17 @@
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 
 <div class="parameter">
-  Target url: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>" emptyValue="default"/></strong>
+  Target share: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>" emptyValue="default"/></strong>
 </div>
 
 <div class="parameter">
-  Username: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_USERNAME%>" emptyValue="default"/></strong>
+  Domain: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_DOMAIN%>" emptyValue="empty"/></strong>
 </div>
 
 <div class="parameter">
-  Password: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>" emptyValue="default"/></strong>
+  Username: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_USERNAME%>" emptyValue="none"/></strong>
 </div>
 
 <div class="parameter">
-  Source: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" emptyValue="default"/></strong>
+  Source: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" emptyValue="none"/></strong>
 </div>

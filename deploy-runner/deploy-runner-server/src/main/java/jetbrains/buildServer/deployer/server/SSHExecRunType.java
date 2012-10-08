@@ -64,10 +64,10 @@ public class SSHExecRunType extends RunType {
     @Override
     public String describeParameters(@NotNull Map<String, String> parameters) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Target: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
+        sb.append("Target: ").append(parameters.get(SSHRunnerConstants.PARAM_HOST));
         final String port = parameters.get(SSHRunnerConstants.PARAM_PORT);
         if (StringUtil.isNotEmpty(port)) {
-            sb.append(" Port: ").append(port);
+            sb.append('\n').append(" Port: ").append(port);
         }
         sb.append('\n');
         final String commands = parameters.get(SSHRunnerConstants.PARAM_COMMAND);

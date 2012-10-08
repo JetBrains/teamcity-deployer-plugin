@@ -1,5 +1,8 @@
 package jetbrains.buildServer.deployer.common;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Created by Nikita.Skvortsov
  * Date: 9/28/12, 2:53 PM
@@ -18,5 +21,18 @@ public class SSHRunnerConstants {
 
     public static final String TRANSPORT_SCP = "jetbrains.buildServer.deployer.ssh.transport.scp";
     public static final String TRANSPORT_SFTP = "jetbrains.buildServer.deployer.ssh.transport.sftp";
+
+    public String getTransportType() {
+        return PARAM_TRANSPORT;
+    }
+
+    public Map<String, String> getTransportTypeValues() {
+        final Map<String, String> result = new LinkedHashMap<String, String>();
+        result.put(TRANSPORT_SCP, "SCP");
+        result.put(TRANSPORT_SFTP, "SFTP");
+        return result;
+    }
+
+
 
 }
