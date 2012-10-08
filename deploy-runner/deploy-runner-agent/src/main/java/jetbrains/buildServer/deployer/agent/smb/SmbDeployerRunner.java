@@ -23,7 +23,7 @@ public class SmbDeployerRunner extends BaseDeployerRunner {
                                               @NotNull final String target,
                                               @NotNull final List<ArtifactsCollection> artifactsCollections) {
         final String domain = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_DOMAIN);
-        return new SMBBuildProcessAdapter(username, password, domain, target, artifactsCollections);
+        return new SMBBuildProcessAdapter(context, username, password, domain, target, artifactsCollections);
     }
 
     @NotNull

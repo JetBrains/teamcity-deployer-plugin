@@ -178,12 +178,15 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
 
         try {
             for (ArtifactsCollection artifactCollection : myArtifacts) {
+                int count = 0;
                 for (Map.Entry<File, String> filePathEntry : artifactCollection.getFilePathMap().entrySet()) {
                     final File source = filePathEntry.getKey();
                     final String destination = filePathEntry.getValue();
                     final ScpOperation operationChain = ScpOperationBuilder.getCopyFileOperation(source, destination);
                     operationChain.execute(out, in);
+                    count++;
                 }
+                myLogger.message("Uploaded [" + count + "] files for [" + artifactCollection.getSourcePath() + "] pattern");
             }
         } finally {
             FileUtil.close(out);

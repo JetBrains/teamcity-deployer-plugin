@@ -6,6 +6,8 @@ import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProcessAdapter;
+import jetbrains.buildServer.agent.BuildProgressLogger;
+import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.StringUtil;
@@ -20,16 +22,18 @@ import java.util.StringTokenizer;
 
 
 class FtpBuildProcessAdapter extends BuildProcessAdapter {
+    private static final String FTP_PROTOCOL = "ftp://";
 
     private final String myTarget;
     private final String myUsername;
     private final String myPassword;
     private final List<ArtifactsCollection> myArtifacts;
-    private static final String FTP_PROTOCOL = "ftp://";
+    private final BuildProgressLogger myLogger;
 
     private volatile boolean hasFinished;
 
-    public FtpBuildProcessAdapter(@NotNull final String target,
+    public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
+                                  @NotNull final String target,
                                   @NotNull final String username,
                                   @NotNull final String password,
                                   @NotNull final List<ArtifactsCollection> artifactsCollections) {
@@ -37,6 +41,7 @@ class FtpBuildProcessAdapter extends BuildProcessAdapter {
         myUsername = username;
         myPassword = password;
         myArtifacts = artifactsCollections;
+        myLogger = context.getBuild().getBuildLogger();
         hasFinished = false;
     }
 
@@ -89,7 +94,10 @@ class FtpBuildProcessAdapter extends BuildProcessAdapter {
 
             final String remoteRoot = client.currentDirectory();
 
+            myLogger.message("Starting upload via FTP to " + myTarget);
+
             for (ArtifactsCollection artifactsCollection : myArtifacts) {
+                int count = 0;
                 for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
                     final File source = fileStringEntry.getKey();
                     final String destinationDir = fileStringEntry.getValue();
@@ -105,7 +113,9 @@ class FtpBuildProcessAdapter extends BuildProcessAdapter {
                     client.changeDirectory(destinationDir);
                     client.upload(source);
                     client.changeDirectory(remoteRoot);
+                    count++;
                 }
+                myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
             }
 
 

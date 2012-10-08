@@ -13,6 +13,8 @@ import org.apache.ftpserver.usermanager.ClearTextPasswordEncryptor;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.ftpserver.usermanager.impl.BaseUser;
 import org.apache.ftpserver.usermanager.impl.WritePermission;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -38,6 +40,7 @@ public class FtpBuildProcessAdapterTest {
     private final String myUsername = "myUsername";
     private final String myPassword = "myPassword";
     private List<ArtifactsCollection> myArtifactsCollections;
+    private BuildRunnerContext myContext;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -78,6 +81,18 @@ public class FtpBuildProcessAdapterTest {
 
         // start the server
         myServer.start();
+
+        Mockery mockeryCtx = new Mockery();
+        myContext = mockeryCtx.mock(BuildRunnerContext.class);
+        final AgentRunningBuild build = mockeryCtx.mock(AgentRunningBuild.class);
+        final BuildProgressLogger logger = new NullBuildProgressLogger();
+        final File workingDir = myTempFiles.createTempDir();
+
+        mockeryCtx.checking(new Expectations() {{
+            allowing(myContext).getWorkingDirectory(); will(returnValue(workingDir));
+            allowing(myContext).getBuild(); will(returnValue(build));
+            allowing(build).getBuildLogger(); will(returnValue(logger));
+        }});
     }
 
     @AfterMethod
@@ -131,6 +146,6 @@ public class FtpBuildProcessAdapterTest {
 
 
     private BuildProcess getProcess(String target) {
-        return new FtpBuildProcessAdapter(target, myUsername, myPassword, myArtifactsCollections);
+        return new FtpBuildProcessAdapter(myContext, target, myUsername, myPassword, myArtifactsCollections);
     }
 }
