@@ -4,6 +4,7 @@ import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.base.BaseDeployerRunner;
+import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -21,7 +22,8 @@ public class SmbDeployerRunner extends BaseDeployerRunner {
                                               @NotNull final String password,
                                               @NotNull final String target,
                                               @NotNull final List<ArtifactsCollection> artifactsCollections) {
-        return new SMBBuildProcessAdapter(username, password, target, artifactsCollections);
+        final String domain = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_DOMAIN);
+        return new SMBBuildProcessAdapter(username, password, domain, target, artifactsCollections);
     }
 
     @NotNull

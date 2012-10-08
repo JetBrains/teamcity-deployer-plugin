@@ -9,6 +9,7 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,14 +28,17 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
     private final String myUsername;
     private final String myPassword;
     private final List<ArtifactsCollection> myArtifactsCollections;
+    private final String myDomain;
 
     public SMBBuildProcessAdapter(@NotNull final String username,
                                   @NotNull final String password,
+                                  @Nullable final String domain,
                                   @NotNull final String target,
                                   @NotNull final List<ArtifactsCollection> artifactsCollections) {
         myTarget = target;
         myUsername = username;
         myPassword = password;
+        myDomain = domain;
         myArtifactsCollections = artifactsCollections;
         hasFinished = false;
     }
@@ -74,12 +78,13 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
 
         targetWithProtocol = targetWithProtocol.replaceAll("\\\\", "/");
 
-        NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(myUsername.split("\\\\")[0],
-                myUsername.split("\\\\")[1], myPassword);
+        NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(myDomain == null ? "" : myDomain,
+                myUsername, myPassword);
 
         final String settingsString = "Trying to connect with following parameters:\n" +
                 "username=[" + myUsername + "]\n" +
                 "password=[" + myPassword + "]\n" +
+                "domain=[" + (myDomain == null ? "" : myDomain) + "]\n" +
                 "target=[" + targetWithProtocol + "]";
         try {
             Loggers.AGENT.debug(settingsString);
