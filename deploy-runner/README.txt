@@ -20,7 +20,7 @@ New runners include:
  * FTP Deployer   - upload artifacts via FTP
  * SSH Deployer   - upload artifacts via SSH (using SCP or SFTP protocols)
  * SSH Exec       - execute arbitrary commands using SSH
- * Tomcat Depoyer - deploy WAR application archives to a Tomcat instance (requires Manager webapp)
+ * Tomcat Deployer - deploy WAR application archives to a Tomcat instance (requires Manager webapp)
 
  When configuring artifacts for upload, same patterns can be used as in "Artifacts Path" section of "General Settings"
  page. Including packaging artifacts to zip/tgz archives
