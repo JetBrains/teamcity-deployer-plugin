@@ -1,2 +1,0 @@
-SimpleRunnerRunType does not exist
-Runner RunType string must be equal to plugin name. Otherwise sever is unable to load server resources
