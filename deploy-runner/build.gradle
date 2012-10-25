@@ -62,6 +62,9 @@ assembleTeamcityPluginConfig {
     artifacts   project( ':deploy-runner-server' )
 
     useSeparateClassloader true
+
+    archivePath      new File("build/teamcity/${pluginName}.zip")
+    agentArchivePath new File("build/teamcity/${pluginName}-agent.zip")
 }
 
 /**
