@@ -28,10 +28,6 @@ ext.pluginVersion = new Date().format("yyyyMMddHHmmss");
 
 apply from: 'https://raw.github.com/evgeny-goldin/gradle-plugins/master/teamcity/teamcity.gradle'
 
-allprojects {
-    version = "0.1"
-}
-
 subprojects {
     apply plugin:'java'
     repositories {
