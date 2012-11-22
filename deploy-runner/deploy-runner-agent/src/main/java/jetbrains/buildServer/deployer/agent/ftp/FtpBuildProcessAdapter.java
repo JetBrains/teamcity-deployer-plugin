@@ -23,6 +23,7 @@ import java.util.StringTokenizer;
 
 class FtpBuildProcessAdapter extends BuildProcessAdapter {
     private static final String FTP_PROTOCOL = "ftp://";
+    private static final int FILE_SYSTEM_ERROR = 550;
 
     private final String myTarget;
     private final String myUsername;
@@ -151,7 +152,7 @@ class FtpBuildProcessAdapter extends BuildProcessAdapter {
             client.createDirectory(directoryName);
         } catch (FTPException e) {
             // we can safely ignore if dir already exists
-            if (!e.getMessage().contains("already exists")) {
+            if (e.getCode() != FILE_SYSTEM_ERROR) {
                 throw e;
             }
         }
