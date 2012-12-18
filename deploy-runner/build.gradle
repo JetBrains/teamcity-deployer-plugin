@@ -109,6 +109,9 @@ project( ':deploy-runner-server' ) {
     }
     dependencies   {
         compile project(":deploy-runner-common")
+
+        testCompile 'org.testng:testng:6.8',
+                    'org.jmock:jmock:2.5.1'
     }
 }
 

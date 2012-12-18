@@ -71,16 +71,17 @@ public class SSHExecRunType extends RunType {
         }
         sb.append('\n');
         final String commands = parameters.get(SSHRunnerConstants.PARAM_COMMAND);
-        final List<String> commandsList = Arrays.asList(commands.split("\\\\n"));
-        final int size = commandsList.size();
-        if (size > 0) {
-            sb.append("Commands: ").append(commandsList.get(0));
-            if (size > 1) {
-                sb.append(" <and ").append(size - 1).append(" more line").append(size > 2 ? "s" : "").append(">");
+        if (commands != null) {
+            final List<String> commandsList = Arrays.asList(commands.split("\\\\n"));
+            final int size = commandsList.size();
+            if (size > 0) {
+                sb.append("Commands: ").append(commandsList.get(0));
+                if (size > 1) {
+                    sb.append(" <and ").append(size - 1).append(" more line").append(size > 2 ? "s" : "").append(">");
+                }
+                return sb.toString();
             }
-        } else {
-            sb.append("No commands defined.");
         }
-        return sb.toString();
+        return sb.append("No commands defined").toString();
     }
 }
