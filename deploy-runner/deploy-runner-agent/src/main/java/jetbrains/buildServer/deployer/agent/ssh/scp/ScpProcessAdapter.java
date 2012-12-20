@@ -84,17 +84,16 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
     public void start() throws RunBuildException {
         try {
             final String host;
-            final String escapedRemotePath;
+            String escapedRemotePath;
 
             final int delimiterIndex = myTargetString.indexOf(':');
             if (delimiterIndex > 0) {
                 host = myTargetString.substring(0, delimiterIndex);
                 final String remotePath = myTargetString.substring(delimiterIndex +1);
 
-                if (new File(remotePath).isAbsolute()) {
-                    escapedRemotePath = "/" + remotePath.trim().replaceAll("\\\\", "/");
-                } else {
-                    escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+                escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+                if (new File(escapedRemotePath).isAbsolute() && !escapedRemotePath.startsWith("/")) {
+                    escapedRemotePath = "/" + escapedRemotePath;
                 }
             } else {
                 host = myTargetString;
