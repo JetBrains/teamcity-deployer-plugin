@@ -17,8 +17,8 @@
 
 
 buildscript {
-    repositories { mavenRepo url: 'http://evgenyg.artifactoryonline.com/evgenyg/repo/' }
-    dependencies { classpath      'com.github.goldin.plugins:teamcity:0.1.4-SNAPSHOT'  }
+    repositories { maven { url 'http://evgenyg.artifactoryonline.com/evgenyg/repo/'  }}
+    dependencies { classpath 'com.github.goldin.plugins.gradle:teamcity:0.2-SNAPSHOT' }
 }
 
 ext.teamCityVersion = '7.0.4'
@@ -78,7 +78,7 @@ project( ':deploy-runner-agent' ) {
         compile project(":deploy-runner-common"),
                 files("lib/ftp4j-1.7.2.jar"),
                 'org.samba.jcifs:jcifs:1.3.17',
-                'com.jcraft:jsch:0.1.47',
+                'com.jcraft:jsch:0.1.49',
                 'org.apache.ant:ant:1.8.2',
                 'log4j:log4j:1.2.12'
                 compile("org.apache.tomcat:tomcat-catalina-ant:7.0.0") {
