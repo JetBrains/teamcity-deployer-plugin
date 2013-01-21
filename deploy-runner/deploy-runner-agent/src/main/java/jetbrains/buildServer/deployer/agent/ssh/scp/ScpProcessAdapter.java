@@ -28,6 +28,8 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
     private final String myPassword;
     private final List<ArtifactsCollection> myArtifacts;
 
+    private final File myKeyFile;
+
 
     private volatile boolean hasFinished;
     private volatile boolean isInterrupted;
@@ -41,6 +43,25 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
                              final int port,
                              @NotNull final BuildRunnerContext context,
                              @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        myKeyFile = null;
+        myTargetString = target;
+        myUsername = username;
+        myPassword = password;
+        myArtifacts = artifactsCollections;
+        myPort = port;
+        myLogger = context.getBuild().getBuildLogger();
+        hasFinished = false;
+        isInterrupted = false;
+    }
+
+    public ScpProcessAdapter(@NotNull final File privateKey,
+                             @NotNull final String username,
+                             @NotNull final String password,
+                             @NotNull final String target,
+                             final int port,
+                             @NotNull final BuildRunnerContext context,
+                             @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        myKeyFile = privateKey;
         myTargetString = target;
         myUsername = username;
         myPassword = password;
@@ -105,8 +126,17 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
             Session session = null;
 
             try {
+                if (myKeyFile != null) {
+                    if (StringUtil.isNotEmpty(myPassword)) {
+                        jsch.addIdentity(myKeyFile.getAbsolutePath(), myPassword);
+                    } else {
+                        jsch.addIdentity(myKeyFile.getAbsolutePath());
+                    }
+                }
                 session = jsch.getSession(myUsername, host, myPort);
-                session.setPassword(myPassword);
+                if (myKeyFile == null) {
+                    session.setPassword(myPassword);
+                }
                 session.connect();
 
                 createRemotePath(session, escapedRemotePath);

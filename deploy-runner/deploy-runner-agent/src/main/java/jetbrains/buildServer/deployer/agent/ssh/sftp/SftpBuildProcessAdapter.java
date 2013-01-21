@@ -12,7 +12,6 @@ import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.List;
@@ -25,10 +24,28 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
     private final int myPort;
     private final String myUsername;
     private final String myPassword;
+    private final File myKeyFile;
     private final List<ArtifactsCollection> myArtifacts;
 
     private volatile boolean hasFinished;
     private final BuildProgressLogger myLogger;
+
+    public SftpBuildProcessAdapter(@NotNull final File keyFile,
+                                   @NotNull final String username,
+                                   @NotNull final String password,
+                                   @NotNull final String target,
+                                   final int port,
+                                   @NotNull final BuildRunnerContext context,
+                                   @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        myTarget = target;
+        myPort = port;
+        myUsername = username;
+        myPassword = password;
+        myKeyFile = keyFile;
+        myLogger = context.getBuild().getBuildLogger();
+        myArtifacts = artifactsCollections;
+        hasFinished = false;
+    }
 
     public SftpBuildProcessAdapter(@NotNull final String username,
                                    @NotNull final String password,
@@ -40,6 +57,7 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
         myPort = port;
         myUsername = username;
         myPassword = password;
+        myKeyFile = null;
         myLogger = context.getBuild().getBuildLogger();
         myArtifacts = artifactsCollections;
         hasFinished = false;
@@ -85,15 +103,26 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
         Session session = null;
 
         try {
+            if (myKeyFile != null) {
+                if (StringUtil.isNotEmpty(myPassword)) {
+                    jsch.addIdentity(myKeyFile.getAbsolutePath(), myPassword);
+                } else {
+                    jsch.addIdentity(myKeyFile.getAbsolutePath());
+                }
+            }
             session = jsch.getSession(myUsername, host, myPort);
-            session.setPassword(myPassword);
+            if (myKeyFile == null) {
+                session.setPassword(myPassword);
+            }
+
             session.connect();
 
             if (isInterrupted()) return;
 
             ChannelSftp channel = (ChannelSftp)session.openChannel("sftp");
             channel.connect();
-            if (!StringUtil.isEmpty(escapedRemotePath)) {
+
+            if (StringUtil.isNotEmpty(escapedRemotePath)) {
                 createRemotePath(channel, escapedRemotePath);
                 channel.cd(escapedRemotePath);
             }

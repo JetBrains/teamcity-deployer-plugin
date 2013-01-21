@@ -1,6 +1,10 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.intellij.openapi.util.SystemInfo;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.KeyPair;
+import com.jcraft.jsch.KeyPairRSA;
 import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
@@ -10,6 +14,7 @@ import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.PasswordAuthenticator;
+import org.apache.sshd.server.PublickeyAuthenticator;
 import org.apache.sshd.server.command.ScpCommandFactory;
 import org.apache.sshd.server.filesystem.NativeFileSystemFactory;
 import org.apache.sshd.server.session.ServerSession;
@@ -21,12 +26,18 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.File;
+import java.io.*;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 /**
  * Created by Nikita.Skvortsov
@@ -40,6 +51,7 @@ public abstract class BaseSSHTransferTest {
     protected final String myPassword = "testpassword";
     protected List<ArtifactsCollection> myArtifactsCollections;
     protected BuildRunnerContext myContext;
+    protected File myPrivateKey;
 
     private TempFiles myTempFiles;
     private File myRemoteDir = null;
@@ -69,6 +81,20 @@ public abstract class BaseSSHTransferTest {
         if (!keyFile.exists()) {
             keyFile = new File("deploy-runner-agent/src/test/resources/hostkey.pem");
         }
+
+        File privateKey = new File("src/test/resources/tmp_rsa");
+        if (!privateKey.exists()) {
+            privateKey = new File("deploy-runner-agent/src/test/resources/tmp_rsa");
+        }
+
+        myPrivateKey = privateKey.getAbsoluteFile();
+
+        myServer.setPublickeyAuthenticator(new PublickeyAuthenticator() {
+            @Override
+            public boolean authenticate(String username, PublicKey key, ServerSession session) {
+                return true;
+            }
+        });
         myServer.setKeyPairProvider(new FileKeyPairProvider(new String[] { keyFile.getCanonicalPath() }));
         myServer.setFileSystemFactory(new NativeFileSystemFactory());
         myServer.setSubsystemFactories(Arrays.<NamedFactory<Command>>asList(new SftpSubsystem.Factory()));
