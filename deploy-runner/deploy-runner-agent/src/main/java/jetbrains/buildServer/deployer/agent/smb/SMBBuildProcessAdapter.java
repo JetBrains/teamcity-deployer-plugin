@@ -88,7 +88,6 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
 
         final String settingsString = "Trying to connect with following parameters:\n" +
                 "username=[" + myUsername + "]\n" +
-                "password=[" + myPassword + "]\n" +
                 "domain=[" + (myDomain == null ? "" : myDomain) + "]\n" +
                 "target=[" + targetWithProtocol + "]";
         try {
