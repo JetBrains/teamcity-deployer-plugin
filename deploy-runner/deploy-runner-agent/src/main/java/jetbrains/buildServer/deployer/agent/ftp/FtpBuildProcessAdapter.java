@@ -103,15 +103,11 @@ class FtpBuildProcessAdapter extends BuildProcessAdapter {
                     final File source = fileStringEntry.getKey();
                     final String destinationDir = fileStringEntry.getValue();
 
-                    try {
+                    if (StringUtil.isNotEmpty(destinationDir)) {
                         createPath(client, destinationDir);
-                    } catch (FTPException e) {
-                        // we can safely ignore if dir already exists
-                        if (!e.getMessage().contains("Directory already exists")) {
-                            throw e;
-                        }
+                        client.changeDirectory(destinationDir);
                     }
-                    client.changeDirectory(destinationDir);
+
                     client.upload(source);
                     client.changeDirectory(remoteRoot);
                     count++;

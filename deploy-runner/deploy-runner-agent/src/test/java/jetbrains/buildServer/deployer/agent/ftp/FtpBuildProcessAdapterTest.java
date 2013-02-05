@@ -129,6 +129,14 @@ public class FtpBuildProcessAdapterTest {
     }
 
     @Test
+    public void testTransferToEmptyPath() throws Exception {
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, ""));
+        final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
+    }
+
+    @Test
     public void testTransferToExistingPath() throws Exception {
         final String uploadDestination = "some/path";
         final String artifactDestination = "dest1/sub";
