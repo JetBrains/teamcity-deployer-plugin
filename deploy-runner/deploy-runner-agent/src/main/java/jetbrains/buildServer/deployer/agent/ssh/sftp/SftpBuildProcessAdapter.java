@@ -171,11 +171,9 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
     }
 
     private String escapePathForSSH(String remotePath) {
-        String escapedRemotePath;
-        if (new File(remotePath).isAbsolute()) {
-            escapedRemotePath = "/" + remotePath.trim().replaceAll("\\\\", "/");
-        } else {
-            escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+        String escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+        if (new File(remotePath).isAbsolute() && !escapedRemotePath.startsWith("/")) {
+            escapedRemotePath = "/" + escapedRemotePath;
         }
         return escapedRemotePath;
     }
