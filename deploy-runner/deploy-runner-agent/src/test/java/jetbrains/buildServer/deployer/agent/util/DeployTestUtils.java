@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.util;
 
+import com.intellij.openapi.util.text.StringUtil;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.BuildProcess;
@@ -47,7 +48,8 @@ public class DeployTestUtils {
         for (ArtifactsCollection artifactsCollection : artifactsCollections) {
             for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
                 final File source = fileStringEntry.getKey();
-                final String targetPath = fileStringEntry.getValue() + File.separator + source.getName();
+                final String relativePath = fileStringEntry.getValue();
+                final String targetPath = relativePath + (StringUtil.isNotEmpty(relativePath) ? File.separator : "") + source.getName();
                 final File target;
                 if (new File(targetPath).isAbsolute()) {
                     target = new File(targetPath);
