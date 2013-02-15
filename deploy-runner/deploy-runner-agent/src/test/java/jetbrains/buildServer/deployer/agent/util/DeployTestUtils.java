@@ -36,11 +36,13 @@ public class DeployTestUtils {
     public static ArtifactsCollection buildArtifactsCollection(final TempFiles tempFiles, String... destinationDirs) throws IOException {
 
         final Map<File, String> filePathMap = new HashMap<File, String>();
+        String dirTo = "dirTo";
         for (String destinationDir : destinationDirs) {
+            dirTo = destinationDir;
             final File content = tempFiles.createTempFile(100);
             filePathMap.put(content, destinationDir);
         }
-        return new ArtifactsCollection("dirFrom/**", "dirTo", filePathMap);
+        return new ArtifactsCollection("dirFrom/**", dirTo, filePathMap);
     }
 
     public static void assertCollectionsTransferred(File remoteBase, List<ArtifactsCollection> artifactsCollections) throws IOException {

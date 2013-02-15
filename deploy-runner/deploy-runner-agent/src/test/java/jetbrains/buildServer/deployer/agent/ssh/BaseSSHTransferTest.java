@@ -1,10 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.intellij.openapi.util.SystemInfo;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.KeyPair;
-import com.jcraft.jsch.KeyPairRSA;
 import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
@@ -26,18 +22,13 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.*;
-import java.security.KeyFactory;
+import java.io.File;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 /**
  * Created by Nikita.Skvortsov
@@ -46,6 +37,7 @@ import static org.testng.Assert.fail;
 public abstract class BaseSSHTransferTest {
 
     protected static final int PORT_NUM = 15655;
+    protected static final String HOST_ADDR = "127.0.0.1";
 
     protected String myUsername = "testuser";
     protected final String myPassword = "testpassword";
@@ -130,7 +122,7 @@ public abstract class BaseSSHTransferTest {
     @Test
     public void testSimpleTransfer() throws Exception {
         myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
-        final BuildProcess process = getProcess("127.0.0.1");
+        final BuildProcess process = getProcess(HOST_ADDR);
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
@@ -139,7 +131,7 @@ public abstract class BaseSSHTransferTest {
     public void testTransferToRelativePath() throws Exception {
         final String subPath = "test_path/subdir";
         myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
-        final BuildProcess process = getProcess("127.0.0.1:" + subPath);
+        final BuildProcess process = getProcess(HOST_ADDR + ":" + subPath);
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
     }
@@ -149,7 +141,7 @@ public abstract class BaseSSHTransferTest {
         final File absDestination = new File(myTempFiles.createTempDir(), "sub/path");
         final String absPath = absDestination.getCanonicalPath();
         myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
-        final BuildProcess process = getProcess("127.0.0.1:" + absPath);
+        final BuildProcess process = getProcess(HOST_ADDR + ":" + absPath);
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(absDestination, myArtifactsCollections);
     }
@@ -160,7 +152,7 @@ public abstract class BaseSSHTransferTest {
         final File tempDir1 = myTempFiles.createTempDir();
         final File tempDir2 = myTempFiles.createTempDir();
         myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, new File(tempDir1, "dest1").getCanonicalPath(), new File(tempDir1, "dest2").getCanonicalPath(), new File(tempDir2, "dest3").getCanonicalPath()));
-        final BuildProcess process = getProcess("127.0.0.1:" + subPath);
+        final BuildProcess process = getProcess(HOST_ADDR + ":" + subPath);
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
@@ -171,12 +163,12 @@ public abstract class BaseSSHTransferTest {
         final String artifactDestination = "dest1/sub";
 
         final File existingPath = new File(myRemoteDir, uploadDestination);
-        assertTrue(existingPath.mkdirs());
+        assertTrue(existingPath.mkdirs() || existingPath.exists());
         final File existingDestination = new File(existingPath, artifactDestination);
-        assertTrue(existingDestination.mkdirs());
+        assertTrue(existingDestination.mkdirs() || existingDestination.exists());
 
         myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, artifactDestination, "dest2"));
-        final BuildProcess process = getProcess("127.0.0.1:" + uploadDestination);
+        final BuildProcess process = getProcess(HOST_ADDR + ":" + uploadDestination);
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(existingPath, myArtifactsCollections);
     }
