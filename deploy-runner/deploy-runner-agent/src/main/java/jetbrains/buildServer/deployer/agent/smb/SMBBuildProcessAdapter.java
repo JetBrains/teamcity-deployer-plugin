@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.smb;
 
+import com.intellij.openapi.util.text.StringUtil;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
 import jetbrains.buildServer.RunBuildException;
@@ -90,7 +91,14 @@ class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
         int count = 0;
         for (Map.Entry<File, String> fileDestEntry : filePathMap.entrySet()) {
             final File source = fileDestEntry.getKey();
-            final SmbFile destDirectory = new SmbFile(destination, fileDestEntry.getValue() + "/");  // Share and directories names require trailing /
+            final String targetPath = fileDestEntry.getValue();
+            final SmbFile destDirectory;
+            if (StringUtil.isEmpty(targetPath)) {
+                destDirectory = destination;
+            } else {
+                destDirectory = new SmbFile(destination, targetPath + "/");
+            }
+
             final SmbFile destFile = new SmbFile(destDirectory, source.getName());
 
             Loggers.AGENT.debug("Uploading source=[" + source.getAbsolutePath() + "] to \n" +
