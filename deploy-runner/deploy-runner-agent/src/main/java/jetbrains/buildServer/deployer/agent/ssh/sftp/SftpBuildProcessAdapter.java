@@ -6,19 +6,18 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import jetbrains.buildServer.RunBuildException;
-import jetbrains.buildServer.agent.BuildFinishedStatus;
-import jetbrains.buildServer.agent.BuildProcessAdapter;
-import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 
 
-public class SftpBuildProcessAdapter extends BuildProcessAdapter {
+public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
     private final String myTarget;
     private final int myPort;
@@ -27,24 +26,20 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
     private final File myKeyFile;
     private final List<ArtifactsCollection> myArtifacts;
 
-    private volatile boolean hasFinished;
-    private final BuildProgressLogger myLogger;
-
-    public SftpBuildProcessAdapter(@NotNull final File keyFile,
+    public SftpBuildProcessAdapter(@Nullable final File keyFile,
                                    @NotNull final String username,
                                    @NotNull final String password,
                                    @NotNull final String target,
                                    final int port,
                                    @NotNull final BuildRunnerContext context,
                                    @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        super(context.getBuild().getBuildLogger());
         myTarget = target;
         myPort = port;
         myUsername = username;
         myPassword = password;
         myKeyFile = keyFile;
-        myLogger = context.getBuild().getBuildLogger();
         myArtifacts = artifactsCollections;
-        hasFinished = false;
     }
 
     public SftpBuildProcessAdapter(@NotNull final String username,
@@ -53,37 +48,11 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
                                    final int port,
                                    @NotNull final BuildRunnerContext context,
                                    @NotNull final List<ArtifactsCollection> artifactsCollections) {
-        myTarget = target;
-        myPort = port;
-        myUsername = username;
-        myPassword = password;
-        myKeyFile = null;
-        myLogger = context.getBuild().getBuildLogger();
-        myArtifacts = artifactsCollections;
-        hasFinished = false;
-    }
-
-    @NotNull
-    @Override
-    public BuildFinishedStatus waitFor() throws RunBuildException {
-        while (!isInterrupted() && !hasFinished) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RunBuildException(e);
-            }
-        }
-        return hasFinished ? BuildFinishedStatus.FINISHED_SUCCESS :
-                BuildFinishedStatus.INTERRUPTED;
+        this(null, username, password, target, port, context, artifactsCollections);
     }
 
     @Override
-    public boolean isFinished() {
-        return hasFinished;
-    }
-
-    @Override
-    public void start() throws RunBuildException {
+    public void runProcess() throws RunBuildException {
         final String host;
         final String escapedRemotePath;
 
@@ -150,7 +119,6 @@ public class SftpBuildProcessAdapter extends BuildProcessAdapter {
                 session.disconnect();
             }
         }
-        hasFinished = true;
     }
 
     private void createRemotePath(@NotNull final ChannelSftp channel,

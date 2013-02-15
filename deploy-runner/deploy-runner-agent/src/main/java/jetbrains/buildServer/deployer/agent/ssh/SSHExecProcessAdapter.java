@@ -1,26 +1,24 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 import jetbrains.buildServer.RunBuildException;
-import jetbrains.buildServer.agent.BuildFinishedStatus;
-import jetbrains.buildServer.agent.BuildProcessAdapter;
 import jetbrains.buildServer.agent.BuildProgressLogger;
+import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 
-class SSHExecProcessAdapter extends BuildProcessAdapter {
+class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
     private final String myHost;
     private final int myPort;
     private final String myUsername;
     private final String myPassword;
     private final String myCommands;
-    private final BuildProgressLogger myLogger;
-
-    private volatile boolean hasFinished;
-
 
 
     public SSHExecProcessAdapter(@NotNull final String host,
@@ -29,32 +27,17 @@ class SSHExecProcessAdapter extends BuildProcessAdapter {
                                  @NotNull final String password,
                                  @NotNull final String commands,
                                  @NotNull final BuildProgressLogger buildLogger) {
+        super(buildLogger);
         myHost = host;
         myPort = port;
         myUsername = username;
         myPassword = password;
         myCommands = commands;
-        hasFinished = false;
-        myLogger = buildLogger;
     }
 
 
-    @NotNull
     @Override
-    public BuildFinishedStatus waitFor() throws RunBuildException {
-        while (!isInterrupted() && !hasFinished) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RunBuildException(e);
-            }
-        }
-        return hasFinished ? BuildFinishedStatus.FINISHED_SUCCESS :
-                BuildFinishedStatus.INTERRUPTED;
-    }
-
-    @Override
-    public void start() throws RunBuildException {
+    public void runProcess() throws RunBuildException {
 
         JSch jsch=new JSch();
         JSch.setConfig("StrictHostKeyChecking", "no");
@@ -68,17 +51,18 @@ class SSHExecProcessAdapter extends BuildProcessAdapter {
 
             executeCommand(session, myCommands);
 
+        } catch (RunBuildException e) {
+            throw e;
         } catch (Exception e) {
             throw new RunBuildException(e);
         } finally {
             if (session != null) {
                 session.disconnect();
             }
-            hasFinished = true;
         }
     }
 
-    private void executeCommand(Session session, String command) throws JSchException, IOException {
+    private void executeCommand(Session session, String command) throws Exception {
         ChannelExec channel = null;
         myLogger.message("Executing commands:\n" + command + "\non host [" + session.getHost() + "]");
         try {
@@ -100,10 +84,12 @@ class SSHExecProcessAdapter extends BuildProcessAdapter {
             myLogger.message("Exec output:\n" + result.toString());
         } finally {
             if (channel != null) {
-                if (channel.isClosed()){
-                    myLogger.message("ssh exit-code: " + channel.getExitStatus());
-                }
                 channel.disconnect();
+                int exitCode = channel.getExitStatus();
+                if (exitCode > 0) {
+                    throw new RunBuildException("Non-zero exit code from ssh exec: [" + exitCode + "]");
+                }
+                myLogger.message("ssh exit-code: " + exitCode);
             }
         }
 

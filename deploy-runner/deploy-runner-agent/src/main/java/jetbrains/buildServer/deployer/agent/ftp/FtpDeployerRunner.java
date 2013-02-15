@@ -1,7 +1,9 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
 import jetbrains.buildServer.ExtensionHolder;
-import jetbrains.buildServer.agent.*;
+import jetbrains.buildServer.agent.AgentBuildRunnerInfo;
+import jetbrains.buildServer.agent.BuildProcess;
+import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.base.BaseDeployerRunner;
 import org.jetbrains.annotations.NotNull;

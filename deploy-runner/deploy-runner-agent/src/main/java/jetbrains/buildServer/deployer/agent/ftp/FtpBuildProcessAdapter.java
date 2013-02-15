@@ -4,11 +4,9 @@ import it.sauronsoftware.ftp4j.FTPClient;
 import it.sauronsoftware.ftp4j.FTPException;
 import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
 import jetbrains.buildServer.RunBuildException;
-import jetbrains.buildServer.agent.BuildFinishedStatus;
-import jetbrains.buildServer.agent.BuildProcessAdapter;
-import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +19,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 
-class FtpBuildProcessAdapter extends BuildProcessAdapter {
+class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     private static final String FTP_PROTOCOL = "ftp://";
     private static final int FILE_SYSTEM_ERROR = 550;
 
@@ -29,44 +27,21 @@ class FtpBuildProcessAdapter extends BuildProcessAdapter {
     private final String myUsername;
     private final String myPassword;
     private final List<ArtifactsCollection> myArtifacts;
-    private final BuildProgressLogger myLogger;
-
-    private volatile boolean hasFinished;
 
     public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                   @NotNull final String target,
                                   @NotNull final String username,
                                   @NotNull final String password,
                                   @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        super(context.getBuild().getBuildLogger());
         myTarget = target.toLowerCase().startsWith(FTP_PROTOCOL) ? target : FTP_PROTOCOL + target;
         myUsername = username;
         myPassword = password;
         myArtifacts = artifactsCollections;
-        myLogger = context.getBuild().getBuildLogger();
-        hasFinished = false;
-    }
-
-    @NotNull
-    @Override
-    public BuildFinishedStatus waitFor() throws RunBuildException {
-        while (!isInterrupted() && !hasFinished) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RunBuildException(e);
-            }
-        }
-        return hasFinished ? BuildFinishedStatus.FINISHED_SUCCESS :
-                BuildFinishedStatus.INTERRUPTED;
     }
 
     @Override
-    public boolean isFinished() {
-        return hasFinished;
-    }
-
-    @Override
-    public void start() throws RunBuildException {
+    public void runProcess() throws RunBuildException {
 
 
         FTPClient client = new FTPClient();
@@ -126,8 +101,6 @@ class FtpBuildProcessAdapter extends BuildProcessAdapter {
             } catch (Exception e) {
                 Loggers.AGENT.error(e.getMessage(), e);
             }
-
-            hasFinished = true;
         }
     }
 

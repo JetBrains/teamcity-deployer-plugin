@@ -5,11 +5,9 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import jetbrains.buildServer.RunBuildException;
-import jetbrains.buildServer.agent.BuildFinishedStatus;
-import jetbrains.buildServer.agent.BuildProcessAdapter;
-import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class ScpProcessAdapter extends BuildProcessAdapter {
+public class ScpProcessAdapter extends SyncBuildProcessAdapter {
 
     private final String myTargetString;
     private final String myUsername;
@@ -33,11 +31,7 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
 
     private final File myKeyFile;
 
-
-    private volatile boolean hasFinished;
-    private volatile boolean isInterrupted;
     private final int myPort;
-    private final BuildProgressLogger myLogger;
 
 
     public ScpProcessAdapter(@NotNull final String username,
@@ -56,132 +50,97 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
                              final int port,
                              @NotNull final BuildRunnerContext context,
                              @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        super(context.getBuild().getBuildLogger());
         myKeyFile = privateKey;
         myTargetString = target;
         myUsername = username;
         myPassword = password;
         myArtifacts = artifactsCollections;
         myPort = port;
-        myLogger = context.getBuild().getBuildLogger();
-        hasFinished = false;
-        isInterrupted = false;
     }
 
-    @NotNull
     @Override
-    public BuildFinishedStatus waitFor() throws RunBuildException {
-        while (!isInterrupted() && !hasFinished) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RunBuildException(e);
+    public void runProcess() throws RunBuildException {
+        final String host;
+        String escapedRemotePath;
+
+        final int delimiterIndex = myTargetString.indexOf(':');
+        if (delimiterIndex > 0) {
+            host = myTargetString.substring(0, delimiterIndex);
+            final String remotePath = myTargetString.substring(delimiterIndex +1);
+
+            escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+            if (new File(escapedRemotePath).isAbsolute() && !escapedRemotePath.startsWith("/")) {
+                escapedRemotePath = "/" + escapedRemotePath;
             }
+        } else {
+            host = myTargetString;
+            escapedRemotePath = "";
         }
-        return hasFinished ? BuildFinishedStatus.FINISHED_SUCCESS :
-                BuildFinishedStatus.INTERRUPTED;
-    }
 
-    @Override
-    public void interrupt() {
-        isInterrupted = true;
-    }
+        JSch jsch=new JSch();
+        JSch.setConfig("StrictHostKeyChecking", "no");
+        Session session = null;
 
-    @Override
-    public boolean isInterrupted() {
-        return isInterrupted;
-    }
-
-    @Override
-    public boolean isFinished() {
-        return hasFinished;
-    }
-
-    @Override
-    public void start() throws RunBuildException {
         try {
-            final String host;
-            String escapedRemotePath;
-
-            final int delimiterIndex = myTargetString.indexOf(':');
-            if (delimiterIndex > 0) {
-                host = myTargetString.substring(0, delimiterIndex);
-                final String remotePath = myTargetString.substring(delimiterIndex +1);
-
-                escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
-                if (new File(escapedRemotePath).isAbsolute() && !escapedRemotePath.startsWith("/")) {
-                    escapedRemotePath = "/" + escapedRemotePath;
-                }
-            } else {
-                host = myTargetString;
-                escapedRemotePath = "";
-            }
-
-            JSch jsch=new JSch();
-            JSch.setConfig("StrictHostKeyChecking", "no");
-            Session session = null;
-
-            try {
-                if (myKeyFile != null) {
-                    if (StringUtil.isNotEmpty(myPassword)) {
-                        jsch.addIdentity(myKeyFile.getAbsolutePath(), myPassword);
-                    } else {
-                        jsch.addIdentity(myKeyFile.getAbsolutePath());
-                    }
-                }
-                session = jsch.getSession(myUsername, host, myPort);
-                if (myKeyFile == null) {
-                    session.setPassword(myPassword);
-                }
-                session.connect();
-
-                // createRemotePath(session, escapedRemotePath);
-                if (isInterrupted()) return;
-                myLogger.message("Starting upload via SCP to " +
-                        (StringUtil.isNotEmpty(escapedRemotePath) ?
-                                "[" + escapedRemotePath + "] on " : "") + "host [" + host + ":" + myPort + "]");
-
-
-                final List<ArtifactsCollection> relativeDestinations = new LinkedList<ArtifactsCollection>();
-                final List<ArtifactsCollection> absDestinations = new LinkedList<ArtifactsCollection>();
-                boolean isRemoteBaseAbsolute = escapedRemotePath.startsWith("/");
-
-
-                for (ArtifactsCollection artifactsCollection : myArtifacts) {
-                    if (artifactsCollection.getTargetPath().startsWith("/")) {
-                        absDestinations.add(new ArtifactsCollection(
-                                artifactsCollection.getSourcePath(),
-                                artifactsCollection.getTargetPath(),
-                                new HashMap<File, String>(artifactsCollection.getFilePathMap())
-                        ));
-                    } else {
-                        final Map<File, String> newPathMap = new HashMap<File, String>();
-                        for (Map.Entry<File, String> fileTargetEntry : artifactsCollection.getFilePathMap().entrySet()) {
-                            final String oldTarget = fileTargetEntry.getValue();
-                            newPathMap.put(fileTargetEntry.getKey(), escapedRemotePath + "/" + oldTarget);
-                        }
-                        final ArtifactsCollection newCollection = new ArtifactsCollection(artifactsCollection.getSourcePath(), artifactsCollection.getTargetPath(), newPathMap);
-                        if (isRemoteBaseAbsolute) {
-                            absDestinations.add(newCollection);
-                        } else {
-                            relativeDestinations.add(newCollection);
-                        }
-
-                    }
-                }
-
-                upload(session, ".", relativeDestinations);
-                upload(session, "/", absDestinations);
-
-
-            } catch (Exception e) {
-                throw new RunBuildException(e);
-            } finally {
-                if (session != null) {
-                    session.disconnect();
+            if (myKeyFile != null) {
+                if (StringUtil.isNotEmpty(myPassword)) {
+                    jsch.addIdentity(myKeyFile.getAbsolutePath(), myPassword);
+                } else {
+                    jsch.addIdentity(myKeyFile.getAbsolutePath());
                 }
             }
+            session = jsch.getSession(myUsername, host, myPort);
+            if (myKeyFile == null) {
+                session.setPassword(myPassword);
+            }
+            session.connect();
+
+            // createRemotePath(session, escapedRemotePath);
+            if (isInterrupted()) return;
+            myLogger.message("Starting upload via SCP to " +
+                    (StringUtil.isNotEmpty(escapedRemotePath) ?
+                            "[" + escapedRemotePath + "] on " : "") + "host [" + host + ":" + myPort + "]");
+
+
+            final List<ArtifactsCollection> relativeDestinations = new LinkedList<ArtifactsCollection>();
+            final List<ArtifactsCollection> absDestinations = new LinkedList<ArtifactsCollection>();
+            boolean isRemoteBaseAbsolute = escapedRemotePath.startsWith("/");
+
+
+            for (ArtifactsCollection artifactsCollection : myArtifacts) {
+                if (artifactsCollection.getTargetPath().startsWith("/")) {
+                    absDestinations.add(new ArtifactsCollection(
+                            artifactsCollection.getSourcePath(),
+                            artifactsCollection.getTargetPath(),
+                            new HashMap<File, String>(artifactsCollection.getFilePathMap())
+                    ));
+                } else {
+                    final Map<File, String> newPathMap = new HashMap<File, String>();
+                    for (Map.Entry<File, String> fileTargetEntry : artifactsCollection.getFilePathMap().entrySet()) {
+                        final String oldTarget = fileTargetEntry.getValue();
+                        newPathMap.put(fileTargetEntry.getKey(), escapedRemotePath + "/" + oldTarget);
+                    }
+                    final ArtifactsCollection newCollection = new ArtifactsCollection(artifactsCollection.getSourcePath(), artifactsCollection.getTargetPath(), newPathMap);
+                    if (isRemoteBaseAbsolute) {
+                        absDestinations.add(newCollection);
+                    } else {
+                        relativeDestinations.add(newCollection);
+                    }
+
+                }
+            }
+
+            upload(session, ".", relativeDestinations);
+            upload(session, "/", absDestinations);
+
+
+        } catch (Exception e) {
+            throw new RunBuildException(e);
         } finally {
-            hasFinished = true;
+            if (session != null) {
+                session.disconnect();
+            }
         }
     }
 

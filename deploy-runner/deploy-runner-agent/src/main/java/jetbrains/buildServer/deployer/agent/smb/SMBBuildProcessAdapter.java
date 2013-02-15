@@ -3,11 +3,9 @@ package jetbrains.buildServer.deployer.agent.smb;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
 import jetbrains.buildServer.RunBuildException;
-import jetbrains.buildServer.agent.BuildFinishedStatus;
-import jetbrains.buildServer.agent.BuildProcessAdapter;
-import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 
-class SMBBuildProcessAdapter extends BuildProcessAdapter {
+class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
     public static final String SMB = "smb://";
 
     private final String myTarget;
@@ -29,9 +27,6 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
     private final String myPassword;
     private final List<ArtifactsCollection> myArtifactsCollections;
     private final String myDomain;
-    private final BuildProgressLogger myLogger;
-
-    private volatile boolean hasFinished;
 
     public SMBBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                   @NotNull final String username,
@@ -39,31 +34,16 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
                                   @Nullable final String domain,
                                   @NotNull final String target,
                                   @NotNull final List<ArtifactsCollection> artifactsCollections) {
+        super(context.getBuild().getBuildLogger());
         myTarget = target;
         myUsername = username;
         myPassword = password;
         myDomain = domain;
         myArtifactsCollections = artifactsCollections;
-        myLogger = context.getBuild().getBuildLogger();
-        hasFinished = false;
-    }
-
-    @NotNull
-    @Override
-    public BuildFinishedStatus waitFor() throws RunBuildException {
-        while (!isInterrupted() && !hasFinished) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RunBuildException(e);
-            }
-        }
-        return hasFinished ? BuildFinishedStatus.FINISHED_SUCCESS :
-                BuildFinishedStatus.INTERRUPTED;
     }
 
     @Override
-    public void start() throws RunBuildException {
+    public void runProcess() throws RunBuildException {
 
         jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
 
@@ -103,8 +83,6 @@ class SMBBuildProcessAdapter extends BuildProcessAdapter {
         } catch (Exception e) {
             Loggers.AGENT.error(settingsString, e);
             throw new RunBuildException(e);
-        } finally {
-            hasFinished = true;
         }
     }
 

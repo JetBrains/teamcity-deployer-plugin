@@ -1,10 +1,8 @@
 package jetbrains.buildServer.deployer.agent.tomcat;
 
 import jetbrains.buildServer.RunBuildException;
-import jetbrains.buildServer.agent.BuildFinishedStatus;
-import jetbrains.buildServer.agent.BuildProcessAdapter;
-import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.BuildRunnerContext;
+import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.util.StringUtil;
 import org.apache.catalina.ant.DeployTask;
 import org.apache.catalina.ant.ListTask;
@@ -16,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 
 
-class TomcatBuildProcessAdapter extends BuildProcessAdapter {
+class TomcatBuildProcessAdapter extends SyncBuildProcessAdapter {
 
     private static final String MANAGER_APP_SUFFIX = "manager";
     private static final String HTTP_PREFIX = "http://";
@@ -25,9 +23,7 @@ class TomcatBuildProcessAdapter extends BuildProcessAdapter {
     private final String myTarget;
     private final String myUsername;
     private final String myPassword;
-    private final BuildProgressLogger myLogger;
 
-    private volatile boolean hasFinished;
     private final String myWepappContext;
     private final File myWarArchive;
 
@@ -38,10 +34,10 @@ class TomcatBuildProcessAdapter extends BuildProcessAdapter {
                                      final @NotNull BuildRunnerContext context,
                                      final @NotNull String sourcePath,
                                      final @Nullable String contextPath) {
+        super(context.getBuild().getBuildLogger());
         myTarget = target;
         myUsername = username;
         myPassword = password;
-        myLogger = context.getBuild().getBuildLogger();
         myWarArchive = new File(context.getWorkingDirectory(), sourcePath);
 
         if (contextPath == null || StringUtil.isEmptyOrSpaces(contextPath)) {
@@ -52,25 +48,11 @@ class TomcatBuildProcessAdapter extends BuildProcessAdapter {
             // leading / is required!
             myWepappContext = contextPath.startsWith("/") ? contextPath : "/" + contextPath;
         }
-        hasFinished = false;
     }
 
-    @NotNull
-    @Override
-    public BuildFinishedStatus waitFor() throws RunBuildException {
-        while (!isInterrupted() && !hasFinished) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RunBuildException(e);
-            }
-        }
-        return hasFinished ? BuildFinishedStatus.FINISHED_SUCCESS :
-                BuildFinishedStatus.INTERRUPTED;
-    }
 
     @Override
-    public void start() throws RunBuildException {
+    public void runProcess() throws RunBuildException {
 
         try {
             final StringBuilder sb = new StringBuilder();
@@ -123,8 +105,6 @@ class TomcatBuildProcessAdapter extends BuildProcessAdapter {
 
         } catch (Exception e) {
             throw new RunBuildException(e);
-        } finally {
-            hasFinished = true;
         }
     }
 }
