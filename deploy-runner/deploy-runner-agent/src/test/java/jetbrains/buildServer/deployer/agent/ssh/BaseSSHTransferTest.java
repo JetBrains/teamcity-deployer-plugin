@@ -151,11 +151,23 @@ public abstract class BaseSSHTransferTest {
         final String subPath = "test_path/subdir";
         final File tempDir1 = myTempFiles.createTempDir();
         final File tempDir2 = myTempFiles.createTempDir();
-        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, new File(tempDir1, "dest1").getCanonicalPath(), new File(tempDir1, "dest2").getCanonicalPath(), new File(tempDir2, "dest3").getCanonicalPath()));
+        final String dest1 = prependLeadingSlash(new File(tempDir1, "dest1").getCanonicalPath());
+        final String dest2 = prependLeadingSlash(new File(tempDir1, "dest2").getCanonicalPath());
+        final String dest3 = prependLeadingSlash(new File(tempDir2, "dest3").getCanonicalPath());
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, dest1, dest2, dest3));
         final BuildProcess process = getProcess(HOST_ADDR + ":" + subPath);
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
+
+    protected String prependLeadingSlash(String path) {
+        if (!path.startsWith("/")) {
+            return "/" + path;
+        } else {
+            return path;
+        }
+    }
+
 
     @Test
     public void testTransferToExistingPath() throws Exception {
