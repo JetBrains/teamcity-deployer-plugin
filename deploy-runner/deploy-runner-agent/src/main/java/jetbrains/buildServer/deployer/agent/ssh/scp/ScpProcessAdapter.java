@@ -13,11 +13,14 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,18 +46,10 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
                              final int port,
                              @NotNull final BuildRunnerContext context,
                              @NotNull final List<ArtifactsCollection> artifactsCollections) {
-        myKeyFile = null;
-        myTargetString = target;
-        myUsername = username;
-        myPassword = password;
-        myArtifacts = artifactsCollections;
-        myPort = port;
-        myLogger = context.getBuild().getBuildLogger();
-        hasFinished = false;
-        isInterrupted = false;
+        this(null, username, password, target, port, context, artifactsCollections);
     }
 
-    public ScpProcessAdapter(@NotNull final File privateKey,
+    public ScpProcessAdapter(@Nullable final File privateKey,
                              @NotNull final String username,
                              @NotNull final String password,
                              @NotNull final String target,
@@ -139,12 +134,44 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
                 }
                 session.connect();
 
-                createRemotePath(session, escapedRemotePath);
+                // createRemotePath(session, escapedRemotePath);
                 if (isInterrupted()) return;
                 myLogger.message("Starting upload via SCP to " +
                         (StringUtil.isNotEmpty(escapedRemotePath) ?
-                        "[" + escapedRemotePath + "] on " : "") + "host [" + host + ":" + myPort + "]");
-                upload(session, escapedRemotePath);
+                                "[" + escapedRemotePath + "] on " : "") + "host [" + host + ":" + myPort + "]");
+
+
+                final List<ArtifactsCollection> relativeDestinations = new LinkedList<ArtifactsCollection>();
+                final List<ArtifactsCollection> absDestinations = new LinkedList<ArtifactsCollection>();
+                boolean isRemoteBaseAbsolute = escapedRemotePath.startsWith("/");
+
+
+                for (ArtifactsCollection artifactsCollection : myArtifacts) {
+                    if (artifactsCollection.getTargetPath().startsWith("/")) {
+                        absDestinations.add(new ArtifactsCollection(
+                                artifactsCollection.getSourcePath(),
+                                artifactsCollection.getTargetPath(),
+                                new HashMap<File, String>(artifactsCollection.getFilePathMap())
+                        ));
+                    } else {
+                        final Map<File, String> newPathMap = new HashMap<File, String>();
+                        for (Map.Entry<File, String> fileTargetEntry : artifactsCollection.getFilePathMap().entrySet()) {
+                            final String oldTarget = fileTargetEntry.getValue();
+                            newPathMap.put(fileTargetEntry.getKey(), escapedRemotePath + "/" + oldTarget);
+                        }
+                        final ArtifactsCollection newCollection = new ArtifactsCollection(artifactsCollection.getSourcePath(), artifactsCollection.getTargetPath(), newPathMap);
+                        if (isRemoteBaseAbsolute) {
+                            absDestinations.add(newCollection);
+                        } else {
+                            relativeDestinations.add(newCollection);
+                        }
+
+                    }
+                }
+
+                upload(session, ".", relativeDestinations);
+                upload(session, "/", absDestinations);
+
 
             } catch (Exception e) {
                 throw new RunBuildException(e);
@@ -158,40 +185,16 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
         }
     }
 
-    private void createRemotePath(final @NotNull Session session,
-                                  final @NotNull String escapedRemotePath) throws JSchException, IOException {
-        if (StringUtil.isEmptyOrSpaces(escapedRemotePath)) {
+    private void upload(final @NotNull Session session,
+                        final @NotNull String escapedRemoteBase,
+                        final @NotNull List<ArtifactsCollection> artifacts) throws IOException, JSchException {
+
+        assert session.isConnected();
+
+        // skip empty collections
+        if (artifacts.size() == 0) {
             return;
         }
-
-        assert session.isConnected();
-
-        final String command= "scp -rt .";
-        final ChannelExec execChannel = (ChannelExec)session.openChannel("exec");
-        execChannel.setCommand(command);
-
-        // get I/O streams for remote scp
-        final OutputStream out = execChannel.getOutputStream();
-        final InputStream in = execChannel.getInputStream();
-
-        execChannel.connect();
-        ScpExecUtil.checkScpAck(in);
-
-        try {
-            final ScpOperation createPathOperation = ScpOperationBuilder.getCreatePathOperation(escapedRemotePath);
-            createPathOperation.execute(out, in);
-        } finally {
-            FileUtil.close(out);
-            FileUtil.close(in);
-            execChannel.disconnect();
-        }
-
-    }
-
-    private void upload(final @NotNull Session session,
-                        final @NotNull String escapedRemoteBase) throws IOException, JSchException {
-
-        assert session.isConnected();
 
         // exec 'scp -rt <remoteBase>' remotely
         final String command= "scp -rt " + (StringUtil.isEmptyOrSpaces(escapedRemoteBase) ? "." : escapedRemoteBase);
@@ -206,7 +209,7 @@ public class ScpProcessAdapter extends BuildProcessAdapter {
         ScpExecUtil.checkScpAck(in);
 
         try {
-            for (ArtifactsCollection artifactCollection : myArtifacts) {
+            for (ArtifactsCollection artifactCollection : artifacts) {
                 int count = 0;
                 for (Map.Entry<File, String> filePathEntry : artifactCollection.getFilePathMap().entrySet()) {
                     final File source = filePathEntry.getKey();

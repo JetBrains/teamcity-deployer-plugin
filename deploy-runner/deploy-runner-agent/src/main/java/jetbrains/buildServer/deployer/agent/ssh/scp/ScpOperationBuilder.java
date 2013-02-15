@@ -4,7 +4,8 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 
 public class ScpOperationBuilder {
 
@@ -51,20 +52,17 @@ public class ScpOperationBuilder {
             childOperation.add(chainTailOperation);
         }
         remoteDir = remoteDir.getParentFile();
+        String name = remoteDir != null ? remoteDir.getName() : "";
+        while (remoteDir != null && !StringUtil.isEmpty(name)) {
 
-        while (remoteDir != null) {
-            final String name = remoteDir.getName();
-            final DirScpOperation directoryOperation;
-            if (StringUtil.isEmpty(name) && remoteDir.isAbsolute()) {
-                directoryOperation = new DirScpOperation("/"+remoteDir.getAbsolutePath());
-            } else {
-                directoryOperation = new DirScpOperation(name);
-            }
-
+            final DirScpOperation directoryOperation = new DirScpOperation(name);
             directoryOperation.add(childOperation);
 
             childOperation = directoryOperation;
             remoteDir = remoteDir.getParentFile();
+            if (remoteDir != null) {
+                name = remoteDir.getName();
+            }
         }
         return childOperation;
     }
