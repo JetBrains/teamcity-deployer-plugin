@@ -152,6 +152,15 @@ public class FtpBuildProcessAdapterTest {
         DeployTestUtils.assertCollectionsTransferred(existingPath, myArtifactsCollections);
     }
 
+    @Test
+    public void testTransferToExistingPath2() throws Exception {
+        final String subPath = "test_path/subdir";
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest1"));
+        final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
+    }
+
 
     private BuildProcess getProcess(String target) {
         return new FtpBuildProcessAdapter(myContext, target, myUsername, myPassword, myArtifactsCollections);

@@ -1,8 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
-import it.sauronsoftware.ftp4j.FTPClient;
-import it.sauronsoftware.ftp4j.FTPException;
-import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
+import it.sauronsoftware.ftp4j.*;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
@@ -105,19 +103,40 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     }
 
     private void createPath(@NotNull final FTPClient client,
-                            @NotNull final String path) throws IOException, FTPIllegalReplyException, FTPException {
+                            @NotNull final String path) throws Exception {
+        final String root = client.currentDirectory();
         final String normalisedPath = path.trim().replaceAll("\\\\","/");
         final StringTokenizer pathTokenizer = new StringTokenizer(normalisedPath, "/");
-        final StringBuilder sb = new StringBuilder(pathTokenizer.nextToken());
-        createDirSkipExisting(client, sb.toString());
-        while(pathTokenizer.hasMoreTokens()) {
-            sb.append('/').append(pathTokenizer.nextToken());
-            createDirSkipExisting(client, sb.toString());
+
+        boolean prevDirExisted = true;
+        while (pathTokenizer.hasMoreTokens()) {
+            final String nextDir = pathTokenizer.nextToken();
+            if (prevDirExisted && dirExists(nextDir, client)) {
+                client.changeDirectory(nextDir);
+            } else {
+                prevDirExisted = false;
+                client.createDirectory(nextDir);
+                client.changeDirectory(nextDir);
+            }
         }
+
+        client.changeDirectory(root);
+    }
+
+    private boolean dirExists(@NotNull final String nextDir,
+                              @NotNull final FTPClient client) throws Exception {
+        final String[] strings = client.listNames();
+        for (String string : strings) {
+            if (string.equals(nextDir)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void createDirSkipExisting(FTPClient client, final String directoryName) throws IOException, FTPIllegalReplyException, FTPException {
         try {
+            //client.changeDirectory(directoryName);
             client.createDirectory(directoryName);
         } catch (FTPException e) {
             // we can safely ignore if dir already exists
