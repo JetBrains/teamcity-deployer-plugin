@@ -1,6 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
-import it.sauronsoftware.ftp4j.*;
+import it.sauronsoftware.ftp4j.FTPClient;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
@@ -10,7 +10,6 @@ import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import java.util.StringTokenizer;
 
 class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     private static final String FTP_PROTOCOL = "ftp://";
-    private static final int FILE_SYSTEM_ERROR = 550;
 
     private final String myTarget;
     private final String myUsername;
@@ -40,7 +38,6 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
     @Override
     public void runProcess() throws RunBuildException {
-
 
         FTPClient client = new FTPClient();
         try {
@@ -132,17 +129,5 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
             }
         }
         return false;
-    }
-
-    private void createDirSkipExisting(FTPClient client, final String directoryName) throws IOException, FTPIllegalReplyException, FTPException {
-        try {
-            //client.changeDirectory(directoryName);
-            client.createDirectory(directoryName);
-        } catch (FTPException e) {
-            // we can safely ignore if dir already exists
-            if (e.getCode() != FILE_SYSTEM_ERROR) {
-                throw e;
-            }
-        }
     }
 }
