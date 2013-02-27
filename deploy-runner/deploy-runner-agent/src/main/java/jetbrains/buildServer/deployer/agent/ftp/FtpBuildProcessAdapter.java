@@ -104,7 +104,9 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         final String root = client.currentDirectory();
         final String normalisedPath = path.trim().replaceAll("\\\\","/");
         final StringTokenizer pathTokenizer = new StringTokenizer(normalisedPath, "/");
-
+        if (path.startsWith("/")) {
+            client.changeDirectory("/"); // support absolute paths
+        }
         boolean prevDirExisted = true;
         while (pathTokenizer.hasMoreTokens()) {
             final String nextDir = pathTokenizer.nextToken();
