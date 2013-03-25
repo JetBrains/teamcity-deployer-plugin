@@ -1,6 +1,7 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
 import it.sauronsoftware.ftp4j.FTPClient;
+import it.sauronsoftware.ftp4j.FTPException;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
@@ -113,9 +114,23 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
             if (prevDirExisted && dirExists(nextDir, client)) {
                 client.changeDirectory(nextDir);
             } else {
-                prevDirExisted = false;
-                client.createDirectory(nextDir);
-                client.changeDirectory(nextDir);
+                Exception createException = null;
+                try {
+                    client.createDirectory(nextDir);
+                    prevDirExisted = false;
+                } catch (FTPException e) {
+                    createException = e;
+                }
+
+                try {
+                    client.changeDirectory(nextDir);
+                } catch (FTPException f) {
+                    String message = "Failed to change current dir to [" + nextDir + "]";
+                    if (createException != null) {
+                        message += "\n also failed to create this dir: [" + createException.getMessage() + "]";
+                    }
+                    throw new RunBuildException(message, f);
+                }
             }
         }
 
