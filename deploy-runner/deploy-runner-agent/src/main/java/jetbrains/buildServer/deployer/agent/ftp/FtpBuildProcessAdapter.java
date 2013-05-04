@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -45,7 +46,14 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
             final URL targetUrl = new URL(myTarget);
             final String host = targetUrl.getHost();
             final int port = targetUrl.getPort();
-            final String path = targetUrl.getPath();
+            final String encodedPath = targetUrl.getPath();
+
+            final String path;
+            if (encodedPath.length() > 0) {
+                path = URLDecoder.decode(encodedPath.substring(1), "UTF-8");
+            } else {
+                path = "";
+            }
 
             if (port > 0) {
                 client.connect(host, port);

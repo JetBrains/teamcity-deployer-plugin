@@ -4,6 +4,7 @@ import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
+import jetbrains.buildServer.log.Loggers;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.Authority;
