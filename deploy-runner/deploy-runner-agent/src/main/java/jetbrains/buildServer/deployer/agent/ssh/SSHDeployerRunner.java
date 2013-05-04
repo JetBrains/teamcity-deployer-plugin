@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
+import com.jcraft.jsch.JSchException;
 import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.AgentBuildRunnerInfo;
@@ -10,8 +11,10 @@ import jetbrains.buildServer.deployer.agent.base.BaseDeployerRunner;
 import jetbrains.buildServer.deployer.agent.ssh.scp.ScpProcessAdapter;
 import jetbrains.buildServer.deployer.agent.ssh.sftp.SftpBuildProcessAdapter;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
+import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -41,10 +44,25 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
             port = 22;
         }
 
+        final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
+        final File keyFile;
+        if (StringUtil.isNotEmpty(keyFilePath)) {
+            keyFile = new File(context.getWorkingDirectory(), keyFilePath);
+        } else {
+            keyFile = null;
+        }
+
+        final SSHSessionProvider provider;
+        try {
+            provider = new SSHSessionProvider(target, port, username, password, keyFile).invoke();
+        } catch (JSchException e) {
+            throw new RunBuildException(e);
+        }
+
         if (SSHRunnerConstants.TRANSPORT_SCP.equals(transport)) {
-            return new ScpProcessAdapter(username, password, target, port, context, artifactsCollections);
+            return new ScpProcessAdapter(context, artifactsCollections, provider);
         } else if (SSHRunnerConstants.TRANSPORT_SFTP.equals(transport)) {
-            return new SftpBuildProcessAdapter(username, password, target, port, context, artifactsCollections);
+            return new SftpBuildProcessAdapter(context, artifactsCollections, provider);
         } else {
             throw new RunBuildException("Unknown ssh transport [" + transport + "]");
         }

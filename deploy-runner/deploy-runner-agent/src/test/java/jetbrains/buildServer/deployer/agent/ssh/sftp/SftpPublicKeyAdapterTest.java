@@ -2,8 +2,7 @@ package jetbrains.buildServer.deployer.agent.ssh.sftp;
 
 import jetbrains.buildServer.agent.BuildProcess;
 import jetbrains.buildServer.deployer.agent.ssh.BaseSSHTransferTest;
-
-import java.io.File;
+import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
 
 /**
  * Created by Nikita.Skvortsov
@@ -11,7 +10,8 @@ import java.io.File;
  */
 public class SftpPublicKeyAdapterTest extends BaseSSHTransferTest {
     @Override
-    protected BuildProcess getProcess(String targetBasePath) {
-        return new SftpBuildProcessAdapter(myPrivateKey, myUsername, "passphrase", targetBasePath,  PORT_NUM, myContext, myArtifactsCollections);
+    protected BuildProcess getProcess(String targetBasePath) throws Exception {
+        final SSHSessionProvider provider = new SSHSessionProvider(targetBasePath, PORT_NUM, myUsername, "passphrase", myPrivateKey).invoke();
+        return new SftpBuildProcessAdapter(myContext, myArtifactsCollections, provider);
     }
 }

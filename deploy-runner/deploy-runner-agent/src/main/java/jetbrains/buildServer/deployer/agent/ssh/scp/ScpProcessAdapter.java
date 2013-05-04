@@ -1,13 +1,13 @@
 package jetbrains.buildServer.deployer.agent.ssh.scp;
 
 import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
+import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
@@ -24,83 +24,33 @@ import java.util.Map;
 
 public class ScpProcessAdapter extends SyncBuildProcessAdapter {
 
-    private final String myTargetString;
-    private final String myUsername;
-    private final String myPassword;
     private final List<ArtifactsCollection> myArtifacts;
 
-    private final File myKeyFile;
+    private SSHSessionProvider mySessionProvider;
 
-    private final int myPort;
-
-
-    public ScpProcessAdapter(@NotNull final String username,
-                             @NotNull final String password,
-                             @NotNull final String target,
-                             final int port,
-                             @NotNull final BuildRunnerContext context,
-                             @NotNull final List<ArtifactsCollection> artifactsCollections) {
-        this(null, username, password, target, port, context, artifactsCollections);
-    }
-
-    public ScpProcessAdapter(@Nullable final File privateKey,
-                             @NotNull final String username,
-                             @NotNull final String password,
-                             @NotNull final String target,
-                             final int port,
-                             @NotNull final BuildRunnerContext context,
-                             @NotNull final List<ArtifactsCollection> artifactsCollections) {
+    public ScpProcessAdapter(@NotNull final BuildRunnerContext context,
+                             @NotNull final List<ArtifactsCollection> artifactsCollections,
+                             @NotNull final SSHSessionProvider sessionProvider) {
         super(context.getBuild().getBuildLogger());
-        myKeyFile = privateKey;
-        myTargetString = target;
-        myUsername = username;
-        myPassword = password;
         myArtifacts = artifactsCollections;
-        myPort = port;
+        mySessionProvider = sessionProvider;
+
     }
 
     @Override
     public void runProcess() throws RunBuildException {
-        final String host;
         String escapedRemotePath;
-
-        final int delimiterIndex = myTargetString.indexOf(':');
-        if (delimiterIndex > 0) {
-            host = myTargetString.substring(0, delimiterIndex);
-            final String remotePath = myTargetString.substring(delimiterIndex +1);
-
-            escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
-            if (new File(escapedRemotePath).isAbsolute() && !escapedRemotePath.startsWith("/")) {
-                escapedRemotePath = "/" + escapedRemotePath;
-            }
-        } else {
-            host = myTargetString;
-            escapedRemotePath = "";
-        }
-
-        JSch jsch=new JSch();
-        JSch.setConfig("StrictHostKeyChecking", "no");
         Session session = null;
 
         try {
-            if (myKeyFile != null) {
-                if (StringUtil.isNotEmpty(myPassword)) {
-                    jsch.addIdentity(myKeyFile.getAbsolutePath(), myPassword);
-                } else {
-                    jsch.addIdentity(myKeyFile.getAbsolutePath());
-                }
-            }
-            session = jsch.getSession(myUsername, host, myPort);
-            if (myKeyFile == null) {
-                session.setPassword(myPassword);
-            }
-            session.connect();
 
-            // createRemotePath(session, escapedRemotePath);
+            escapedRemotePath = mySessionProvider.getEscapedRemotePath();
+            session = mySessionProvider.getSession();
+
+
             if (isInterrupted()) return;
-            myLogger.message("Starting upload via SCP to " +
-                    (StringUtil.isNotEmpty(escapedRemotePath) ?
-                            "[" + escapedRemotePath + "] on " : "") + "host [" + host + ":" + myPort + "]");
+
+            myLogger.message("Starting upload via SCP to " + mySessionProvider.getSessionString());
 
 
             final List<ArtifactsCollection> relativeDestinations = new LinkedList<ArtifactsCollection>();
