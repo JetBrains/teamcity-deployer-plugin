@@ -3,6 +3,9 @@ package jetbrains.buildServer.deployer.agent.ssh;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import jetbrains.buildServer.agent.BuildRunnerContext;
+import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
+import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +38,25 @@ public class SSHSessionProvider {
         myUsername = username;
         myPassword = password;
         myKeyFile = keyFile;
+    }
+
+    public SSHSessionProvider(BuildRunnerContext context) {
+        myTarget = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
+        final String portStr = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_PORT);
+        try {
+            myPort = Integer.parseInt(portStr);
+        } catch (NumberFormatException e) {
+            myPort = 22;
+        }
+        myUsername = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_USERNAME);
+        myPassword = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
+
+        final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
+        if (StringUtil.isNotEmpty(keyFilePath)) {
+            myKeyFile = new File(context.getWorkingDirectory(), keyFilePath);
+        } else {
+            myKeyFile = null;
+        }
     }
 
     public String getEscapedRemotePath() {

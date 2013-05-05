@@ -1,9 +1,14 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
+import com.jcraft.jsch.JSchException;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.*;
+import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
+import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
 
 public class SSHExecRunner implements AgentBuildRunner {
 
@@ -11,21 +16,15 @@ public class SSHExecRunner implements AgentBuildRunner {
     @Override
     public BuildProcess createBuildProcess(@NotNull AgentRunningBuild runningBuild, @NotNull final BuildRunnerContext context) throws RunBuildException {
 
-        final String username = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_USERNAME);
-        final String password = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_PASSWORD);
-        final String host = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_HOST);
-        final String command = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_COMMAND);
-
-        final String portStr = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_PORT);
-        int port;
+        final SSHSessionProvider provider;
         try {
-            port = Integer.parseInt(portStr);
-        } catch (NumberFormatException e) {
-            port = 22;
+            provider = new SSHSessionProvider(context).invoke();
+        } catch (JSchException e) {
+            throw new RunBuildException(e);
         }
 
-
-        return new SSHExecProcessAdapter(host, port, username, password, command, runningBuild.getBuildLogger());
+        final String command = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_COMMAND);
+        return new SSHExecProcessAdapter(provider, command, runningBuild.getBuildLogger());
     }
 
     @NotNull

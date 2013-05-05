@@ -35,30 +35,15 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
                                               @NotNull final String password,
                                               @NotNull final String target,
                                               @NotNull final List<ArtifactsCollection> artifactsCollections) throws RunBuildException {
-        final String transport = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_TRANSPORT);
-        final String portStr = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_PORT);
-        int port;
-        try {
-            port = Integer.parseInt(portStr);
-        } catch (NumberFormatException e) {
-            port = 22;
-        }
-
-        final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
-        final File keyFile;
-        if (StringUtil.isNotEmpty(keyFilePath)) {
-            keyFile = new File(context.getWorkingDirectory(), keyFilePath);
-        } else {
-            keyFile = null;
-        }
 
         final SSHSessionProvider provider;
         try {
-            provider = new SSHSessionProvider(target, port, username, password, keyFile).invoke();
+            provider = new SSHSessionProvider(context).invoke();
         } catch (JSchException e) {
             throw new RunBuildException(e);
         }
 
+        final String transport = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_TRANSPORT);
         if (SSHRunnerConstants.TRANSPORT_SCP.equals(transport)) {
             return new ScpProcessAdapter(context, artifactsCollections, provider);
         } else if (SSHRunnerConstants.TRANSPORT_SFTP.equals(transport)) {

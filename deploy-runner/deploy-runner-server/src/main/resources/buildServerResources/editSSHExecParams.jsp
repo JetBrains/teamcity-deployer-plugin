@@ -9,7 +9,7 @@
 <l:settingsGroup title="Deployment Target">
     <tr>
         <th><label for="jetbrains.buildServer.sshexec.host">Hostname: </label></th>
-        <td><props:textProperty name="<%=SSHRunnerConstants.PARAM_HOST%>"  className="longField" maxlength="256"/>
+        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter hostname or IP address</span>
         </td>
     </tr>
@@ -24,13 +24,13 @@
 <l:settingsGroup title="Deployment Credentials">
     <tr>
         <th><label for="jetbrains.buildServer.sshexec.username">Username:</label></th>
-        <td><props:textProperty name="<%=SSHRunnerConstants.PARAM_USERNAME%>"  className="longField" maxlength="256"/>
+        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter username</span>
         </td>
     </tr>
     <tr>
         <th><label for="jetbrains.buildServer.sshexec.password">Password:</label></th>
-        <td><props:passwordProperty name="<%=SSHRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
+        <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter password</span>
         </td>
     </tr>

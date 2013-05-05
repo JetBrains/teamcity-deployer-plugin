@@ -14,24 +14,15 @@ import java.io.InputStreamReader;
 
 class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
-    private final String myHost;
-    private final int myPort;
-    private final String myUsername;
-    private final String myPassword;
     private final String myCommands;
+    private final SSHSessionProvider myProvider;
 
 
-    public SSHExecProcessAdapter(@NotNull final String host,
-                                 final int port,
-                                 @NotNull final String username,
-                                 @NotNull final String password,
+    public SSHExecProcessAdapter(@NotNull final SSHSessionProvider provider,
                                  @NotNull final String commands,
                                  @NotNull final BuildProgressLogger buildLogger) {
         super(buildLogger);
-        myHost = host;
-        myPort = port;
-        myUsername = username;
-        myPassword = password;
+        myProvider = provider;
         myCommands = commands;
     }
 
@@ -39,18 +30,10 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
     @Override
     public void runProcess() throws RunBuildException {
 
-        JSch jsch=new JSch();
-        JSch.setConfig("StrictHostKeyChecking", "no");
-        Session session = null;
+        final Session session = myProvider.getSession();
 
         try {
-
-            session = jsch.getSession(myUsername, myHost, myPort);
-            session.setPassword(myPassword);
-            session.connect();
-
             executeCommand(session, myCommands);
-
         } catch (RunBuildException e) {
             throw e;
         } catch (Exception e) {
