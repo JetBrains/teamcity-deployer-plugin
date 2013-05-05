@@ -9,13 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
-/**
-* Created with IntelliJ IDEA.
-* User: Kit
-* Date: 04.05.13
-* Time: 21:17
-* To change this template use File | Settings | File Templates.
-*/
+
 public class SSHSessionProvider {
     // out
     private Session session;
