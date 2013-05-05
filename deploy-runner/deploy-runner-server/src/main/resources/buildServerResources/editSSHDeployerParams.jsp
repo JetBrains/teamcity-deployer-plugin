@@ -34,20 +34,7 @@
     </tr>
 </l:settingsGroup>
 
-<l:settingsGroup title="Deployment Credentials">
-    <tr>
-        <th><label for="jetbrains.buildServer.deployer.username">Username:</label></th>
-        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter username</span>
-        </td>
-    </tr>
-    <tr>
-        <th><label for="jetbrains.buildServer.deployer.password">Password:</label></th>
-        <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter password</span>
-        </td>
-    </tr>
-</l:settingsGroup>
+<%@include file="sshCredentials.jspf" %>
 
 <l:settingsGroup title="Deployment source">
     <tr>
