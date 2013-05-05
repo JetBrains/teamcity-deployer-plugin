@@ -51,8 +51,12 @@ public class SSHSessionProvider {
         myUsername = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_USERNAME);
         myPassword = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
 
-        final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
-        if (StringUtil.isNotEmpty(keyFilePath)) {
+        final String authMethod = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METOD);
+
+        if ("DEFAULT_KEY".equals(authMethod)) {
+            myKeyFile = new File(System.getProperty("user.home"), ".ssh" + File.separator + "id_rsa");
+        } else if ("PRIVATE_KEY".equals(authMethod)) {
+            final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
             myKeyFile = new File(context.getBuild().getCheckoutDirectory(), keyFilePath);
         } else {
             myKeyFile = null;
