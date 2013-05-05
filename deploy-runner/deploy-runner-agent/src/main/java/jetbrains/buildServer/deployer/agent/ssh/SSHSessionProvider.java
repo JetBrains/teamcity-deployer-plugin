@@ -53,7 +53,7 @@ public class SSHSessionProvider {
 
         final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
         if (StringUtil.isNotEmpty(keyFilePath)) {
-            myKeyFile = new File(context.getWorkingDirectory(), keyFilePath);
+            myKeyFile = new File(context.getBuild().getCheckoutDirectory(), keyFilePath);
         } else {
             myKeyFile = null;
         }
