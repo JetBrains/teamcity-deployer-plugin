@@ -7,9 +7,9 @@
 
 <l:settingsGroup title="Deployment Target">
     <tr>
-        <th><label for="jetbrains.buildServer.deployer.targetUrl">Target URL: </label></th>
+        <th><label for="jetbrains.buildServer.deployer.targetUrl">Target URL: <l:star/></label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter target url, e.g. \\host\share\subdir</span>
+            <span class="smallNote">Enter target url, e.g. \\host\share\subdir</span><span class="error" id="error_jetbrains.buildServer.deployer.targetUrl"></span>
         </td>
     </tr>
 </l:settingsGroup>

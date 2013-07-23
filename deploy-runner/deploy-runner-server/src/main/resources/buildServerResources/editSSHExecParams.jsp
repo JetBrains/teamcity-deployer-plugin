@@ -8,9 +8,9 @@
 
 <l:settingsGroup title="Deployment Target">
     <tr>
-        <th><label for="jetbrains.buildServer.sshexec.host">Hostname: </label></th>
+        <th><label for="jetbrains.buildServer.sshexec.host">Target: <l:star/></label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter hostname or IP address</span>
+            <span class="smallNote">Enter hostname or IP address</span><span class="error" id="error_jetbrains.buildServer.deployer.targetUrl"></span>
         </td>
     </tr>
     <tr>

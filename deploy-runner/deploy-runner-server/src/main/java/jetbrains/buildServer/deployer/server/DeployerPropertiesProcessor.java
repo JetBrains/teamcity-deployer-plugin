@@ -1,10 +1,13 @@
 package jetbrains.buildServer.deployer.server;
 
+import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
+import jetbrains.buildServer.util.StringUtil;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -14,6 +17,10 @@ import java.util.Map;
 public class DeployerPropertiesProcessor implements PropertiesProcessor {
     @Override
     public Collection<InvalidProperty> process(Map<String, String> properties) {
-        return Collections.emptySet();
+        Collection<InvalidProperty> result = new HashSet<InvalidProperty>();
+        if (StringUtil.isEmptyOrSpaces(properties.get(DeployerRunnerConstants.PARAM_TARGET_URL))) {
+            result.add(new InvalidProperty(DeployerRunnerConstants.PARAM_TARGET_URL, "The target must be specified."));
+        }
+        return result;
     }
 }
