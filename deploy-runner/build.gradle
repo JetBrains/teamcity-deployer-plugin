@@ -119,7 +119,7 @@ project( ':deploy-runner-server' ) {
 assembleTeamcityPlugin.dependsOn ':deploy-runner-server:jar', ':deploy-runner-agent:jar'
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.0'
+    gradleVersion = '1.6'
 }
 
 task copyToProduction(dependsOn: assembleTeamcityPlugin) << {
