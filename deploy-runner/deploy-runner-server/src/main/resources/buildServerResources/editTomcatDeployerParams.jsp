@@ -29,9 +29,9 @@
     </tr>
 </l:settingsGroup>
 
-<l:settingsGroup title="Web applicatoin settings">
+<l:settingsGroup title="Web Applicatoin Settings">
     <tr>
-        <th><label for="jetbrains.buildServer.deployer.sourcePath">Path to WAR archive: </label></th>
+        <th><label for="jetbrains.buildServer.deployer.sourcePath">Path to war archive: </label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Path to war archive to deploy</span>
         </td>
