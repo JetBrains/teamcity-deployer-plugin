@@ -1,16 +1,22 @@
 package jetbrains.buildServer.deployer.server;
 
+import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
+import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
-import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class SmbDeployerRunType extends RunType {
+
+    final private Pattern SIMPLE_UNC_REGEX = Pattern.compile("^\\\\(\\\\(\\w|-)+)+(\\\\(\\w|[-()])+(\\s(\\w|[-()])+)*)+$");
 
     private final PluginDescriptor myDescriptor;
 
@@ -38,7 +44,20 @@ public class SmbDeployerRunType extends RunType {
 
     @Override
     public PropertiesProcessor getRunnerPropertiesProcessor() {
-        return new DeployerPropertiesProcessor();
+        return new DeployerPropertiesProcessor() {
+            @Override
+            public Collection<InvalidProperty> process(Map<String, String> properties) {
+                Collection<InvalidProperty> result = super.process(properties);
+                if (!isValidUNC(properties.get(DeployerRunnerConstants.PARAM_TARGET_URL))) {
+                    result.add(new InvalidProperty(DeployerRunnerConstants.PARAM_TARGET_URL, "Invalid UNC path."));
+                }
+                return result;
+            }
+        };
+    }
+
+    private boolean isValidUNC(@Nullable String string) {
+        return string != null && SIMPLE_UNC_REGEX.matcher(string).matches();
     }
 
     @Override
