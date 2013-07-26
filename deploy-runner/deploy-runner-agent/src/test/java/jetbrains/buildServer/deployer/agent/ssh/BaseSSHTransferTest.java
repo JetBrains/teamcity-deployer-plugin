@@ -137,6 +137,15 @@ public abstract class BaseSSHTransferTest {
     }
 
     @Test
+    public void testTransferToRelativeTargetAndEmptyPath() throws Exception {
+        final String subPath = "test_path/subdir";
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, ""));
+        final BuildProcess process = getProcess(HOST_ADDR + ":" + subPath);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
+    }
+
+    @Test
     public void testTransferAbsoluteBasePath() throws Exception {
         final File absDestination = new File(myTempFiles.createTempDir(), "sub/path");
         final String absPath = absDestination.getCanonicalPath();

@@ -1,14 +1,16 @@
 package jetbrains.buildServer.deployer.server;
 
 import com.intellij.openapi.util.text.StringUtil;
+import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
+import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
-import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +42,16 @@ public class SSHDeployerRunType extends RunType {
 
     @Override
     public PropertiesProcessor getRunnerPropertiesProcessor() {
-        return new DeployerPropertiesProcessor();
+        return new DeployerPropertiesProcessor() {
+            @Override
+            public Collection<InvalidProperty> process(Map<String, String> properties) {
+                Collection<InvalidProperty> result = super.process(properties);
+                if (StringUtil.isEmptyOrSpaces(properties.get(DeployerRunnerConstants.PARAM_USERNAME))) {
+                    result.add(new InvalidProperty(DeployerRunnerConstants.PARAM_USERNAME, "Username must be specified."));
+                }
+                return result;
+            }
+        };
     }
 
     @Override

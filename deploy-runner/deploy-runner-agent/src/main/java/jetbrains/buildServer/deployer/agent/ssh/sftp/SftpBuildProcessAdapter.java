@@ -9,6 +9,7 @@ import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
+    private final Logger logger = Logger.getLogger(getClass());
     private final List<ArtifactsCollection> myArtifacts;
     private SSHSessionProvider mySessionProvider;
 
@@ -54,7 +56,8 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
                 int count = 0;
                 for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
                     final File source = fileStringEntry.getKey();
-                    final String destinationPath = fileStringEntry.getValue();
+                    final String value = fileStringEntry.getValue();
+                    final String destinationPath = "".equals(value) ? "." : value;
                     createRemotePath(channel, destinationPath);
                     channel.put(source.getAbsolutePath(), destinationPath);
                     count++;
@@ -64,6 +67,7 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
             channel.disconnect();
 
         } catch (Exception e) {
+            logger.debug(e.getMessage(), e);
             throw new RunBuildException(e);
         } finally {
             if (session != null) {
