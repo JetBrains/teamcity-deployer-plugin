@@ -10,8 +10,8 @@ import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +25,8 @@ import java.util.Map;
 public class ScpProcessAdapter extends SyncBuildProcessAdapter {
 
     private final List<ArtifactsCollection> myArtifacts;
+    private final Logger myInternalLog = Logger.getLogger(getClass());
+
 
     private SSHSessionProvider mySessionProvider;
 
@@ -124,7 +126,9 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
                     final File source = filePathEntry.getKey();
                     final String destination = filePathEntry.getValue();
                     final ScpOperation operationChain = ScpOperationBuilder.getCopyFileOperation(source, destination);
+                    myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destination + "]");
                     operationChain.execute(out, in);
+                    myInternalLog.debug("done transferring [" + source.getAbsolutePath() + "]");
                     count++;
                 }
                 myLogger.message("Uploaded [" + count + "] files for [" + artifactCollection.getSourcePath() + "] pattern");

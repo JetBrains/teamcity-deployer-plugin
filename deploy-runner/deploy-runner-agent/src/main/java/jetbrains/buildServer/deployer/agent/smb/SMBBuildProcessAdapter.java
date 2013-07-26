@@ -9,6 +9,7 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.FileUtil;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,6 +23,8 @@ import java.util.Map;
 
 class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
     public static final String SMB = "smb://";
+
+    private final Logger myInternalLog = Logger.getLogger(getClass());
 
     private final String myTarget;
     private final String myUsername;
@@ -108,6 +111,7 @@ class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
             FileInputStream inputStream = null;
             OutputStream outputStream = null;
 
+            myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destDirectory.getCanonicalPath() + "] destFile=[" +  destFile.getCanonicalPath() +"]");
             try {
                 if (!destDirectory.exists()) {
                     destDirectory.mkdirs();
@@ -120,6 +124,7 @@ class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
                 FileUtil.close(inputStream);
                 FileUtil.close(outputStream);
             }
+            myInternalLog.debug("Done transferring [" + source.getAbsolutePath() + "]");
             count++;
         }
         return count;

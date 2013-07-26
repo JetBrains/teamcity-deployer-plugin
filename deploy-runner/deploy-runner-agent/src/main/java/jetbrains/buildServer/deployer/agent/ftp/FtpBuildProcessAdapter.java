@@ -8,6 +8,7 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.StringUtil;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -20,6 +21,8 @@ import java.util.StringTokenizer;
 
 class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     private static final String FTP_PROTOCOL = "ftp://";
+
+    private final Logger myInternalLog = Logger.getLogger(getClass());
 
     private final String myTarget;
     private final String myUsername;
@@ -86,9 +89,10 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                         createPath(client, destinationDir);
                         client.changeDirectory(destinationDir);
                     }
-
+                    myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationDir + "] under [" + remoteRoot + "]");
                     client.upload(source);
                     client.changeDirectory(remoteRoot);
+                    myInternalLog.debug("done transferring [" + source.getAbsolutePath() + "]");
                     count++;
                 }
                 myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");

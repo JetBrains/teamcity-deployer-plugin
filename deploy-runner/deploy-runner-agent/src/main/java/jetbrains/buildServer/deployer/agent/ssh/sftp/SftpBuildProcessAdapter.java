@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private final Logger myInternalLog = Logger.getLogger(getClass());
     private final List<ArtifactsCollection> myArtifacts;
     private SSHSessionProvider mySessionProvider;
 
@@ -51,7 +51,7 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
             }
 
             myLogger.message("Starting upload via SFTP to " + mySessionProvider.getSessionString());
-
+            final String baseDir = channel.pwd();
             for (ArtifactsCollection artifactsCollection : myArtifacts) {
                 int count = 0;
                 for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
@@ -59,7 +59,9 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
                     final String value = fileStringEntry.getValue();
                     final String destinationPath = "".equals(value) ? "." : value;
                     createRemotePath(channel, destinationPath);
+                    myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationPath + "] under [" + baseDir + "]");
                     channel.put(source.getAbsolutePath(), destinationPath);
+                    myInternalLog.debug("done transferring [" + source.getAbsolutePath() + "]");
                     count++;
                 }
                 myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
@@ -67,7 +69,7 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
             channel.disconnect();
 
         } catch (Exception e) {
-            logger.debug(e.getMessage(), e);
+            myInternalLog.debug(e.getMessage(), e);
             throw new RunBuildException(e);
         } finally {
             if (session != null) {
