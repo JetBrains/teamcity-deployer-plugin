@@ -2,9 +2,6 @@ package jetbrains.buildServer.deployer.server;
 
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
@@ -16,19 +13,12 @@ import static org.testng.Assert.assertEquals;
  * Date: 12/18/12, 4:15 PM
  */
 @Test
-public class SSHExecRunTypeTest {
+public class SSHExecRunTypeTest extends DeployerRunTypeTest {
 
     SSHExecRunType myRunType;
-    Mockery myContext;
 
-    @BeforeMethod
-    public void setUp() {
-        myContext = new Mockery();
-        final RunTypeRegistry registry = myContext.mock(RunTypeRegistry.class);
-        final PluginDescriptor descriptor = myContext.mock(PluginDescriptor.class);
-        myContext.checking(new Expectations(){{
-            allowing(registry).registerRunType(with(aNonNull(SSHExecRunType.class)));
-        }});
+    @Override
+    protected void createRunType(RunTypeRegistry registry, PluginDescriptor descriptor) {
         myRunType = new SSHExecRunType(registry, descriptor);
     }
 
