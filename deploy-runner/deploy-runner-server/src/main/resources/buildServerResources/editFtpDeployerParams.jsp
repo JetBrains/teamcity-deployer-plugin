@@ -1,4 +1,5 @@
 <%@ page import="jetbrains.buildServer.deployer.common.DeployerRunnerConstants" %>
+<%@ page import="jetbrains.buildServer.deployer.common.FTPRunnerConstants" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -16,12 +17,20 @@
 
 <l:settingsGroup title="Deployment Credentials">
     <tr>
+        <th><label for="jetbrains.buildServer.deployer.ftp.authMethod">Authentication method:</label></th>
+        <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_AUTH_METOD%>" onchange="ftpSelectAuth()">
+            <props:option value="ANONYMOUS">anonymous</props:option>
+            <props:option value="USER_PWD">username/password</props:option>
+        </props:selectProperty>
+        </td>
+    </tr>
+    <tr id="user_row">
         <th><label for="jetbrains.buildServer.deployer.username">Username:</label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter username</span>
         </td>
     </tr>
-    <tr>
+    <tr id="pwd_row">
         <th><label for="jetbrains.buildServer.deployer.password">Password:</label></th>
         <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter password</span>
@@ -39,3 +48,20 @@
         </td>
     </tr>
 </l:settingsGroup>
+<script type="text/javascript">
+    window.ftpSelectAuth = function () {
+        var selector = $('<%=FTPRunnerConstants.PARAM_AUTH_METOD%>');
+        switch (selector.value) {
+            case 'ANONYMOUS':
+                BS.Util.hide('user_row', 'pwd_row');
+                break;
+            case 'USER_PWD':
+                BS.Util.show('user_row', 'pwd_row');
+                break;
+            default:
+                alert("Unknown authentication method " + selector.value);
+        }
+        BS.VisibilityHandlers.updateVisibility();
+    }
+    ftpSelectAuth();
+</script>

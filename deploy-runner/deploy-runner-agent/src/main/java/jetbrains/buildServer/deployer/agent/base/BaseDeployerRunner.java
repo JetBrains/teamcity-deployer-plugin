@@ -12,16 +12,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Nikita.Skvortsov
  * Date: 10/1/12, 10:44 AM
  */
 public abstract class BaseDeployerRunner implements AgentBuildRunner {
-    protected final ExtensionHolder myExtentionHolder;
+    protected final ExtensionHolder myExtensionHolder;
 
     public BaseDeployerRunner(@NotNull final ExtensionHolder extensionHolder) {
-        myExtentionHolder = extensionHolder;
+        myExtensionHolder = extensionHolder;
     }
 
     @NotNull
@@ -29,12 +30,13 @@ public abstract class BaseDeployerRunner implements AgentBuildRunner {
     public BuildProcess createBuildProcess(@NotNull final AgentRunningBuild runningBuild,
                                            @NotNull final BuildRunnerContext context) throws RunBuildException {
 
-        final String username = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_USERNAME);
-        final String password = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
-        final String target = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
-        final String sourcePaths = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_SOURCE_PATH);
+        final Map<String,String> runnerParameters = context.getRunnerParameters();
+        final String username = runnerParameters.get(DeployerRunnerConstants.PARAM_USERNAME);
+        final String password = runnerParameters.get(DeployerRunnerConstants.PARAM_PASSWORD);
+        final String target = runnerParameters.get(DeployerRunnerConstants.PARAM_TARGET_URL);
+        final String sourcePaths = runnerParameters.get(DeployerRunnerConstants.PARAM_SOURCE_PATH);
 
-        final Collection<ArtifactsPreprocessor> preprocessors = myExtentionHolder.getExtensions(ArtifactsPreprocessor.class);
+        final Collection<ArtifactsPreprocessor> preprocessors = myExtensionHolder.getExtensions(ArtifactsPreprocessor.class);
 
         final ArtifactsBuilder builder = new ArtifactsBuilder();
         builder.setPreprocessors(preprocessors);

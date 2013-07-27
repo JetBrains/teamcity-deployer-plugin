@@ -64,11 +64,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                 client.connect(host);
             }
 
-            if (StringUtil.isEmpty(myUsername)) {
-                client.login("anonymous", " ");
-            } else {
-                client.login(myUsername, myPassword);
-            }
+            client.login(myUsername, myPassword);
 
             if (!StringUtil.isEmpty(path)) {
                 createPath(client, path);
