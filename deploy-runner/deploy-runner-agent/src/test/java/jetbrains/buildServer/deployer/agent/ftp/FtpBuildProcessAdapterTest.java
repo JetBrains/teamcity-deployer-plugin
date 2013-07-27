@@ -4,7 +4,6 @@ import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
-import jetbrains.buildServer.log.Loggers;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.Authority;
@@ -136,6 +135,15 @@ public class FtpBuildProcessAdapterTest {
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
+
+    @Test
+    public void testTransferToDot() throws Exception {
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "."));
+        final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
+    }
+
 
     @Test
     public void testTransferToExistingPath() throws Exception {
