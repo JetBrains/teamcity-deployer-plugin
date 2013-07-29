@@ -31,9 +31,9 @@
         </td>
     </tr>
     <tr id="pwd_row">
-        <th><label for="jetbrains.buildServer.deployer.password">Password:</label></th>
+        <th><label for="secure:jetbrains.buildServer.deployer.password">Password:</label></th>
         <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter password</span>
+            <span class="smallNote">Enter password. Configuration parameters can be used</span>
         </td>
     </tr>
 </l:settingsGroup>
