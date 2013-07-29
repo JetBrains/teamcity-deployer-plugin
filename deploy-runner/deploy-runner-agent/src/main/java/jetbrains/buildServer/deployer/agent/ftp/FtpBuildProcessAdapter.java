@@ -6,6 +6,7 @@ import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
+import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.StringUtil;
 import org.apache.log4j.Logger;
@@ -28,6 +29,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     private final String myUsername;
     private final String myPassword;
     private final List<ArtifactsCollection> myArtifacts;
+    private final String myTransferMode;
 
     public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                   @NotNull final String target,
@@ -39,6 +41,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         myUsername = username;
         myPassword = password;
         myArtifacts = artifactsCollections;
+        myTransferMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_TRANSFER_MODE);
     }
 
     @Override
@@ -65,6 +68,12 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
             }
 
             client.login(myUsername, myPassword);
+
+            if (FTPRunnerConstants.TRANSFER_MODE_BINARY.equals(myTransferMode)) {
+                client.setType(FTPClient.TYPE_BINARY);
+            } else if (FTPRunnerConstants.TRANSFER_MODE_ASCII.equals(myTransferMode)) {
+                client.setType(FTPClient.TYPE_TEXTUAL);
+            }
 
             if (!StringUtil.isEmpty(path)) {
                 createPath(client, path);

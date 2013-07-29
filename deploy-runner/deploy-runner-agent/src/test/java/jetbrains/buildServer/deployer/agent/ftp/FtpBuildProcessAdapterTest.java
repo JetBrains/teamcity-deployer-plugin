@@ -4,6 +4,7 @@ import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
+import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.Authority;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 /**
  * Created by Nikita.Skvortsov
@@ -164,6 +165,27 @@ public class FtpBuildProcessAdapterTest {
         final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT + "/" + uploadDestination);
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(existingPath, myArtifactsCollections);
+    }
+
+    @Test
+    public void testTransferUTF8BOM() throws Exception {
+
+        myRunnerParameters.put(FTPRunnerConstants.PARAM_TRANSFER_MODE, FTPRunnerConstants.TRANSFER_MODE_BINARY);
+        File sourceXml = new File("src/test/resources/data.xml");
+        if (!sourceXml.exists()) {
+            sourceXml = new File("deploy-runner-agent/src/test/resources/data.xml");
+        }
+
+        Map<File, String> map = new HashMap<File, String>();
+        map.put(sourceXml, "");
+        myArtifactsCollections.add(new ArtifactsCollection("", "", map));
+        final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT);
+        DeployTestUtils.runProcess(process, 5000);
+
+        File[] files = myRemoteDir.listFiles();
+        assertNotNull(files);
+
+        assertEquals(files[0].length(), sourceXml.length());
     }
 
 

@@ -18,7 +18,7 @@
 <l:settingsGroup title="Deployment Credentials">
     <tr>
         <th><label for="jetbrains.buildServer.deployer.ftp.authMethod">Authentication method:</label></th>
-        <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_AUTH_METOD%>" onchange="ftpSelectAuth()">
+        <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_AUTH_METHOD%>" onchange="ftpSelectAuth()">
             <props:option value="ANONYMOUS">anonymous</props:option>
             <props:option value="USER_PWD">username/password</props:option>
         </props:selectProperty>
@@ -38,6 +38,19 @@
     </tr>
 </l:settingsGroup>
 
+<l:settingsGroup title="FTP Transfer mode">
+    <tr>
+        <th><label for="jetbrains.buildServer.deployer.ftp.transferMethod">Transfer Mode:</label></th>
+        <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_TRANSFER_MODE%>" onchange="sshSelectAuth()">
+            <props:option value="AUTO">Auto Detect</props:option>
+            <props:option value="BINARY">Binary</props:option>
+            <props:option value="ASCII">ASCII</props:option>
+        </props:selectProperty>
+            <span class="smallNote">Optional. Select FTP transfer mode to force.</span>
+        </td>
+    </tr>
+</l:settingsGroup>
+
 <l:settingsGroup title="Deployment Source">
     <tr>
         <th><label for="jetbrains.buildServer.deployer.sourcePath">Artifacts path: </label></th>
@@ -50,7 +63,7 @@
 </l:settingsGroup>
 <script type="text/javascript">
     window.ftpSelectAuth = function () {
-        var selector = $('<%=FTPRunnerConstants.PARAM_AUTH_METOD%>');
+        var selector = $('<%=FTPRunnerConstants.PARAM_AUTH_METHOD%>');
         switch (selector.value) {
             case 'ANONYMOUS':
                 BS.Util.hide('user_row', 'pwd_row');

@@ -27,7 +27,7 @@ public class FtpDeployerRunner extends BaseDeployerRunner {
                                               @NotNull final String target,
                                               @NotNull final List<ArtifactsCollection> artifactsCollections) throws RunBuildException {
         final Map<String,String> runnerParameters = context.getRunnerParameters();
-        final String authMethod = runnerParameters.get(FTPRunnerConstants.PARAM_AUTH_METOD);
+        final String authMethod = runnerParameters.get(FTPRunnerConstants.PARAM_AUTH_METHOD);
 
         if ("USER_PWD".equals(authMethod)) {
             return new FtpBuildProcessAdapter(context, target, username, password, artifactsCollections);
