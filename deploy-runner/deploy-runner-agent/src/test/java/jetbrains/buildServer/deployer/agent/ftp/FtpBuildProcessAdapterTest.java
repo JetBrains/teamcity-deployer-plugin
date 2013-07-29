@@ -21,7 +21,9 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.testng.Assert.assertTrue;
 
@@ -33,6 +35,7 @@ public class FtpBuildProcessAdapterTest {
 
     private static final int TEST_PORT = 55369;
 
+
     private FtpServer myServer;
     private TempFiles myTempFiles;
     private File myRemoteDir;
@@ -41,6 +44,7 @@ public class FtpBuildProcessAdapterTest {
     private final String myPassword = "myPassword";
     private List<ArtifactsCollection> myArtifactsCollections;
     private BuildRunnerContext myContext;
+    private final Map<String, String> myRunnerParameters = new HashMap<String, String>();
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -91,6 +95,7 @@ public class FtpBuildProcessAdapterTest {
         mockeryCtx.checking(new Expectations() {{
             allowing(myContext).getWorkingDirectory(); will(returnValue(workingDir));
             allowing(myContext).getBuild(); will(returnValue(build));
+            allowing(myContext).getRunnerParameters(); will(returnValue(myRunnerParameters));
             allowing(build).getBuildLogger(); will(returnValue(logger));
         }});
     }
@@ -159,15 +164,6 @@ public class FtpBuildProcessAdapterTest {
         final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT + "/" + uploadDestination);
         DeployTestUtils.runProcess(process, 5000);
         DeployTestUtils.assertCollectionsTransferred(existingPath, myArtifactsCollections);
-    }
-
-    @Test
-    public void testTransferToExistingPath2() throws Exception {
-        final String subPath = "test_path/subdir";
-        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest1"));
-        final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT);
-        DeployTestUtils.runProcess(process, 5000);
-        DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
 
 
