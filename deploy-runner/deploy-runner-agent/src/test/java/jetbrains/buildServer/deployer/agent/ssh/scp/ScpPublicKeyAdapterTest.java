@@ -11,7 +11,7 @@ import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
 public class ScpPublicKeyAdapterTest extends BaseSSHTransferTest {
     @Override
     protected BuildProcess getProcess(String targetBasePath) throws Exception {
-        SSHSessionProvider provider = new SSHSessionProvider(targetBasePath, PORT_NUM, myUsername, "passphrase", myPrivateKey).invoke();
+        SSHSessionProvider provider = new SSHSessionProvider(targetBasePath, PORT_NUM, myUsername, "passphrase", myPrivateKey);
         return new ScpProcessAdapter(myContext, myArtifactsCollections, provider);
     }
 }

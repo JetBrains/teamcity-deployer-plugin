@@ -11,10 +11,8 @@ import jetbrains.buildServer.deployer.agent.base.BaseDeployerRunner;
 import jetbrains.buildServer.deployer.agent.ssh.scp.ScpProcessAdapter;
 import jetbrains.buildServer.deployer.agent.ssh.sftp.SftpBuildProcessAdapter;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
-import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -38,7 +36,7 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
 
         final SSHSessionProvider provider;
         try {
-            provider = new SSHSessionProvider(context).invoke();
+            provider = new SSHSessionProvider(context);
         } catch (JSchException e) {
             throw new RunBuildException(e);
         }

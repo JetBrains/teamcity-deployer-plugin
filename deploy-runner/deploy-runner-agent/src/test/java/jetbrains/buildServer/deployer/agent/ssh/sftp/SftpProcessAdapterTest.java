@@ -9,7 +9,7 @@ import org.testng.annotations.Test;
 public class SftpProcessAdapterTest extends BaseSSHTransferTest {
     @Override
     protected BuildProcess getProcess(String targetBasePath) throws Exception {
-        final SSHSessionProvider provider = new SSHSessionProvider(targetBasePath, PORT_NUM, myUsername, myPassword, null).invoke();
+        final SSHSessionProvider provider = new SSHSessionProvider(targetBasePath, PORT_NUM, myUsername, myPassword, null);
         return new SftpBuildProcessAdapter(myContext, myArtifactsCollections, provider);
     }
 }

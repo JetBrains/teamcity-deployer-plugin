@@ -15,7 +15,7 @@ public class SSHExecRunner implements AgentBuildRunner {
 
         final SSHSessionProvider provider;
         try {
-            provider = new SSHSessionProvider(context).invoke();
+            provider = new SSHSessionProvider(context);
         } catch (JSchException e) {
             throw new RunBuildException(e);
         }

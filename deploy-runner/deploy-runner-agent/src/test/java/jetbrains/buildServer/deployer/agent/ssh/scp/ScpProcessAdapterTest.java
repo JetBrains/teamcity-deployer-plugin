@@ -9,7 +9,7 @@ public class ScpProcessAdapterTest extends BaseSSHTransferTest {
 
     @Override
     protected ScpProcessAdapter getProcess(String targetBasePath) throws Exception {
-        final SSHSessionProvider provider = new SSHSessionProvider(targetBasePath, PORT_NUM, myUsername, myPassword, null).invoke();
+        final SSHSessionProvider provider = new SSHSessionProvider(targetBasePath, PORT_NUM, myUsername, myPassword, null);
         return new ScpProcessAdapter(myContext, myArtifactsCollections, provider);
     }
 }

@@ -32,15 +32,16 @@ public class SSHSessionProvider {
                               final int port,
                               @NotNull final String username,
                               @NotNull final String password,
-                              @Nullable final File keyFile) {
+                              @Nullable final File keyFile) throws JSchException {
         myTarget = target;
         myPort = port;
         myUsername = username;
         myPassword = password;
         myKeyFile = keyFile;
+        invoke();
     }
 
-    public SSHSessionProvider(BuildRunnerContext context) {
+    public SSHSessionProvider(BuildRunnerContext context) throws JSchException {
         myTarget = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
         final String portStr = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_PORT);
         try {
@@ -61,6 +62,8 @@ public class SSHSessionProvider {
         } else {
             myKeyFile = null;
         }
+
+        invoke();
     }
 
     public String getEscapedRemotePath() {
