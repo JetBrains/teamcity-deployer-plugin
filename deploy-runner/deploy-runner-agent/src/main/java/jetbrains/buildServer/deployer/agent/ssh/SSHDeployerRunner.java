@@ -6,6 +6,7 @@ import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.AgentBuildRunnerInfo;
 import jetbrains.buildServer.agent.BuildProcess;
 import jetbrains.buildServer.agent.BuildRunnerContext;
+import jetbrains.buildServer.agent.InternalPropertiesHolder;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.base.BaseDeployerRunner;
 import jetbrains.buildServer.deployer.agent.ssh.scp.ScpProcessAdapter;
@@ -22,9 +23,13 @@ import java.util.List;
 public class SSHDeployerRunner extends BaseDeployerRunner {
 
 
+    @NotNull
+    private final InternalPropertiesHolder myInternalProperties;
 
-    public SSHDeployerRunner(@NotNull final ExtensionHolder extensionHolder) {
+    public SSHDeployerRunner(@NotNull final ExtensionHolder extensionHolder,
+                             @NotNull final InternalPropertiesHolder holder) {
         super(extensionHolder);
+        myInternalProperties = holder;
     }
 
     @Override
@@ -36,7 +41,7 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
 
         final SSHSessionProvider provider;
         try {
-            provider = new SSHSessionProvider(context);
+            provider = new SSHSessionProvider(context, myInternalProperties);
         } catch (JSchException e) {
             throw new RunBuildException(e);
         }

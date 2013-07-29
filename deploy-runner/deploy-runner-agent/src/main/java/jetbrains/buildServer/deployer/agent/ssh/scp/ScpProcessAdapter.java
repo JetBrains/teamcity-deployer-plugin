@@ -46,7 +46,7 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
 
         try {
 
-            escapedRemotePath = mySessionProvider.getEscapedRemotePath();
+            escapedRemotePath = mySessionProvider.getRemotePath();
             session = mySessionProvider.getSession();
 
 

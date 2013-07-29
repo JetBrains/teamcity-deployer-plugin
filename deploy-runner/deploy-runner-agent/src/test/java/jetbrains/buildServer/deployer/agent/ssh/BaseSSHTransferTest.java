@@ -16,6 +16,8 @@ import org.apache.sshd.server.filesystem.NativeFileSystemFactory;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.apache.sshd.server.shell.ProcessShellFactory;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
@@ -24,9 +26,7 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.testng.Assert.assertTrue;
 
@@ -39,11 +39,20 @@ public abstract class BaseSSHTransferTest {
     protected static final int PORT_NUM = 15655;
     protected static final String HOST_ADDR = "127.0.0.1";
 
+    protected File myWorkingDir;
     protected String myUsername = "testuser";
-    protected final String myPassword = "testpassword";
+    protected String myPassword = "testpassword";
     protected List<ArtifactsCollection> myArtifactsCollections;
     protected BuildRunnerContext myContext;
     protected File myPrivateKey;
+    protected final Map<String, String> myRunnerParams = new HashMap<String, String>();
+    protected final InternalPropertiesHolder myInternalProperties = new InternalPropertiesHolder() {
+        @Nullable
+        @Override
+        public String getInternalProperty(@NotNull String s, String s2) {
+            return null;
+        }
+    };
 
     private TempFiles myTempFiles;
     private File myRemoteDir = null;
@@ -97,12 +106,14 @@ public abstract class BaseSSHTransferTest {
         myContext = mockeryCtx.mock(BuildRunnerContext.class);
         final AgentRunningBuild build = mockeryCtx.mock(AgentRunningBuild.class);
         final BuildProgressLogger logger = new NullBuildProgressLogger();
-        final File workingDir = myTempFiles.createTempDir();
+        myWorkingDir = myTempFiles.createTempDir();
 
         mockeryCtx.checking(new Expectations() {{
-            allowing(myContext).getWorkingDirectory(); will(returnValue(workingDir));
+            allowing(myContext).getWorkingDirectory(); will(returnValue(myWorkingDir));
             allowing(myContext).getBuild(); will(returnValue(build));
+            allowing(myContext).getRunnerParameters(); will(returnValue(myRunnerParams));
             allowing(build).getBuildLogger(); will(returnValue(logger));
+            allowing(build).getCheckoutDirectory(); will(returnValue(myWorkingDir));
         }});
 
         // need to change user.dir, so that NativeFileSystemFactory works inside temp directory

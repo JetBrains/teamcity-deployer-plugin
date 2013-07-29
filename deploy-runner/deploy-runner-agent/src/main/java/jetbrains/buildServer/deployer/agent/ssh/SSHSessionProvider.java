@@ -2,115 +2,122 @@ package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.OpenSSHConfig;
 import com.jcraft.jsch.Session;
 import jetbrains.buildServer.agent.BuildRunnerContext;
+import jetbrains.buildServer.agent.InternalPropertiesHolder;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 
 
 public class SSHSessionProvider {
-    // out
-    private Session session;
+
+    public static final String TEAMCITY_DEPLOYER_SSH_CONFIG_PATH = "teamcity.deployer.ssh.config.path";
+    public static final String TEAMCITY_DEPLOYER_SSH_DEFAULT_KEY = "teamcity.deployer.ssh.default.key";
+
+    private Session mySession;
     private String myHost;
     private int myPort;
-    private String escapedRemotePath;
-
-    // in
-    private String myTarget;
-    private File myKeyFile;
-    private String myPassword;
-    private String myUsername;
+    private String myRemotePath;
 
 
+    public SSHSessionProvider(@NotNull final BuildRunnerContext context, @NotNull final InternalPropertiesHolder holder) throws JSchException {
 
-    public SSHSessionProvider(@NotNull final String target,
-                              final int port,
-                              @NotNull final String username,
-                              @NotNull final String password,
-                              @Nullable final File keyFile) throws JSchException {
-        myTarget = target;
-        myPort = port;
-        myUsername = username;
-        myPassword = password;
-        myKeyFile = keyFile;
-        invoke();
-    }
-
-    public SSHSessionProvider(BuildRunnerContext context) throws JSchException {
-        myTarget = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
+        final String target = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
         final String portStr = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_PORT);
         try {
             myPort = Integer.parseInt(portStr);
         } catch (NumberFormatException e) {
             myPort = 22;
         }
-        myUsername = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_USERNAME);
-        myPassword = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
 
-        final String authMethod = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METOD);
-
-        if ("DEFAULT_KEY".equals(authMethod)) {
-            myKeyFile = new File(System.getProperty("user.home"), ".ssh" + File.separator + "id_rsa");
-        } else if ("PRIVATE_KEY".equals(authMethod)) {
-            final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
-            myKeyFile = new File(context.getBuild().getCheckoutDirectory(), keyFilePath);
-        } else {
-            myKeyFile = null;
-        }
-
-        invoke();
-    }
-
-    public String getEscapedRemotePath() {
-        return escapedRemotePath;
-    }
-
-    public Session getSession() {
-        return session;
-    }
-
-    public String getSessionString() {
-        return  (StringUtil.isNotEmpty(escapedRemotePath) ? "[" + escapedRemotePath + "] on " : "") + "host [" + myHost + ":" + myPort + "]";
-    }
-
-    public SSHSessionProvider invoke() throws JSchException {
-        final int delimiterIndex = myTarget.indexOf(':');
+        final int delimiterIndex = target.indexOf(':');
         if (delimiterIndex > 0) {
-            myHost = myTarget.substring(0, delimiterIndex);
-            final String remotePath = myTarget.substring(delimiterIndex + 1);
+            myHost = target.substring(0, delimiterIndex);
+            final String remotePath = target.substring(delimiterIndex + 1);
 
-            escapedRemotePath = remotePath.trim().replaceAll("\\\\", "/");
-            if (new File(escapedRemotePath).isAbsolute() && !escapedRemotePath.startsWith("/")) {
-                escapedRemotePath = "/" + escapedRemotePath;
+            myRemotePath = remotePath.trim().replaceAll("\\\\", "/");
+            if (new File(myRemotePath).isAbsolute() && !myRemotePath.startsWith("/")) {
+                myRemotePath = "/" + myRemotePath;
             }
         } else {
-            myHost = myTarget;
-            escapedRemotePath = "";
+            myHost = target;
+            myRemotePath = "";
         }
+
+        final String username = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_USERNAME);
+        final String password = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
+        final String authMethod = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METHOD);
 
         JSch jsch=new JSch();
         JSch.setConfig("StrictHostKeyChecking", "no");
 
-
-        if (myKeyFile != null) {
-            if (StringUtil.isNotEmpty(myPassword)) {
-                jsch.addIdentity(myKeyFile.getAbsolutePath(), myPassword);
+        if (SSHRunnerConstants.AUTH_METHOD_DEFAULT_KEY.equals(authMethod)) {
+            final String configPath = holder.getInternalProperty(TEAMCITY_DEPLOYER_SSH_CONFIG_PATH, System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "config");
+            //noinspection ConstantConditions
+            final File config = new File(configPath);
+            if (config.exists()) {
+                iniSessionSSHConfig(jsch, config);
             } else {
-                jsch.addIdentity(myKeyFile.getAbsolutePath());
+                final String keyPath = holder.getInternalProperty(TEAMCITY_DEPLOYER_SSH_DEFAULT_KEY, System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa");
+                //noinspection ConstantConditions
+                final File keyFile = new File(keyPath);
+                initSessionKeyFile(username, password, keyFile, jsch);
             }
+        } else if (SSHRunnerConstants.AUTH_METHOD_CUSTOM_KEY.equals(authMethod)) {
+            final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
+            final File keyFile = new File(context.getBuild().getCheckoutDirectory(), keyFilePath);
+            initSessionKeyFile(username, password, keyFile, jsch);
+        } else {
+            initSessionUserPassword(username, password, jsch);
         }
 
-        session = jsch.getSession(myUsername, myHost, myPort);
-        if (myKeyFile == null) {
-            session.setPassword(myPassword);
-        }
-
-        session.connect();
-        return this;
+        mySession.connect();
     }
+
+    private void iniSessionSSHConfig(JSch jsch, File config) throws JSchException {
+        try {
+            final OpenSSHConfig sshConfig = OpenSSHConfig.parseFile(config.getCanonicalPath());
+            jsch.setConfigRepository(sshConfig);
+            mySession = jsch.getSession(myHost);
+        } catch (IOException e) {
+            throw new JSchException("Error parsing ssh config file", e);
+        }
+    }
+
+    private void initSessionUserPassword(String username, String password, JSch jsch) throws JSchException {
+        mySession = jsch.getSession(username, myHost, myPort);
+        mySession.setPassword(password);
+    }
+
+    private void initSessionKeyFile(String username, String password, File keyFile, JSch jsch) throws JSchException {
+        try {
+            if (StringUtil.isNotEmpty(password)) {
+                jsch.addIdentity(keyFile.getCanonicalPath(), password);
+            } else {
+                jsch.addIdentity(keyFile.getCanonicalPath());
+            }
+            mySession = jsch.getSession(username, myHost, myPort);
+        } catch (IOException e) {
+            throw new JSchException("Failed to use key file", e);
+        }
+    }
+
+    public String getRemotePath() {
+        return myRemotePath;
+    }
+
+    public Session getSession() {
+        return mySession;
+    }
+
+    public String getSessionString() {
+        return  (StringUtil.isNotEmpty(myRemotePath) ? "[" + myRemotePath + "] on " : "") + "host [" + myHost + ":" + myPort + "]";
+    }
+
 }

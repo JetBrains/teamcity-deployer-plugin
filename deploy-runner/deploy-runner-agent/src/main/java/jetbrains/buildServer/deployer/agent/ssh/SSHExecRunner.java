@@ -9,13 +9,20 @@ import org.jetbrains.annotations.NotNull;
 
 public class SSHExecRunner implements AgentBuildRunner {
 
+    private final InternalPropertiesHolder myInternalProperties;
+
+    public SSHExecRunner(@NotNull final InternalPropertiesHolder holder) {
+        myInternalProperties = holder;
+    }
+
     @NotNull
     @Override
-    public BuildProcess createBuildProcess(@NotNull AgentRunningBuild runningBuild, @NotNull final BuildRunnerContext context) throws RunBuildException {
+    public BuildProcess createBuildProcess(@NotNull AgentRunningBuild runningBuild,
+                                           @NotNull final BuildRunnerContext context) throws RunBuildException {
 
         final SSHSessionProvider provider;
         try {
-            provider = new SSHSessionProvider(context);
+            provider = new SSHSessionProvider(context, myInternalProperties);
         } catch (JSchException e) {
             throw new RunBuildException(e);
         }

@@ -37,7 +37,7 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
         Session session = null;
 
         try {
-            escapedRemotePath = mySessionProvider.getEscapedRemotePath();
+            escapedRemotePath = mySessionProvider.getRemotePath();
             session = mySessionProvider.getSession();
 
             if (isInterrupted()) return;
