@@ -42,7 +42,6 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
                 Loggers.SERVER.debug("Scrambling password for runner [" + runnerType + "-" + descriptor.getName() + "] in [" + buildType.getName() + "]");
                 newRunnerParams.remove(DeployerRunnerConstants.PARAM_PLAIN_PASSWORD);
                 newRunnerParams.put(DeployerRunnerConstants.PARAM_PASSWORD, plainPassword);
-                buildType.updateBuildRunner(descriptor.getId(), descriptor.getName(), runnerType, newRunnerParams);
             }
 
             if (DeployerRunnerConstants.SSH_RUN_TYPE.equals(runnerType) ||
@@ -52,11 +51,11 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
                     persistBuildType = true;
                     Loggers.SERVER.debug("Setting default (username password) ssh authentication method for runner [" + runnerType + "-" + descriptor.getName() + "] in [" + buildType.getName() + "]");
                     newRunnerParams.put(SSHRunnerConstants.PARAM_AUTH_METHOD, SSHRunnerConstants.AUTH_METHOD_USERNAME_PWD);
-                    buildType.updateBuildRunner(descriptor.getId(), descriptor.getName(), runnerType, newRunnerParams);
                 }
                 if (SSHRunnerConstants.SSH_EXEC_RUN_TYPE.equals(runnerType)) {
                     final String oldUsername = newRunnerParams.get(SSHRunnerConstants.PARAM_USERNAME);
                     final String oldPassword = newRunnerParams.get(SSHRunnerConstants.PARAM_PASSWORD);
+                    final String oldHost = newRunnerParams.get(SSHRunnerConstants.PARAM_HOST);
                     if (StringUtil.isNotEmpty(oldUsername)) {
                         persistBuildType = true;
                         newRunnerParams.remove(SSHRunnerConstants.PARAM_USERNAME);
@@ -66,6 +65,11 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
                         persistBuildType = true;
                         newRunnerParams.remove(SSHRunnerConstants.PARAM_PASSWORD);
                         newRunnerParams.put(DeployerRunnerConstants.PARAM_PASSWORD, oldPassword);
+                    }
+                    if (StringUtil.isNotEmpty(oldHost)) {
+                        persistBuildType = true;
+                        newRunnerParams.remove(SSHRunnerConstants.PARAM_HOST);
+                        newRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, oldHost);
                     }
                 }
             }
@@ -81,9 +85,9 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
                     } else {
                         newRunnerParams.put(FTPRunnerConstants.PARAM_AUTH_METHOD, FTPRunnerConstants.AUTH_METHOD_USER_PWD);
                     }
-                    buildType.updateBuildRunner(descriptor.getId(), descriptor.getName(), runnerType, newRunnerParams);
                 }
             }
+            buildType.updateBuildRunner(descriptor.getId(), descriptor.getName(), runnerType, newRunnerParams);
         }
         if (persistBuildType) {
             buildType.persist();
