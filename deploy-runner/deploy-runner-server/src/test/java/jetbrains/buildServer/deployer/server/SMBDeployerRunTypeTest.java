@@ -28,12 +28,13 @@ public class SMBDeployerRunTypeTest extends  DeployerRunTypeTest {
     }
 
     @Test
-    public void testIllegalUNCPaths() throws Exception {
+    public void testUNCPathsPattern() throws Exception {
         assertIllegalTarget("\\\\\\\\host");
         assertIllegalTarget("host");
         assertIllegalTarget("..abracadabra");
         assertIllegalTarget("\\\\host");
         assertLegalTarget("\\\\host\\share");
+        assertLegalTarget("\\\\host\\c$");
         assertLegalTarget("\\\\host\\share\\subdir");
     }
 
