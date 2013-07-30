@@ -29,9 +29,9 @@ public class FtpDeployerRunner extends BaseDeployerRunner {
         final Map<String,String> runnerParameters = context.getRunnerParameters();
         final String authMethod = runnerParameters.get(FTPRunnerConstants.PARAM_AUTH_METHOD);
 
-        if ("USER_PWD".equals(authMethod)) {
+        if (FTPRunnerConstants.AUTH_METHOD_USER_PWD.equals(authMethod)) {
             return new FtpBuildProcessAdapter(context, target, username, password, artifactsCollections);
-        } else if ("ANONYMOUS".equals(authMethod)) {
+        } else if (FTPRunnerConstants.AUTH_METHOD_ANONYMOUS.equals(authMethod)) {
             return new FtpBuildProcessAdapter(context, target, "anonymous", " ", artifactsCollections);
         } else {
             throw new RunBuildException("Unknown FTP authentication method: [" + authMethod + "]");
