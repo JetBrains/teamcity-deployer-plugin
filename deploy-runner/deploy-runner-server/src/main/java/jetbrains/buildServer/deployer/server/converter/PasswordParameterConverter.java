@@ -30,17 +30,21 @@ public class PasswordParameterConverter extends BuildServerAdapter {
         if (myServerHasStarted) {
             return;
         }
+        boolean persistBuildType = false;
         for (SBuildRunnerDescriptor descriptor : buildType.getBuildRunners()) {
             Map<String,String> runnerParams = descriptor.getParameters();
             final String plainPassword = runnerParams.get(DeployerRunnerConstants.PARAM_PLAIN_PASSWORD);
             if (plainPassword != null) {
+                persistBuildType = true;
                 Loggers.SERVER.debug("Scrambling password for runner [" + descriptor.getType() + "-" + descriptor.getName() + "] in [" + buildType.getName() + "]");
                 final Map<String,String> newRunnerParams = new HashMap<String, String>(runnerParams);
                 newRunnerParams.remove(DeployerRunnerConstants.PARAM_PLAIN_PASSWORD);
                 newRunnerParams.put(DeployerRunnerConstants.PARAM_PASSWORD, plainPassword);
                 buildType.updateBuildRunner(descriptor.getId(), descriptor.getName(), descriptor.getType(), newRunnerParams);
-                buildType.persist();
             }
+        }
+        if (persistBuildType) {
+            buildType.persist();
         }
     }
 
