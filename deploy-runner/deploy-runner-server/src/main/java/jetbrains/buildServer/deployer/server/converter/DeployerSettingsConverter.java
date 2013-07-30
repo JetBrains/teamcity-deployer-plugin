@@ -18,11 +18,11 @@ import java.util.Map;
  * Created by Nikita.Skvortsov
  * date: 29.07.13.
  */
-public class PasswordParameterConverter extends BuildServerAdapter {
+public class DeployerSettingsConverter extends BuildServerAdapter {
 
     private final SBuildServer myServer;
 
-    public PasswordParameterConverter(@NotNull SBuildServer server) {
+    public DeployerSettingsConverter(@NotNull SBuildServer server) {
         myServer = server;
         myServer.addListener(this);
     }
