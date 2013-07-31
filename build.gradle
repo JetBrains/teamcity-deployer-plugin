@@ -30,6 +30,8 @@ apply from: 'https://raw.github.com/evgeny-goldin/gradle-plugins/master/teamcity
 
 subprojects {
     apply plugin:'java'
+    sourceCompatibility = '1.5'
+    targetCompatibility = '1.5'
     repositories {
         mavenRepo(name: "sonatype-public", urls: "https://oss.sonatype.org/content/groups/public/");
         mavenRepo(name: "daisycms", urls: "http://daisycms.org/maven/maven2/deploy/");
