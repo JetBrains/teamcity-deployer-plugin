@@ -74,7 +74,7 @@
             default:
                 alert("Unknown authentication method " + selector.value);
         }
-        BS.VisibilityHandlers.updateVisibility();
+        BS.VisibilityHandlers.updateVisibility($('runnerParams'))
     }
     ftpSelectAuth();
 </script>
