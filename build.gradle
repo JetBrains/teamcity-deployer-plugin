@@ -46,12 +46,12 @@ assembleTeamcityPluginConfig {
 
     name        'artifactDeployer'
     displayName 'Artifact Deployer'
-    description 'Plugin description'
-    downloadUrl 'Plugin download URL'
-    email       'Plugin author e-mail'
-    vendorName  'Plugin vendor name'
-    vendorUrl   'Plugin vendor URL'
-    vendorLogo  'Plugin vendor logo URL'
+    description 'Set of Runners for basic deployment tasks'
+    downloadUrl 'http://confluence.jetbrains.com/display/TW/Deployer+plugin'
+    email       'n.s.skvortsov@gmail.com'
+    vendorName  'Nikita Skvortsov'
+    vendorUrl   ''
+    vendorLogo  ''
 
     version     "snapshot-${pluginVersion}"
 
