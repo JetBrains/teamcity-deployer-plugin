@@ -1,7 +1,7 @@
 *~
 *.swp
 .gradle/
-build
 .idea/
 *.iml
 gradle-runner/
+target
