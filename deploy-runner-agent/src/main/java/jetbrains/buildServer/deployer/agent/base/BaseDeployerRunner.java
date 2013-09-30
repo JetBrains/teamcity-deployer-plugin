@@ -41,7 +41,6 @@ public abstract class BaseDeployerRunner implements AgentBuildRunner {
         final ArtifactsBuilder builder = new ArtifactsBuilder();
         builder.setPreprocessors(preprocessors);
         builder.setBaseDir(runningBuild.getCheckoutDirectory());
-        builder.setCaseInsensitivePatterns(SystemInfo.isWindows);
         builder.setArtifactsPaths(sourcePaths);
 
         builder.addListener(new ArtifactsBuilderAdapter());
