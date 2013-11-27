@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.Session;
 import jetbrains.buildServer.RunBuildException;
@@ -7,23 +8,24 @@ import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 
 class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
     private final String myCommands;
     private final SSHSessionProvider myProvider;
+    private final String myPty;
 
 
     public SSHExecProcessAdapter(@NotNull final SSHSessionProvider provider,
                                  @NotNull final String commands,
+                                 final String pty,
                                  @NotNull final BuildProgressLogger buildLogger) {
         super(buildLogger);
         myProvider = provider;
         myCommands = commands;
+        myPty = pty;
     }
 
 
@@ -33,7 +35,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
         final Session session = myProvider.getSession();
 
         try {
-            executeCommand(session, myCommands);
+            executeCommand(session, myPty, myCommands);
         } catch (RunBuildException e) {
             throw e;
         } catch (Exception e) {
@@ -45,11 +47,15 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
         }
     }
 
-    private void executeCommand(Session session, String command) throws Exception {
+    private void executeCommand(Session session, String pty, String command) throws Exception {
         ChannelExec channel = null;
         myLogger.message("Executing commands:\n" + command + "\non host [" + session.getHost() + "]");
         try {
             channel = (ChannelExec)session.openChannel("exec");
+            if (!StringUtil.isEmpty(pty)) {
+                channel.setPty(true);
+                channel.setPtyType(pty);
+            }
             channel.setCommand(command);
 
             final InputStream inputStream = channel.getInputStream();

@@ -9,7 +9,11 @@
 </div>
 
 <div class="parameter">
-  Target port: <strong><props:displayValue name="<%=SSHRunnerConstants.PARAM_PORT%>" emptyValue="default"/></strong>
+    Target port: <strong><props:displayValue name="<%=SSHRunnerConstants.PARAM_PORT%>" emptyValue="default"/></strong>
+</div>
+
+<div class="parameter">
+  Use pty: <strong><props:displayValue name="<%=SSHRunnerConstants.PARAM_PTY%>" emptyValue="none"/></strong>
 </div>
 
 <div class="parameter">
