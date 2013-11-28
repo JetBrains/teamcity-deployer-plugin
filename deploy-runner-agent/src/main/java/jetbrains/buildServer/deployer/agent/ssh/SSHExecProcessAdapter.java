@@ -2,6 +2,7 @@ package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.Session;
+import java.io.IOException;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
@@ -53,17 +54,21 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
             channel.setCommand(command);
 
             final InputStream inputStream = channel.getInputStream();
+            final InputStream errorStream = channel.getErrStream();
             final StringBuilder result = new StringBuilder();
             byte[] buf = new byte[8192];
 
             channel.connect();
             while (!isInterrupted()) {
                 if (inputStream.available() > 0) {
-                    int i = inputStream.read(buf, 0, 8192);
-                    if (i < 0) {
+                    if (!readStream(inputStream, result, buf, 8192)) {
                         break;
                     }
-                    result.append(new String(buf, 0, i));
+                }
+                if (errorStream.available() > 0) {
+                    if (!readStream(errorStream, result, buf, 8192)) {
+                        break;
+                    }
                 }
                 if (channel.isClosed()) {
                     break;
@@ -86,5 +91,14 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
             }
         }
 
+    }
+
+    private boolean readStream(InputStream inputStream, StringBuilder appendTo, byte[] buffer, final int BUFFER_LENGTH) throws IOException {
+        int i = inputStream.read(buffer, 0, BUFFER_LENGTH);
+        if (i < 0) {
+            return false;
+        }
+        appendTo.append(new String(buffer, 0, i));
+        return true;
     }
 }
