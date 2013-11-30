@@ -18,6 +18,7 @@ public class SSHRunnerConstants {
     public static final String PARAM_KEYFILE = "jetbrains.buildServer.sshexec.keyFile";
     public static final String PARAM_AUTH_METHOD = "jetbrains.buildServer.sshexec.authMethod";
     public static final String PARAM_COMMAND = "jetbrains.buildServer.sshexec.command";
+    public static final String PARAM_PTY = "jetbrains.buildServer.sshexec.pty";
 
     public static final String PARAM_TRANSPORT = "jetbrains.buildServer.deployer.ssh.transport";
 
