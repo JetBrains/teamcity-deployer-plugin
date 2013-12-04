@@ -86,6 +86,6 @@ public class SSHExecProcessAdapterTest {
     }
 
     private SSHExecProcessAdapter newAdapter(BuildProgressLogger logger) throws Exception {
-        return new SSHExecProcessAdapter(sessionProvider, DEFAULT_COMMAND, logger);
+        return new SSHExecProcessAdapter(sessionProvider, DEFAULT_COMMAND, null, logger);
     }
 }
