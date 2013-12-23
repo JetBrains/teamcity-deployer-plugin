@@ -56,6 +56,34 @@ public class SSHExecProcessAdapterTest {
         context.assertIsSatisfied();
     }
 
+    @Test
+    public void stderrShouldBeLoggedIfStdOutIsEmpty() throws Exception {
+        final BuildProgressLogger mockedLogger = context.mock(BuildProgressLogger.class);
+        SSHExecProcessAdapter adapter = newAdapter(mockedLogger);
+
+        commonExpectations();
+        context.checking(new Expectations() {{
+            oneOf(channel).getInputStream();
+            will(returnValue(new ByteArrayInputStream(new byte[]{11}) {
+                @Override
+                public synchronized int read(byte[] b, int off, int len) {
+                    return -1;
+                }
+            }));
+
+            oneOf(channel).getErrStream();
+            will(returnValue(new ByteArrayInputStream("standard error\n".getBytes())));
+
+            oneOf(mockedLogger).message("Executing commands:\n" + DEFAULT_COMMAND + "\non host []");
+            oneOf(mockedLogger).message("Exec output:\nstandard error\n");
+            oneOf(mockedLogger).message("ssh exit-code: 0");
+        }});
+
+        adapter.runProcess();
+
+        context.assertIsSatisfied();
+    }
+
     private void commonExpectations() throws Exception {
         context.checking(new Expectations() {{
             allowing(sessionProvider).getSession();
