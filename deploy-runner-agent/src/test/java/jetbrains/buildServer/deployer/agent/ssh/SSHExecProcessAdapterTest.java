@@ -1,13 +1,3 @@
-////////////////////////////////////////////////////////////////////////////////
-//
-// Copyright (c) 2013, Wotif.com. All rights reserved.
-//
-// This is unpublished proprietary source code of Wotif.com.
-// The copyright notice above does not evidence any actual or intended
-// publication of such source code.
-//
-////////////////////////////////////////////////////////////////////////////////
-
 package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.jcraft.jsch.ChannelExec;
