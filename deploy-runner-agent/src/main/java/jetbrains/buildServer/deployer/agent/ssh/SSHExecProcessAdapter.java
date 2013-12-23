@@ -66,8 +66,8 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
             channel.connect();
             while (!isInterrupted()) {
-                boolean readFromInput = false;
-                boolean readFromError = false;
+                boolean readFromInput = true;
+                boolean readFromError = true;
 
                 if (inputStream.available() > 0) {
                     readFromInput = readStream(inputStream, result, buf, 8192);
