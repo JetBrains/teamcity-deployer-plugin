@@ -1,69 +1,65 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
-import org.testng.annotations.BeforeClass;
+import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class SSHExecProcessAdapterTest {
 
     private static final String DEFAULT_COMMAND = "echo hello";
 
-    private Mockery context = new Mockery();
-    private SSHSessionProvider sessionProvider;
-    private Session session;
-    private ChannelExec channel;
-    private InputStream stdout;
-    private InputStream stderr;
+    private Mockery myContext;
+    private SSHSessionProvider mySessionProvider;
+    private Session mySession;
+    private ChannelExec myChannel;
+    private SSHExecProcessAdapter myAdapter;
+    private BuildProgressLogger myLogger;
 
-    @BeforeClass
+    @BeforeMethod
     public void setup() {
-        this.context.setImposteriser(ClassImposteriser.INSTANCE);
+        myContext = new Mockery();
+        myContext.setImposteriser(ClassImposteriser.INSTANCE);
 
-        this.sessionProvider = context.mock(SSHSessionProvider.class);
-        this.session = context.mock(Session.class);
-        this.channel = context.mock(ChannelExec.class);
-        this.stdout = context.mock(InputStream.class, "stdout");
-        this.stderr = context.mock(InputStream.class, "stderr");
+        mySessionProvider = myContext.mock(SSHSessionProvider.class);
+        mySession = myContext.mock(Session.class);
+        myChannel = myContext.mock(ChannelExec.class);
+        myLogger = myContext.mock(BuildProgressLogger.class);
+        myAdapter = newAdapter(myLogger);
+        commonExpectations();
     }
 
     @Test
     public void stdoutAndStderrShouldBeLogged() throws Exception {
-        final BuildProgressLogger mockedLogger = context.mock(BuildProgressLogger.class);
-        SSHExecProcessAdapter adapter = newAdapter(mockedLogger);
-
-        commonExpectations();
-        context.checking(new Expectations() {{
-            oneOf(channel).getInputStream();
+        myContext.checking(new Expectations() {{
+            oneOf(myChannel).getInputStream();
             will(returnValue(new ByteArrayInputStream("standard output\n".getBytes())));
 
-            oneOf(channel).getErrStream();
+            oneOf(myChannel).getErrStream();
             will(returnValue(new ByteArrayInputStream("standard error\n".getBytes())));
 
-            oneOf(mockedLogger).message("Executing commands:\n" + DEFAULT_COMMAND + "\non host []");
-            oneOf(mockedLogger).message("Exec output:\nstandard output\nstandard error\n");
-            oneOf(mockedLogger).message("ssh exit-code: 0");
+            oneOf(myLogger).message("Executing commands:\n" + DEFAULT_COMMAND + "\non host []");
+            oneOf(myLogger).message("Exec output:\nstandard output\nstandard error\n");
+            oneOf(myLogger).message("ssh exit-code: 0");
         }});
 
-        adapter.runProcess();
+        myAdapter.runProcess();
 
-        context.assertIsSatisfied();
+        myContext.assertIsSatisfied();
     }
 
     @Test
     public void stderrShouldBeLoggedIfStdOutIsEmpty() throws Exception {
-        final BuildProgressLogger mockedLogger = context.mock(BuildProgressLogger.class);
-        SSHExecProcessAdapter adapter = newAdapter(mockedLogger);
-
-        commonExpectations();
-        context.checking(new Expectations() {{
-            oneOf(channel).getInputStream();
+        myContext.checking(new Expectations() {{
+            oneOf(myChannel).getInputStream();
             will(returnValue(new ByteArrayInputStream(new byte[]{11}) {
                 @Override
                 public synchronized int read(byte[] b, int off, int len) {
@@ -71,39 +67,44 @@ public class SSHExecProcessAdapterTest {
                 }
             }));
 
-            oneOf(channel).getErrStream();
+            oneOf(myChannel).getErrStream();
             will(returnValue(new ByteArrayInputStream("standard error\n".getBytes())));
 
-            oneOf(mockedLogger).message("Executing commands:\n" + DEFAULT_COMMAND + "\non host []");
-            oneOf(mockedLogger).message("Exec output:\nstandard error\n");
-            oneOf(mockedLogger).message("ssh exit-code: 0");
+            oneOf(myLogger).message("Executing commands:\n" + DEFAULT_COMMAND + "\non host []");
+            oneOf(myLogger).message("Exec output:\nstandard error\n");
+            oneOf(myLogger).message("ssh exit-code: 0");
         }});
 
-        adapter.runProcess();
+        myAdapter.runProcess();
 
-        context.assertIsSatisfied();
+        myContext.assertIsSatisfied();
     }
 
-    private void commonExpectations() throws Exception {
-        context.checking(new Expectations() {{
-            allowing(sessionProvider).getSession();
-            will(returnValue(session));
+    private void commonExpectations() {
+        myContext.checking(new Expectations() {{
+            try {
+                allowing(mySessionProvider).getSession();
+                will(returnValue(mySession));
 
-            allowing(session).getHost();
-            allowing(session).openChannel("exec");
-            will(returnValue(channel));
-            allowing(session).disconnect();
+                allowing(mySession).getHost();
+                allowing(mySession).openChannel("exec");
+                will(returnValue(myChannel));
+                allowing(mySession).disconnect();
 
-            allowing(channel).setCommand(DEFAULT_COMMAND);
-            allowing(channel).connect();
-            allowing(channel).isClosed();
-            will(returnValue(true));
-            allowing(channel).disconnect();
-            allowing(channel).getExitStatus();
+                allowing(myChannel).setCommand(DEFAULT_COMMAND);
+                allowing(myChannel).connect();
+                allowing(myChannel).isClosed();
+                will(returnValue(true));
+                allowing(myChannel).disconnect();
+                allowing(myChannel).getExitStatus();
+            } catch (JSchException e) {
+                Assert.fail("Unexpected exception in jmock expectations list.", e);
+            }
         }});
+
     }
 
-    private SSHExecProcessAdapter newAdapter(BuildProgressLogger logger) throws Exception {
-        return new SSHExecProcessAdapter(sessionProvider, DEFAULT_COMMAND, null, logger);
+    private SSHExecProcessAdapter newAdapter(BuildProgressLogger logger) {
+        return new SSHExecProcessAdapter(mySessionProvider, DEFAULT_COMMAND, null, logger);
     }
 }
