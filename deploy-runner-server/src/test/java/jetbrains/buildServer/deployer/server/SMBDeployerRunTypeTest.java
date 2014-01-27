@@ -36,6 +36,13 @@ public class SMBDeployerRunTypeTest extends  DeployerRunTypeTest {
         assertLegalTarget("\\\\host\\share");
         assertLegalTarget("\\\\host\\c$");
         assertLegalTarget("\\\\host\\share\\subdir");
+        assertLegalTarget("\\\\sub.host.tld\\share\\subdir");
+        assertLegalTarget("\\\\sub.host.tld\\a.share\\subdir");
+        assertLegalTarget("\\\\sub.host.tld\\share\\sub.dir");
+        assertLegalTarget("\\\\sub.host.tld\\a.share\\sub.dir");
+        assertLegalTarget("\\\\host\\share\\sub.dir");
+        assertLegalTarget("\\\\host\\a.share\\subdir");
+        assertLegalTarget("\\\\host\\a.share\\sub.dir");
     }
 
     private void assertIllegalTarget(String value) {
