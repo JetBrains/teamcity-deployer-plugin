@@ -1,14 +1,12 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.OpenSSHConfig;
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.*;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.InternalPropertiesHolder;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.util.StringUtil;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -19,6 +17,8 @@ public class SSHSessionProvider {
 
     public static final String TEAMCITY_DEPLOYER_SSH_CONFIG_PATH = "teamcity.deployer.ssh.config.path";
     public static final String TEAMCITY_DEPLOYER_SSH_DEFAULT_KEY = "teamcity.deployer.ssh.default.key";
+
+    private final Logger myLog = Logger.getLogger(this.getClass());
 
     private Session mySession;
     private String myHost;
@@ -57,30 +57,35 @@ public class SSHSessionProvider {
         JSch jsch=new JSch();
         JSch.setConfig("StrictHostKeyChecking", "no");
 
+        myLog.debug("Initializing ssh session.");
         if (SSHRunnerConstants.AUTH_METHOD_DEFAULT_KEY.equals(authMethod)) {
             final String configPath = holder.getInternalProperty(TEAMCITY_DEPLOYER_SSH_CONFIG_PATH, System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "config");
             //noinspection ConstantConditions
             final File config = new File(configPath);
             if (config.exists()) {
-                iniSessionSSHConfig(jsch, config);
+                myLog.debug("Found config at [" + config.getAbsolutePath() + "], reading.");
+                initSessionSSHConfig(jsch, config);
             } else {
                 final String keyPath = holder.getInternalProperty(TEAMCITY_DEPLOYER_SSH_DEFAULT_KEY, System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa");
                 //noinspection ConstantConditions
                 final File keyFile = new File(keyPath);
+                myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
                 initSessionKeyFile(username, password, keyFile, jsch);
             }
         } else if (SSHRunnerConstants.AUTH_METHOD_CUSTOM_KEY.equals(authMethod)) {
             final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
             final File keyFile = new File(context.getBuild().getCheckoutDirectory(), keyFilePath);
+            myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
             initSessionKeyFile(username, password, keyFile, jsch);
         } else {
+            myLog.debug("Using provided username/password");
             initSessionUserPassword(username, password, jsch);
         }
 
         mySession.connect();
     }
 
-    private void iniSessionSSHConfig(JSch jsch, File config) throws JSchException {
+    private void initSessionSSHConfig(JSch jsch, File config) throws JSchException {
         try {
             final OpenSSHConfig sshConfig = OpenSSHConfig.parseFile(config.getCanonicalPath());
             jsch.setConfigRepository(sshConfig);
