@@ -5,6 +5,7 @@ import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.InternalPropertiesHolder;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
+import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -74,7 +75,7 @@ public class SSHSessionProvider {
             }
         } else if (SSHRunnerConstants.AUTH_METHOD_CUSTOM_KEY.equals(authMethod)) {
             final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
-            final File keyFile = new File(context.getBuild().getCheckoutDirectory(), keyFilePath);
+            final File keyFile = FileUtil.resolvePath(context.getBuild().getCheckoutDirectory(), keyFilePath);
             myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
             initSessionKeyFile(username, password, keyFile, jsch);
         } else {
@@ -103,6 +104,7 @@ public class SSHSessionProvider {
     private void initSessionKeyFile(String username, String password, File keyFile, JSch jsch) throws JSchException {
         try {
             if (StringUtil.isNotEmpty(password)) {
+                myLog.debug("Adding password");
                 jsch.addIdentity(keyFile.getCanonicalPath(), password);
             } else {
                 jsch.addIdentity(keyFile.getCanonicalPath());

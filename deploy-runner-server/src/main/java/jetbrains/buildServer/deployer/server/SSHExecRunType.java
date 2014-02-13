@@ -42,7 +42,7 @@ public class SSHExecRunType extends RunType {
 
     @Override
     public PropertiesProcessor getRunnerPropertiesProcessor() {
-        return new DeployerPropertiesProcessor();
+        return new SSHDeployerPropertiesProcessor();
     }
 
     @Override

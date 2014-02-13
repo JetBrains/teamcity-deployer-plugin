@@ -29,6 +29,13 @@ public class SSHSessionProviderTest extends BaseSSHTest {
         assertSessionIsConnected();
     }
 
+    public void testCustomKeyAbsPath() throws Exception {
+        myRunnerParams.put(SSHRunnerConstants.PARAM_AUTH_METHOD, SSHRunnerConstants.AUTH_METHOD_CUSTOM_KEY);
+        myRunnerParams.put(SSHRunnerConstants.PARAM_KEYFILE, myPrivateKey.getAbsolutePath());
+        myRunnerParams.put(DeployerRunnerConstants.PARAM_PASSWORD, "passphrase");
+        assertSessionIsConnected();
+    }
+
     public void testDefaultConfig() throws Exception {
         myRunnerParams.put(SSHRunnerConstants.PARAM_AUTH_METHOD, SSHRunnerConstants.AUTH_METHOD_DEFAULT_KEY);
         final File tempConfig = myTempFiles.createTempFile("Host *\n" +
