@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 public class SmbDeployerRunType extends RunType {
 
-    final private Pattern SIMPLE_UNC_REGEX = Pattern.compile("^\\\\\\\\[^\\\\]+\\\\[^\\\\]+(\\\\[^\\\\]+)*$");
+    final private Pattern SIMPLE_UNC_REGEX = Pattern.compile("^(?:(\\\\\\\\)?%[^\\\\%\\s]+%)|(?:\\\\\\\\[^\\\\]+\\\\[^\\\\]+(\\\\[^\\\\]+)*)$");
 
     private final PluginDescriptor myDescriptor;
 
