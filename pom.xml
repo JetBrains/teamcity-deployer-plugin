@@ -25,6 +25,14 @@
                         <target>1.5</target>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.jetbrains.teamcity</groupId>
+                    <artifactId>teamcity-sdk-maven-plugin</artifactId>
+                    <version>0.1</version>
+                    <configuration>
+                        <teamcityDir>../TC_Servers/TeamCity_8.1</teamcityDir> <!-- optional -->
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
