@@ -25,7 +25,7 @@ public class SSHRunnerConstants {
     public static final String TRANSPORT_SCP = "jetbrains.buildServer.deployer.ssh.transport.scp";
     public static final String TRANSPORT_SFTP = "jetbrains.buildServer.deployer.ssh.transport.sftp";
     public static final String AUTH_METHOD_DEFAULT_KEY = "DEFAULT_KEY";
-    public static final String AUTH_METHOD_CUSTOM_KEY = "PRIVATE_KEY";
+    public static final String AUTH_METHOD_CUSTOM_KEY = "CUSTOM_KEY";
     public static final String AUTH_METHOD_USERNAME_PWD = "PWD";
 
     public String getTransportType() {
