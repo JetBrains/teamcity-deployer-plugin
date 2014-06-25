@@ -1,22 +1,22 @@
 package jetbrains.buildServer.deployer.server;
 
 import com.intellij.openapi.util.text.StringUtil;
+import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
-import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class TomcatDeployerRunType extends RunType {
+public class CargoDeployerRunType extends RunType {
 
     private final PluginDescriptor myDescriptor;
 
-    public TomcatDeployerRunType(@NotNull final RunTypeRegistry registry,
-                                 @NotNull final PluginDescriptor descriptor) {
+    public CargoDeployerRunType(@NotNull final RunTypeRegistry registry,
+                                @NotNull final PluginDescriptor descriptor) {
         registry.registerRunType(this);
         myDescriptor = descriptor;
     }
@@ -24,17 +24,17 @@ public class TomcatDeployerRunType extends RunType {
     @NotNull
     @Override
     public String getType() {
-        return DeployerRunnerConstants.TOMCAT_RUN_TYPE;
+        return DeployerRunnerConstants.CARGO_RUN_TYPE;
     }
 
     @Override
     public String getDisplayName() {
-        return "Tomcat Deployer";
+        return "Container Deployer";
     }
 
     @Override
     public String getDescription() {
-        return "Runner able to deploy WAR apps to Tomcat server";
+        return "Runner able to deploy WAR apps to different containers";
     }
 
     @Override
@@ -44,12 +44,12 @@ public class TomcatDeployerRunType extends RunType {
 
     @Override
     public String getEditRunnerParamsJspFilePath() {
-        return  myDescriptor.getPluginResourcesPath() + "editTomcatDeployerParams.jsp";
+        return  myDescriptor.getPluginResourcesPath() + "editCargoDeployerParams.jsp";
     }
 
     @Override
     public String getViewRunnerParamsJspFilePath() {
-        return  myDescriptor.getPluginResourcesPath() + "viewTomcatDeployerParams.jsp";
+        return  myDescriptor.getPluginResourcesPath() + "viewCargoDeployerParams.jsp";
     }
 
     @Override
@@ -61,7 +61,7 @@ public class TomcatDeployerRunType extends RunType {
     @Override
     public String describeParameters(@NotNull Map<String, String> parameters) {
         final StringBuilder result = new StringBuilder();
-        result.append("Target Tomcat url: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
+        result.append("Target container url: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
         final String customContext = parameters.get(DeployerRunnerConstants.PARAM_CONTAINER_CONTEXT_PATH);
         if (StringUtil.isNotEmpty(customContext)) {
             result.append('\n');

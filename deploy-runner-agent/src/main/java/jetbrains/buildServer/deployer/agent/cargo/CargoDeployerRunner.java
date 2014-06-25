@@ -1,11 +1,11 @@
-package jetbrains.buildServer.deployer.agent.tomcat;
+package jetbrains.buildServer.deployer.agent.cargo;
 
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
-public class TomcatDeployerRunner implements AgentBuildRunner {
+public class CargoDeployerRunner implements AgentBuildRunner {
 
     @NotNull
     @Override
@@ -17,13 +17,13 @@ public class TomcatDeployerRunner implements AgentBuildRunner {
         final String sourcePath = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_SOURCE_PATH);
         final String contextPath = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_CONTAINER_CONTEXT_PATH);
 
-        return new TomcatBuildProcessAdapter(target, username, password, context, sourcePath, contextPath);
+        return new CargoBuildProcessAdapter(target, username, password, context, sourcePath, contextPath);
     }
 
     @NotNull
     @Override
     public AgentBuildRunnerInfo getRunnerInfo() {
-        return new TomcatDeployerRunnerInfo();
+        return new CargoDeployerRunnerInfo();
     }
 
 

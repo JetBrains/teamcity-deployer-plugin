@@ -8,4 +8,5 @@
     <bean id="smbDeployerRunner" class="jetbrains.buildServer.deployer.agent.smb.SmbDeployerRunner"/>
     <bean id="ftpDeployerRunner" class="jetbrains.buildServer.deployer.agent.ftp.FtpDeployerRunner"/>
     <bean id="tomcatDeployerRunner" class="jetbrains.buildServer.deployer.agent.tomcat.TomcatDeployerRunner"/>
+    <bean id="cargoDeployerRunner" class="jetbrains.buildServer.deployer.agent.cargo.CargoDeployerRunner"/>
 </beans>
