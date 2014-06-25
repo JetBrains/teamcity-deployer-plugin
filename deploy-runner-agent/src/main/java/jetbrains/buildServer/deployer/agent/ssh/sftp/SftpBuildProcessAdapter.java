@@ -8,7 +8,9 @@ import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
+import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
+import jetbrains.buildServer.log.Loggers;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,6 +57,7 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
             for (ArtifactsCollection artifactsCollection : myArtifacts) {
                 int count = 0;
                 for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
+                    checkIsInterrupted();
                     final File source = fileStringEntry.getKey();
                     final String value = fileStringEntry.getValue();
                     final String destinationPath = "".equals(value) ? "." : value;
@@ -68,6 +71,8 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
             }
             channel.disconnect();
 
+        } catch (UploadInterruptedException e) {
+            myLogger.warning("SFTP upload interrupted.");
         } catch (Exception e) {
             myInternalLog.debug(e.getMessage(), e);
             throw new RunBuildException(e);

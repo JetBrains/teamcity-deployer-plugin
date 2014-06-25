@@ -7,6 +7,7 @@ import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
+import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.FileUtil;
 import org.apache.log4j.Logger;
@@ -83,7 +84,8 @@ class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
                 final int numOfUploadedFiles = upload(artifactsCollection.getFilePathMap(), destinationDir);
                 myLogger.message("Uploaded [" + numOfUploadedFiles + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
             }
-
+        } catch (UploadInterruptedException e) {
+            myLogger.warning("SMB upload interrupted.");
         } catch (Exception e) {
             Loggers.AGENT.error(settingsString, e);
             throw new RunBuildException(e);
@@ -93,6 +95,7 @@ class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
     private int upload(Map<File, String> filePathMap, SmbFile destination) throws IOException {
         int count = 0;
         for (Map.Entry<File, String> fileDestEntry : filePathMap.entrySet()) {
+            checkIsInterrupted();
             final File source = fileDestEntry.getKey();
             final String targetPath = fileDestEntry.getValue();
             final SmbFile destDirectory;
@@ -106,19 +109,19 @@ class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
 
             Loggers.AGENT.debug("Uploading source=[" + source.getAbsolutePath() + "] to \n" +
                     "destDirectory=[" + destDirectory.getCanonicalPath() +
-                    "] destFile=[" +  destFile.getCanonicalPath() +"]");
+                    "] destFile=[" + destFile.getCanonicalPath() + "]");
 
             FileInputStream inputStream = null;
             OutputStream outputStream = null;
 
-            myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destDirectory.getCanonicalPath() + "] destFile=[" +  destFile.getCanonicalPath() +"]");
+            myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destDirectory.getCanonicalPath() + "] destFile=[" + destFile.getCanonicalPath() + "]");
             try {
                 if (!destDirectory.exists()) {
                     destDirectory.mkdirs();
                 }
                 inputStream = new FileInputStream(source);
                 outputStream = destFile.getOutputStream();
-                FileUtil.copy(inputStream, outputStream);
+                copyInterruptibly(inputStream, outputStream);
                 outputStream.flush();
             } finally {
                 FileUtil.close(inputStream);
@@ -128,6 +131,15 @@ class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
             count++;
         }
         return count;
+    }
+
+    private void copyInterruptibly(@NotNull FileInputStream inputStream, @NotNull OutputStream outputStream) throws IOException {
+        byte[] buf = new byte[4096];
+        int read;
+        while ((read = inputStream.read(buf)) > -1) {
+            checkIsInterrupted();
+            outputStream.write(buf, 0, read);
+        }
     }
 
 }

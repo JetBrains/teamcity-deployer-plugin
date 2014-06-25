@@ -7,6 +7,7 @@ import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
+import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
@@ -86,7 +87,8 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
             upload(session, ".", relativeDestinations);
             upload(session, "/", absDestinations);
 
-
+        } catch (UploadInterruptedException e) {
+            myLogger.warning("SCP upload interrupted.");
         } catch (Exception e) {
             throw new RunBuildException(e);
         } finally {
@@ -127,6 +129,7 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
                     final String destination = filePathEntry.getValue();
                     final ScpOperation operationChain = ScpOperationBuilder.getCopyFileOperation(source, destination);
                     myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destination + "]");
+                    checkIsInterrupted();
                     operationChain.execute(out, in);
                     myInternalLog.debug("done transferring [" + source.getAbsolutePath() + "]");
                     count++;

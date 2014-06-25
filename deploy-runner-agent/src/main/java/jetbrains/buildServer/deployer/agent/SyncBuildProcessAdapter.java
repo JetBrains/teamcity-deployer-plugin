@@ -67,4 +67,8 @@ public abstract class SyncBuildProcessAdapter extends BuildProcessAdapter {
 
     protected abstract void runProcess() throws RunBuildException;
 
+    protected void checkIsInterrupted() throws UploadInterruptedException {
+        if (isInterrupted()) throw new UploadInterruptedException();
+    }
+
 }

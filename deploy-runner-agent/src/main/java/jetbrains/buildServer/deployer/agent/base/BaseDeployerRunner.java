@@ -8,6 +8,7 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsBuilder;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsBuilderAdapter;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
+import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -31,9 +32,9 @@ public abstract class BaseDeployerRunner implements AgentBuildRunner {
                                            @NotNull final BuildRunnerContext context) throws RunBuildException {
 
         final Map<String,String> runnerParameters = context.getRunnerParameters();
-        final String username = runnerParameters.get(DeployerRunnerConstants.PARAM_USERNAME);
-        final String password = runnerParameters.get(DeployerRunnerConstants.PARAM_PASSWORD);
-        final String target = runnerParameters.get(DeployerRunnerConstants.PARAM_TARGET_URL);
+        final String username = StringUtil.emptyIfNull(runnerParameters.get(DeployerRunnerConstants.PARAM_USERNAME));
+        final String password = StringUtil.emptyIfNull(runnerParameters.get(DeployerRunnerConstants.PARAM_PASSWORD));
+        final String target = StringUtil.emptyIfNull(runnerParameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
         final String sourcePaths = runnerParameters.get(DeployerRunnerConstants.PARAM_SOURCE_PATH);
 
         final Collection<ArtifactsPreprocessor> preprocessors = myExtensionHolder.getExtensions(ArtifactsPreprocessor.class);

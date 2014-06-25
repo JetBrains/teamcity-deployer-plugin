@@ -6,9 +6,11 @@ import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
+import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.StringUtil;
+import jetbrains.buildServer.util.WaitFor;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,6 +20,7 @@ import java.net.URLDecoder;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
@@ -47,63 +50,104 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     @Override
     public void runProcess() throws RunBuildException {
 
-        FTPClient client = new FTPClient();
+        final FTPClient client = new FTPClient();
         try {
-            final URL targetUrl = new URL(myTarget);
-            final String host = targetUrl.getHost();
-            final int port = targetUrl.getPort();
-            final String encodedPath = targetUrl.getPath();
+            final AtomicReference<Exception> innerException = new AtomicReference<Exception>();
+            final Runnable interruptibleBody = new Runnable() {
+                public void run() {
+                    try {
+                        final URL targetUrl = new URL(myTarget);
+                        final String host = targetUrl.getHost();
+                        final int port = targetUrl.getPort();
+                        final String encodedPath = targetUrl.getPath();
 
-            final String path;
-            if (encodedPath.length() > 0) {
-                path = URLDecoder.decode(encodedPath.substring(1), "UTF-8");
-            } else {
-                path = "";
-            }
+                        final String path;
+                        if (encodedPath.length() > 0) {
+                            path = URLDecoder.decode(encodedPath.substring(1), "UTF-8");
+                        } else {
+                            path = "";
+                        }
 
-            if (port > 0) {
-                client.connect(host, port);
-            } else {
-                client.connect(host);
-            }
+                        if (port > 0) {
+                            client.connect(host, port);
+                        } else {
+                            client.connect(host);
+                        }
 
-            client.login(myUsername, myPassword);
+                        client.login(myUsername, myPassword);
 
-            if (FTPRunnerConstants.TRANSFER_MODE_BINARY.equals(myTransferMode)) {
-                client.setType(FTPClient.TYPE_BINARY);
-            } else if (FTPRunnerConstants.TRANSFER_MODE_ASCII.equals(myTransferMode)) {
-                client.setType(FTPClient.TYPE_TEXTUAL);
-            }
+                        if (FTPRunnerConstants.TRANSFER_MODE_BINARY.equals(myTransferMode)) {
+                            client.setType(FTPClient.TYPE_BINARY);
+                        } else if (FTPRunnerConstants.TRANSFER_MODE_ASCII.equals(myTransferMode)) {
+                            client.setType(FTPClient.TYPE_TEXTUAL);
+                        }
 
-            if (!StringUtil.isEmpty(path)) {
-                createPath(client, path);
-                client.changeDirectory(path);
-            }
+                        if (!StringUtil.isEmpty(path)) {
+                            createPath(client, path);
+                            client.changeDirectory(path);
+                        }
 
-            final String remoteRoot = client.currentDirectory();
+                        final String remoteRoot = client.currentDirectory();
 
-            myLogger.message("Starting upload via FTP to " + myTarget);
+                        myLogger.message("Starting upload via FTP to " + myTarget);
 
-            for (ArtifactsCollection artifactsCollection : myArtifacts) {
-                int count = 0;
-                for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
-                    final File source = fileStringEntry.getKey();
-                    final String destinationDir = fileStringEntry.getValue();
+                        for (ArtifactsCollection artifactsCollection : myArtifacts) {
+                            int count = 0;
+                            for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
+                                final File source = fileStringEntry.getKey();
+                                final String destinationDir = fileStringEntry.getValue();
 
-                    if (StringUtil.isNotEmpty(destinationDir)) {
-                        createPath(client, destinationDir);
-                        client.changeDirectory(destinationDir);
+                                if (StringUtil.isNotEmpty(destinationDir)) {
+                                    createPath(client, destinationDir);
+                                    client.changeDirectory(destinationDir);
+                                }
+                                myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationDir + "] under [" + remoteRoot + "]");
+                                checkIsInterrupted();
+                                client.upload(source);
+                                client.changeDirectory(remoteRoot);
+                                checkIsInterrupted();
+                                myInternalLog.debug("done transferring [" + source.getAbsolutePath() + "]");
+                                count++;
+                            }
+                            myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
+                        }
+                    } catch (Exception t) {
+                        innerException.set(t);
                     }
-                    myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationDir + "] under [" + remoteRoot + "]");
-                    client.upload(source);
-                    client.changeDirectory(remoteRoot);
-                    myInternalLog.debug("done transferring [" + source.getAbsolutePath() + "]");
-                    count++;
                 }
-                myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
+            };
+
+
+            final Thread uploadThread = new Thread(interruptibleBody);
+
+            uploadThread.start();
+
+            new WaitFor() {
+                @Override
+                protected boolean condition() {
+                    if (uploadThread.getState() == Thread.State.TERMINATED) {
+                        return true;
+                    }
+                    try {
+                        if (isInterrupted()) {
+                            client.abortCurrentDataTransfer(true);
+                            uploadThread.join();
+                            return true;
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    return false;
+                }
+            };
+
+            final Exception exception = innerException.get();
+            if (exception != null) {
+                throw exception;
             }
 
-
+        } catch (UploadInterruptedException e) {
+            myLogger.warning("Ftp upload interrupted.");
         } catch (Exception e) {
             throw new RunBuildException(e);
         } finally {
@@ -127,6 +171,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         }
         boolean prevDirExisted = true;
         while (pathTokenizer.hasMoreTokens()) {
+            checkIsInterrupted();
             final String nextDir = pathTokenizer.nextToken();
             if (prevDirExisted && dirExists(nextDir, client)) {
                 client.changeDirectory(nextDir);
@@ -138,7 +183,6 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                 } catch (FTPException e) {
                     createException = e;
                 }
-
                 try {
                     client.changeDirectory(nextDir);
                 } catch (FTPException f) {
