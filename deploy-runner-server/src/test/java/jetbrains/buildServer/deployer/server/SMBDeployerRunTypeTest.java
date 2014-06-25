@@ -33,6 +33,14 @@ public class SMBDeployerRunTypeTest extends  DeployerRunTypeTest {
         assertIllegalTarget("host");
         assertIllegalTarget("..abracadabra");
         assertIllegalTarget("\\\\host");
+        assertIllegalTarget("%variable");
+        assertIllegalTarget("variable%");
+        assertLegalTarget("%variable%");
+        assertLegalTarget("\\\\%variable%");
+        assertLegalTarget("\\\\host\\%variable%");
+        assertLegalTarget("\\\\host\\%variable%\\subdir");
+        assertLegalTarget("\\\\host\\%variable%\\sub.dir");
+        assertLegalTarget("\\\\host\\%variable%\\subdir\\sub.dir");
         assertLegalTarget("\\\\host\\share");
         assertLegalTarget("\\\\host\\c$");
         assertLegalTarget("\\\\host\\share\\subdir");
