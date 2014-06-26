@@ -8,11 +8,4 @@
     </parent>
     <artifactId>deploy-runner-common</artifactId>
     <packaging>jar</packaging>
-    <dependencies>
-        <dependency>
-            <groupId>org.codehaus.cargo</groupId>
-            <artifactId>cargo-core-uberjar</artifactId>
-            <version>1.4.8</version>
-        </dependency>
-    </dependencies>
 </project>

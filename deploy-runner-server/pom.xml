@@ -24,6 +24,19 @@
         </dependency>
 
         <dependency>
+            <groupId>org.codehaus.cargo</groupId>
+            <artifactId>cargo-core-uberjar</artifactId>
+            <version>1.4.8</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>xercesImpl</artifactId>
+                    <groupId>xerces</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.jetbrains.teamcity</groupId>
             <artifactId>tests-support</artifactId>
             <version>${teamcity-version}</version>
