@@ -50,10 +50,4 @@
             <span class="smallNote">Path to war archive to deploy</span>
         </td>
     </tr>
-    <tr>
-        <th><label for="jetbrains.buildServer.deployer.container.contextPath">Context path: </label></th>
-        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_CONTAINER_CONTEXT_PATH%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Optional. Context path on server, defaults to war archive name</span>
-        </td>
-    </tr>
 </l:settingsGroup>
