@@ -1,6 +1,5 @@
 package jetbrains.buildServer.deployer.server.cargo;
 
-import jetbrains.buildServer.log.Loggers;
 import org.codehaus.cargo.container.Container;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.configuration.Configuration;
