@@ -1,7 +1,8 @@
-package jetbrains.buildServer.deployer.server;
+package jetbrains.buildServer.deployer.server.cargo;
 
 import com.intellij.openapi.util.text.StringUtil;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
+import jetbrains.buildServer.deployer.server.DeployerPropertiesProcessor;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
