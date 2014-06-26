@@ -11,7 +11,7 @@
     <tr>
         <th><label for="jetbrains.buildServer.deployer.targetUrl">Target: <l:star/></label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter target Tomcat server hostname or IP. "Manager" application must be installed on targer server</span><span class="error" id="error_jetbrains.buildServer.deployer.targetUrl"></span>
+            <span class="smallNote">Enter target container hostname or IP</span><span class="error" id="error_jetbrains.buildServer.deployer.targetUrl"></span>
         </td>
     </tr>
     <tr>
