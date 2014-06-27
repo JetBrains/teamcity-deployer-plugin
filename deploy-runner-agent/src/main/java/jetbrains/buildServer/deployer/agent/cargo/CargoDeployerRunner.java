@@ -15,9 +15,8 @@ public class CargoDeployerRunner implements AgentBuildRunner {
         final String password = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
         final String target = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
         final String sourcePath = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_SOURCE_PATH);
-        final String contextPath = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_CONTAINER_CONTEXT_PATH);
 
-        return new CargoBuildProcessAdapter(target, username, password, context, sourcePath, contextPath);
+        return new CargoBuildProcessAdapter(target, username, password, context, sourcePath);
     }
 
     @NotNull

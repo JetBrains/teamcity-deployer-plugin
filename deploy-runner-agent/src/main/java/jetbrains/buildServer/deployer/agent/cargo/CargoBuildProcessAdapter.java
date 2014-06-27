@@ -4,6 +4,7 @@ import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
+import jetbrains.buildServer.util.StringUtil;
 import org.codehaus.cargo.container.Container;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.configuration.Configuration;
@@ -11,9 +12,9 @@ import org.codehaus.cargo.container.configuration.ConfigurationType;
 import org.codehaus.cargo.container.deployable.Deployable;
 import org.codehaus.cargo.container.deployable.DeployableType;
 import org.codehaus.cargo.container.deployer.Deployer;
-import org.codehaus.cargo.container.deployer.URLDeployableMonitor;
 import org.codehaus.cargo.container.property.GeneralPropertySet;
 import org.codehaus.cargo.container.property.RemotePropertySet;
+import org.codehaus.cargo.container.property.ServletPropertySet;
 import org.codehaus.cargo.generic.DefaultContainerFactory;
 import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
@@ -29,28 +30,41 @@ import java.io.File;
  */
 public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
 
-    private final String myTarget;
+    private final String myHost;
+    private final String myPort;
     private final String myUsername;
     private final String myPassword;
     private final BuildRunnerContext myContext;
     private final String mySourcePath;
-    private final String myContextPath;
     private final String myContainerType;
 
     public CargoBuildProcessAdapter(@NotNull String target,
                                     @NotNull String username,
                                     @NotNull String password,
                                     @NotNull BuildRunnerContext context,
-                                    @NotNull String sourcePath,
-                                    @NotNull String contextPath) {
+                                    @NotNull String sourcePath) {
         super(context.getBuild().getBuildLogger());
-        myTarget = target;
+        myHost = getHost(target);
+        myPort = getPort(target);
         myUsername = username;
         myPassword = password;
         myContext = context;
         mySourcePath = sourcePath;
-        myContextPath = contextPath;
         myContainerType = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_CONTAINER_TYPE);
+    }
+
+    private String getHost(@NotNull String target) {
+        if (target.indexOf(':') > 0) {
+            return target.substring(0, target.indexOf(':'));
+        }
+        return target;
+    }
+
+    private String getPort(@NotNull String target) {
+        if (target.indexOf(':') > 0) {
+            return target.substring(target.indexOf(':') + 1);
+        }
+        return "";
     }
 
     @Override
@@ -60,7 +74,11 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
 
         configuration.setProperty(RemotePropertySet.USERNAME, myUsername);
         configuration.setProperty(RemotePropertySet.PASSWORD, myPassword);
-        configuration.setProperty(GeneralPropertySet.HOSTNAME, myTarget);
+        configuration.setProperty(GeneralPropertySet.HOSTNAME, myHost);
+        if (!StringUtil.isEmpty(myPort)) {
+            configuration.setProperty(ServletPropertySet.PORT, myPort);
+        }
+
 
         final DefaultContainerFactory containerFactory = new DefaultContainerFactory();
         final Container container = containerFactory.createContainer(myContainerType, ContainerType.REMOTE, configuration);
@@ -70,8 +88,14 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
 
         final DefaultDeployableFactory deployableFactory = new DefaultDeployableFactory();
         final Deployable deployable = deployableFactory.createDeployable(container.getId(), getLocation(mySourcePath), DeployableType.WAR);
-        myLogger.message("Deploying [" + mySourcePath + "] to [" + myTarget + "], container type [" + myContainerType +"]");
-        deployer.deploy(deployable);
+        myLogger.message("Deploying [" + mySourcePath + "] to ["
+                + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
+                + "], container type [" + myContainerType +"]");
+        try {
+            deployer.deploy(deployable);
+        } catch (Exception e) {
+            throw new RunBuildException(e);
+        }
         myLogger.message("Deploy finished.");
     }
 
