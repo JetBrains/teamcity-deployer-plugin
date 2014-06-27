@@ -1,6 +1,5 @@
 package jetbrains.buildServer.deployer.server.cargo;
 
-import com.intellij.openapi.util.text.StringUtil;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.server.DeployerPropertiesProcessor;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
@@ -61,13 +60,6 @@ public class CargoDeployerRunType extends RunType {
     @NotNull
     @Override
     public String describeParameters(@NotNull Map<String, String> parameters) {
-        final StringBuilder result = new StringBuilder();
-        result.append("Target container url: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
-        final String customContext = parameters.get(DeployerRunnerConstants.PARAM_CONTAINER_CONTEXT_PATH);
-        if (StringUtil.isNotEmpty(customContext)) {
-            result.append('\n');
-            result.append("Web app context: ").append(customContext);
-        }
-        return result.toString();
+        return "Target container url: " + parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL);
     }
 }
