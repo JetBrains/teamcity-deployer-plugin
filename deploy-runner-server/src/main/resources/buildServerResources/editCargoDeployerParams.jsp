@@ -22,7 +22,10 @@
                         <props:option value="${container.id}"><c:out value="${container.name}"/></props:option>
                 </c:forEach>
             </props:selectProperty>
-            <span class="smallNote">Select type of remote container</span>
+            <span class="smallNote">
+                Select type of remote container. Some containers may have additional requirements.<br/>
+                Please refer to <a href="http://cargo.codehaus.org">Cargo documentation</a> for more details
+            </span>
         </td>
 
     </tr>
