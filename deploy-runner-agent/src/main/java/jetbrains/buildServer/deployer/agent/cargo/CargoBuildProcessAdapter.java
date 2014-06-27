@@ -69,29 +69,30 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
 
     @Override
     protected void runProcess() throws RunBuildException {
-        final ConfigurationFactory configFactory = new DefaultConfigurationFactory();
-        final Configuration configuration = configFactory.createConfiguration(myContainerType, ContainerType.REMOTE, ConfigurationType.RUNTIME);
-
-        configuration.setProperty(RemotePropertySet.USERNAME, myUsername);
-        configuration.setProperty(RemotePropertySet.PASSWORD, myPassword);
-        configuration.setProperty(GeneralPropertySet.HOSTNAME, myHost);
-        if (!StringUtil.isEmpty(myPort)) {
-            configuration.setProperty(ServletPropertySet.PORT, myPort);
-        }
-
-
-        final DefaultContainerFactory containerFactory = new DefaultContainerFactory();
-        final Container container = containerFactory.createContainer(myContainerType, ContainerType.REMOTE, configuration);
-
-        final DefaultDeployerFactory deployerFactory  = new DefaultDeployerFactory();
-        final Deployer deployer = deployerFactory.createDeployer(container);
-
-        final DefaultDeployableFactory deployableFactory = new DefaultDeployableFactory();
-        final Deployable deployable = deployableFactory.createDeployable(container.getId(), getLocation(mySourcePath), DeployableType.WAR);
-        myLogger.message("Deploying [" + mySourcePath + "] to ["
-                + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
-                + "], container type [" + myContainerType +"]");
         try {
+            final ConfigurationFactory configFactory = new DefaultConfigurationFactory();
+            final Configuration configuration = configFactory.createConfiguration(myContainerType, ContainerType.REMOTE, ConfigurationType.RUNTIME);
+
+            configuration.setProperty(RemotePropertySet.USERNAME, myUsername);
+            configuration.setProperty(RemotePropertySet.PASSWORD, myPassword);
+            configuration.setProperty(GeneralPropertySet.HOSTNAME, myHost);
+            if (!StringUtil.isEmpty(myPort)) {
+                configuration.setProperty(ServletPropertySet.PORT, myPort);
+            }
+
+
+            final DefaultContainerFactory containerFactory = new DefaultContainerFactory();
+            final Container container = containerFactory.createContainer(myContainerType, ContainerType.REMOTE, configuration);
+
+            final DefaultDeployerFactory deployerFactory  = new DefaultDeployerFactory();
+            final Deployer deployer = deployerFactory.createDeployer(container);
+
+            final DefaultDeployableFactory deployableFactory = new DefaultDeployableFactory();
+            final Deployable deployable = deployableFactory.createDeployable(container.getId(), getLocation(mySourcePath), DeployableType.WAR);
+            myLogger.message("Deploying [" + mySourcePath + "] to ["
+                    + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
+                    + "], container type [" + myContainerType +"]");
+
             deployer.deploy(deployable);
         } catch (Exception e) {
             throw new RunBuildException(e);
