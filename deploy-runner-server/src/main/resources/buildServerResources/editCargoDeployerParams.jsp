@@ -5,8 +5,6 @@
 <%@ taglib prefix="forms" tagdir="/WEB-INF/tags/forms" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 
-<jsp:useBean id="cargoContainersBean" scope="request" class="jetbrains.buildServer.deployer.server.cargo.CargoContainersBean"/>
-
 <l:settingsGroup title="Deployment Target">
     <tr>
         <th><label for="jetbrains.buildServer.deployer.targetUrl">Target: <l:star/></label></th>
@@ -18,13 +16,13 @@
         <th><label for="jetbrains.buildServer.deployer.container.type">Container Type: <l:star/></label></th>
         <td>
             <props:selectProperty name="<%=DeployerRunnerConstants.PARAM_CONTAINER_TYPE%>">
-                <c:forEach var="container" items="${cargoContainersBean.containerIds}">
-                        <props:option value="${container.id}"><c:out value="${container.name}"/></props:option>
-                </c:forEach>
+                        <props:option value="tomcat5x"><c:out value="Tomcat 5.x"/></props:option>
+                        <props:option value="tomcat6x"><c:out value="Tomcat 6.x"/></props:option>
+                        <props:option value="tomcat7x"><c:out value="Tomcat 7.x"/></props:option>
+                        <props:option value="tomcat8x"><c:out value="Tomcat 8.x"/></props:option>
             </props:selectProperty>
             <span class="smallNote">
-                Select type of remote container. Some containers may have additional requirements.<br/>
-                Please refer to <a href="http://cargo.codehaus.org">Cargo documentation</a> for more details
+                Default "Manager" web app must be deployed to target Tomcat. User must have role "manager-script".
             </span>
         </td>
 

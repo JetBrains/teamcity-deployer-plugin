@@ -16,6 +16,13 @@ import java.util.*;
  * Created by Nikita.Skvortsov
  * date: 26.06.2014.
  */
+/*
+ Can not be used until proper third party dependencies resolution mechanics is implemented
+ See Cargo documentation on Jboss[1] and Glassfish (JSR88) [2] support.
+ 1 - http://cargo.codehaus.org/JBoss+Remote+Deployer
+ 2 - http://cargo.codehaus.org/JSR88
+*/
+
 public class CargoContainersBean {
     final List<ContainerBean> containerIds = new ArrayList<ContainerBean>();
 
@@ -26,9 +33,7 @@ public class CargoContainersBean {
             if (idTypeEntry.getValue().contains(ContainerType.REMOTE)) {
                 final String id = idTypeEntry.getKey();
                 final String name = getNameOrId(factory, cfgFactory, id);
-                if (!name.contains("JBoss")) {
-                    containerIds.add(new ContainerBean(id, name));
-                }
+                containerIds.add(new ContainerBean(id, name));
             }
         }
         Collections.sort(containerIds, new Comparator<ContainerBean>() {
