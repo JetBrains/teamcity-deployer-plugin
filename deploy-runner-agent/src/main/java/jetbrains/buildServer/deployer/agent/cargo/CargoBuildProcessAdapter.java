@@ -20,6 +20,8 @@ import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
 import org.codehaus.cargo.generic.deployable.DefaultDeployableFactory;
 import org.codehaus.cargo.generic.deployer.DefaultDeployerFactory;
+import org.codehaus.cargo.util.log.LogLevel;
+import org.codehaus.cargo.util.log.SimpleLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -93,6 +95,10 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
                     + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
                     + "], container type [" + myContainerType +"]");
 
+
+            final SimpleLogger simpleLogger = new SimpleLogger();
+            simpleLogger.setLevel(LogLevel.DEBUG);
+            deployer.setLogger(simpleLogger);
             deployer.deploy(deployable);
         } catch (Exception e) {
             throw new RunBuildException(e);
