@@ -6,7 +6,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
-        <teamcity-version>8.1</teamcity-version>
+        <teamcity-version>8.1.3</teamcity-version>
     </properties>
     <repositories>
         <repository>
@@ -42,12 +42,4 @@
         <module>deploy-runner-common</module>
         <module>build</module>
     </modules>
-    <dependencies>
-        <dependency>
-            <groupId>org.jetbrains.teamcity.idea</groupId>
-            <artifactId>util</artifactId>
-            <version>95.677</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 </project>
