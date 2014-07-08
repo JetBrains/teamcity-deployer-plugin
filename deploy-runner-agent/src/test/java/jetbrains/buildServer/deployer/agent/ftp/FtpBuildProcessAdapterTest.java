@@ -1,8 +1,8 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
-import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
 import org.apache.ftpserver.FtpServer;
@@ -32,13 +32,12 @@ import static org.testng.Assert.*;
  * Created by Nikita.Skvortsov
  * Date: 10/3/12, 4:22 PM
  */
-public class FtpBuildProcessAdapterTest {
+public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 
     private static final int TEST_PORT = 55369;
 
 
     private FtpServer myServer;
-    private TempFiles myTempFiles;
     private File myRemoteDir;
 
     private final String myUsername = "myUsername";
@@ -48,11 +47,12 @@ public class FtpBuildProcessAdapterTest {
     private final Map<String, String> myRunnerParameters = new HashMap<String, String>();
 
     @BeforeMethod
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
 
         myArtifactsCollections = new ArrayList<ArtifactsCollection>();
 
-        myTempFiles = new TempFiles();
         myRemoteDir = myTempFiles.createTempDir();
 
         final FtpServerFactory serverFactory = new FtpServerFactory();
@@ -102,9 +102,10 @@ public class FtpBuildProcessAdapterTest {
     }
 
     @AfterMethod
+    @Override
     public void tearDown() throws Exception {
         myServer.stop();
-        myTempFiles.cleanup();
+        super.tearDown();
     }
 
     @Test

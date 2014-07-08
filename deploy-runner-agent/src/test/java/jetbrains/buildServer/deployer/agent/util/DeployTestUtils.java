@@ -3,6 +3,7 @@ package jetbrains.buildServer.deployer.agent.util;
 import com.intellij.openapi.util.text.StringUtil;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.TempFiles;
+import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProcess;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.util.FileUtil;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -30,7 +32,8 @@ public class DeployTestUtils {
                 return process.isFinished();
             }
         };
-        assertTrue(process.isFinished(), "Failed to finish test in time");
+        assertThat(process.isFinished()).describedAs("Failed to finish test in time").isTrue();
+        assertThat(process.waitFor()).isEqualTo(BuildFinishedStatus.FINISHED_SUCCESS);
     }
 
     public static ArtifactsCollection buildArtifactsCollection(final TempFiles tempFiles, String... destinationDirs) throws IOException {

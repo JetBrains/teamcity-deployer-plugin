@@ -1,8 +1,8 @@
 package jetbrains.buildServer.deployer.agent.cargo;
 
 import com.intellij.openapi.util.io.StreamUtil;
-import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.*;
+import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.util.FileUtil;
@@ -25,17 +25,17 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.Assert.assertTrue;
 
 /**
  * Created by Nikita.Skvortsov
  * Date: 10/3/12, 4:22 PM
  */
-public class CargoBuildProcessAdapterTest {
+public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
 
     private static final int TEST_PORT = 55369;
 
-    private TempFiles myTempFiles;
     private BuildRunnerContext myContext;
     private final Map<String, String> myRunnerParameters = new HashMap<String, String>();
     private InstalledLocalContainer myTomcat;
@@ -43,8 +43,9 @@ public class CargoBuildProcessAdapterTest {
 
 
     @BeforeMethod
+    @Override
     public void setUp() throws Exception {
-        myTempFiles = new TempFiles();
+        super.setUp();
 
         final File extractDir = myTempFiles.createTempDir();
         final File cfgDir = myTempFiles.createTempDir();
@@ -84,9 +85,10 @@ public class CargoBuildProcessAdapterTest {
     }
 
     @AfterMethod
+    @Override
     public void tearDown() throws Exception {
         myTomcat.stop();
-        myTempFiles.cleanup();
+        super.tearDown();
     }
 
     @Test
@@ -116,7 +118,8 @@ public class CargoBuildProcessAdapterTest {
 
         final InputStream stream = url.openStream();
         final String text = StreamUtil.readText(stream);
-        assertTrue(text.contains("Hello!  The time is now"), "Actual text:\n" + text);
+
+        assertThat(text).contains("Hello!  The time is now");
 
         FileUtil.copy(getTestResource("simple2.war"), new File(workingDir,"simple.war"));
         final BuildProcess process2 = getProcess("127.0.0.1:" + TEST_PORT, "simple.war");
@@ -124,7 +127,8 @@ public class CargoBuildProcessAdapterTest {
 
         final InputStream stream2 = url.openStream();
         final String text2 = StreamUtil.readText(stream2);
-        assertTrue(text2.contains("Hello v2!  The time is now"), "Actual text:\n" + text2);
+
+        assertThat(text2).contains("Hello v2!  The time is now");
     }
 
 

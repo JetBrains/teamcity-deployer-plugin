@@ -4,6 +4,7 @@ import com.intellij.openapi.util.SystemInfo;
 import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import org.apache.sshd.SshServer;
@@ -32,7 +33,7 @@ import java.util.*;
  * Created by User
  * date: 29.07.13.
  */
-public class BaseSSHTest {
+public class BaseSSHTest extends BaseDeployerTest {
 
     protected static final int PORT_NUM = 15655;
     protected static final String HOST_ADDR = "127.0.0.1";
@@ -60,9 +61,9 @@ public class BaseSSHTest {
     protected SshServer myServer;
 
     @BeforeMethod
+    @Override
     public void setUp() throws Exception {
-        myTempFiles = new TempFiles();
-
+        super.setUp();
 
         myRemoteDir = myTempFiles.createTempDir();
 
@@ -138,9 +139,10 @@ public class BaseSSHTest {
     }
 
     @AfterMethod
+    @Override
     public void tearDown() throws Exception {
-        myTempFiles.cleanup();
         myServer.stop(true);
         System.setProperty("user.dir", oldUserDir);
+        super.tearDown();
     }
 }
