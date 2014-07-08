@@ -99,7 +99,7 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
             final SimpleLogger simpleLogger = new SimpleLogger();
             simpleLogger.setLevel(LogLevel.DEBUG);
             deployer.setLogger(simpleLogger);
-            deployer.deploy(deployable);
+            deployer.redeploy(deployable);
         } catch (Exception e) {
             throw new RunBuildException(e);
         }
