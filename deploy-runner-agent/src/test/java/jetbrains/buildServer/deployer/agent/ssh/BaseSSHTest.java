@@ -1,7 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.intellij.openapi.util.SystemInfo;
-import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
@@ -55,7 +54,6 @@ public class BaseSSHTest extends BaseDeployerTest {
     protected BuildRunnerContext myContext;
     protected File myPassphraselessKey;
     protected File myPrivateKey;
-    protected TempFiles myTempFiles;
     protected File myRemoteDir = null;
     protected String oldUserDir = null;
     protected SshServer myServer;
