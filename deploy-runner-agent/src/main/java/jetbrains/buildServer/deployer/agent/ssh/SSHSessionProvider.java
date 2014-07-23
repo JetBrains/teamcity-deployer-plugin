@@ -91,6 +91,7 @@ public class SSHSessionProvider {
             final OpenSSHConfig sshConfig = OpenSSHConfig.parseFile(config.getCanonicalPath());
             jsch.setConfigRepository(sshConfig);
             mySession = jsch.getSession(myHost);
+            mySession.setConfig("PreferredAuthentications", "publickey");
         } catch (IOException e) {
             throw new JSchException("Error parsing ssh config file", e);
         }
@@ -99,6 +100,7 @@ public class SSHSessionProvider {
     private void initSessionUserPassword(String username, String password, JSch jsch) throws JSchException {
         mySession = jsch.getSession(username, myHost, myPort);
         mySession.setPassword(password);
+        mySession.setConfig("PreferredAuthentications", "password");
     }
 
     private void initSessionKeyFile(String username, String password, File keyFile, JSch jsch) throws JSchException {
@@ -110,6 +112,7 @@ public class SSHSessionProvider {
                 jsch.addIdentity(keyFile.getCanonicalPath());
             }
             mySession = jsch.getSession(username, myHost, myPort);
+            mySession.setConfig("PreferredAuthentications", "publickey");
         } catch (IOException e) {
             throw new JSchException("Failed to use key file", e);
         }
