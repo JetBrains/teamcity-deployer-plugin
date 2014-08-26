@@ -196,10 +196,11 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 
     @Test
     public void testSecureConnection() throws Exception {
-        System.setProperty("javax.net.ssl.trustStore", getTestResource("ftpserver.jks").getAbsolutePath());
-        System.setProperty("javax.net.ssl.trustStorePassword", "password");
+//        Following code can help to test real certificates
+//        System.setProperty("javax.net.ssl.trustStore", getTestResource("ftpserver.jks").getAbsolutePath());
+//        System.setProperty("javax.net.ssl.trustStorePassword", "password");
 
-        myRunnerParameters.put(FTPRunnerConstants.SSL_MODE, String.valueOf(FTPClient.SECURITY_FTPES));
+        myRunnerParameters.put(FTPRunnerConstants.PARAM_SSL_MODE, String.valueOf(FTPClient.SECURITY_FTPES));
         myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
         final BuildProcess process = getProcess("localhost:" + TEST_PORT);
         DeployTestUtils.runProcess(process, 5000);

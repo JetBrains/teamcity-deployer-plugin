@@ -15,10 +15,14 @@ import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.net.ssl.SSLException;
+import javax.net.ssl.*;
 import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +43,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     private final String mySecureMode;
     private final List<Integer> knownMods = Arrays.asList(FTPClient.SECURITY_FTP,
             FTPClient.SECURITY_FTPS, FTPClient.SECURITY_FTPES);
+    private final SSLSocketFactory myTrustfulSocketFactory = createTrustfulSocketFactory();
 
     public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                   @NotNull final String target,
@@ -51,7 +56,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         myPassword = password;
         myArtifacts = artifactsCollections;
         myTransferMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_TRANSFER_MODE);
-        mySecureMode = context.getRunnerParameters().get(FTPRunnerConstants.SSL_MODE);
+        mySecureMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_SSL_MODE);
     }
 
     @Override
@@ -76,10 +81,8 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                         }
 
                         final int secureMode = determineSecureMode(mySecureMode);
-                        if (secureMode != FTPClient.SECURITY_FTP) {
-                            myLogger.message("Using secure" + (secureMode == FTPClient.SECURITY_FTPES ? "FTPES" : "FTPS") + " connection." );
-                        }
 
+                        client.setSSLSocketFactory(myTrustfulSocketFactory);
                         client.setSecurity(secureMode);
 
                         if (port > 0) {
@@ -103,7 +106,8 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
                         final String remoteRoot = client.currentDirectory();
 
-                        myLogger.message("Starting upload via FTP to " + myTarget);
+                        myLogger.message("Starting upload via " + (secureMode == FTPClient.SECURITY_FTP ? "FTP" :
+                                                                  (secureMode == FTPClient.SECURITY_FTPS ? "FTPS" : "FTPES")) + " to " + myTarget);
 
                         for (ArtifactsCollection artifactsCollection : myArtifacts) {
                             int count = 0;
@@ -183,6 +187,28 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                 Loggers.AGENT.error(e.getMessage(), e);
             }
         }
+    }
+
+    private SSLSocketFactory createTrustfulSocketFactory() {
+        TrustManager[] trustManager = new TrustManager[] { new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+            }
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+            }
+        } };
+        SSLContext sslContext = null;
+        try {
+            sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustManager, new SecureRandom());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        }
+        return sslContext.getSocketFactory();
     }
 
     private int determineSecureMode(@Nullable String modeString) throws RunBuildException {
