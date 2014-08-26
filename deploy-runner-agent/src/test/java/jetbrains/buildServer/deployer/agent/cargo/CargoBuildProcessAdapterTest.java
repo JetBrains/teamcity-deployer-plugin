@@ -97,8 +97,6 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
         final String fileName = "simple.war";
         File sourceWar = getTestResource(fileName);
 
-
-
         FileUtil.copy(sourceWar, new File(workingDir,"simple.war"));
         final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, "simple.war");
         DeployTestUtils.runProcess(process, 5000);
@@ -131,6 +129,20 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
         assertThat(text2).contains("Hello v2!  The time is now");
     }
 
+
+    @Test
+    public void testDeployWithContext() throws Exception {
+
+        final String fileName = "simple-with-context.war";
+        File sourceWar = getTestResource(fileName);
+
+        FileUtil.copy(sourceWar, new File(workingDir,"simple-with-context.war"));
+        final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, "simple-with-context.war");
+        DeployTestUtils.runProcess(process, 5000);
+        final InputStream stream = new URL("http://127.0.0.1:" + TEST_PORT + "/somepath/myapp").openStream();
+        final String text = StreamUtil.readText(stream);
+        assertTrue(text.contains("Hello!  The time is now"));
+    }
 
 
     private File getTestResource(String fileName) {
