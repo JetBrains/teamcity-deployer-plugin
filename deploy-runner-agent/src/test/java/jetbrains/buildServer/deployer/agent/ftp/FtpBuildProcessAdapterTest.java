@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
+import it.sauronsoftware.ftp4j.FTPClient;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
@@ -10,6 +11,7 @@ import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.Authority;
 import org.apache.ftpserver.ftplet.UserManager;
 import org.apache.ftpserver.listener.ListenerFactory;
+import org.apache.ftpserver.ssl.SslConfigurationFactory;
 import org.apache.ftpserver.usermanager.ClearTextPasswordEncryptor;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.ftpserver.usermanager.impl.BaseUser;
@@ -52,12 +54,15 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
         super.setUp();
 
         myArtifactsCollections = new ArrayList<ArtifactsCollection>();
-
         myRemoteDir = myTempFiles.createTempDir();
-
         final FtpServerFactory serverFactory = new FtpServerFactory();
+
         final ListenerFactory factory = new ListenerFactory();
         factory.setPort(TEST_PORT);
+        final SslConfigurationFactory ssl = new SslConfigurationFactory();
+        ssl.setKeystoreFile(getTestResource("ftpserver.jks"));
+        ssl.setKeystorePassword("password");
+        factory.setSslConfiguration(ssl.createSslConfiguration());
         serverFactory.addListener("default", factory.createListener());
 
         myServer = serverFactory.createServer();
@@ -187,6 +192,18 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
         assertNotNull(files);
 
         assertEquals(files[0].length(), sourceXml.length());
+    }
+
+    @Test
+    public void testSecureConnection() throws Exception {
+        System.setProperty("javax.net.ssl.trustStore", getTestResource("ftpserver.jks").getAbsolutePath());
+        System.setProperty("javax.net.ssl.trustStorePassword", "password");
+
+        myRunnerParameters.put(FTPRunnerConstants.SSL_MODE, String.valueOf(FTPClient.SECURITY_FTPES));
+        myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+        final BuildProcess process = getProcess("localhost:" + TEST_PORT);
+        DeployTestUtils.runProcess(process, 5000);
+        DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
     }
 
 

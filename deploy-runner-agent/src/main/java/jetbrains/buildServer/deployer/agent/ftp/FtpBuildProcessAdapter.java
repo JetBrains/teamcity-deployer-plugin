@@ -13,10 +13,13 @@ import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.util.WaitFor;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.net.ssl.SSLException;
 import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -33,6 +36,9 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     private final String myPassword;
     private final List<ArtifactsCollection> myArtifacts;
     private final String myTransferMode;
+    private final String mySecureMode;
+    private final List<Integer> knownMods = Arrays.asList(FTPClient.SECURITY_FTP,
+            FTPClient.SECURITY_FTPS, FTPClient.SECURITY_FTPES);
 
     public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                   @NotNull final String target,
@@ -45,6 +51,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         myPassword = password;
         myArtifacts = artifactsCollections;
         myTransferMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_TRANSFER_MODE);
+        mySecureMode = context.getRunnerParameters().get(FTPRunnerConstants.SSL_MODE);
     }
 
     @Override
@@ -67,6 +74,13 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                         } else {
                             path = "";
                         }
+
+                        final int secureMode = determineSecureMode(mySecureMode);
+                        if (secureMode != FTPClient.SECURITY_FTP) {
+                            myLogger.message("Using secure" + (secureMode == FTPClient.SECURITY_FTPES ? "FTPES" : "FTPS") + " connection." );
+                        }
+
+                        client.setSecurity(secureMode);
 
                         if (port > 0) {
                             client.connect(host, port);
@@ -148,8 +162,18 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
         } catch (UploadInterruptedException e) {
             myLogger.warning("Ftp upload interrupted.");
-        } catch (Exception e) {
+        } catch (SSLException e) {
+            if (e.getMessage().contains("unable to find valid certification path to requested target")) {
+               myLogger.warning("Failed to setup SSL connection. Looks like target's certificate is not trusted.\n" +
+                       "See Oracle's documentation on how to import the certificate as a Trusted Certificate.");
+            }
             throw new RunBuildException(e);
+        } catch (Exception e) {
+            if (e instanceof RunBuildException) {
+                throw (RunBuildException)e;
+            } else {
+                throw new RunBuildException(e);
+            }
         } finally {
             try {
                 if (client.isConnected()) {
@@ -158,6 +182,24 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
             } catch (Exception e) {
                 Loggers.AGENT.error(e.getMessage(), e);
             }
+        }
+    }
+
+    private int determineSecureMode(@Nullable String modeString) throws RunBuildException {
+        if (StringUtil.isEmpty(modeString)) {
+            return FTPClient.SECURITY_FTP;
+        } else {
+            try {
+                final int i = Integer.parseInt(modeString);
+                if (knownMods.contains(i)) {
+                    return i;
+                }
+            } catch (NumberFormatException e) {
+                myInternalLog.warn("Failed to parse FTP security mode. Unknown mode [" + modeString + "]. Will fallback to insecure connection.", e);
+            }
+            final String message = "Incorrect FTP security mode provided: [" + modeString + "]. Aborting";
+            myLogger.error(message);
+            throw new RunBuildException(message);
         }
     }
 

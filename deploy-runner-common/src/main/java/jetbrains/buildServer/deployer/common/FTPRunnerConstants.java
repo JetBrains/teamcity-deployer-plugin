@@ -12,4 +12,5 @@ public class FTPRunnerConstants {
     public static final String TRANSFER_MODE_ASCII = "ASCII";
     public static final String AUTH_METHOD_USER_PWD = "USER_PWD";
     public static final String AUTH_METHOD_ANONYMOUS = "ANONYMOUS";
+    public static final String SSL_MODE = "SSL_MODE";
 }
