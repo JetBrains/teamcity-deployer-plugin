@@ -13,6 +13,15 @@
             <span class="smallNote">Enter hostname or IP address</span><span class="error" id="error_jetbrains.buildServer.deployer.targetUrl"></span>
         </td>
     </tr>
+    <tr>
+        <th><label for="jetbrains.buildServer.deployer.ftp.securityMode">Secure connection:</label></th>
+        <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_SSL_MODE%>">
+            <props:option value="0">None</props:option>
+            <props:option value="1">FTPS</props:option>
+            <props:option value="2">FTPES</props:option>
+        </props:selectProperty>
+        </td>
+    </tr>
 </l:settingsGroup>
 
 <l:settingsGroup title="Deployment Credentials">
