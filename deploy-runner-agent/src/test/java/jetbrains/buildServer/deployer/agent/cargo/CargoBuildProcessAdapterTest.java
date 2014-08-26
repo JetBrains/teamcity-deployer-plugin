@@ -145,16 +145,6 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
     }
 
 
-    private File getTestResource(String fileName) {
-        final String pathInBuildAgentModule = "src/test/resources/" + fileName;
-        File sourceWar = new File(pathInBuildAgentModule);
-        if (!sourceWar.exists()) {
-            sourceWar = new File("deploy-runner-agent/" + pathInBuildAgentModule);
-        }
-        return sourceWar;
-    }
-
-
     private BuildProcess getProcess(String target, String sourcePath) {
         String username = "tomcat";
         String password = "tomcat";

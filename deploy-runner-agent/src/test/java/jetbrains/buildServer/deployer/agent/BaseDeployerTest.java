@@ -6,6 +6,8 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
+import java.io.File;
+
 /**
  * Created by Nikita.Skvortsov
  * date: 08.07.2014.
@@ -30,5 +32,14 @@ public class BaseDeployerTest {
     public void tearDown() throws Exception {
         myTempFiles.cleanup();
         myLogger.onTestFinish(true);
+    }
+
+    protected File getTestResource(String fileName) {
+        final String pathInBuildAgentModule = "src/test/resources/" + fileName;
+        File file = new File(pathInBuildAgentModule);
+        if (!file.exists()) {
+            file = new File("deploy-runner-agent/" + pathInBuildAgentModule);
+        }
+        return file;
     }
 }

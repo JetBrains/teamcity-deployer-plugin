@@ -76,24 +76,9 @@ public class BaseSSHTest extends BaseDeployerTest {
             }
         });
 
-        File keyFile = new File("src/test/resources/hostkey.pem");
-        if (!keyFile.exists()) {
-            keyFile = new File("deploy-runner-agent/src/test/resources/hostkey.pem");
-        }
-
-        File privateKey = new File("src/test/resources/tmp_rsa");
-        if (!privateKey.exists()) {
-            privateKey = new File("deploy-runner-agent/src/test/resources/tmp_rsa");
-        }
-
-        myPrivateKey = privateKey.getAbsoluteFile();
-
-        File passphraselessKey = new File("src/test/resources/passphraseless");
-        if (!passphraselessKey.exists()) {
-            passphraselessKey = new File("deploy-runner-agent/src/test/resources/passphraseless");
-        }
-
-        myPassphraselessKey = passphraselessKey.getAbsoluteFile();
+        final File keyFile = getTestResource("hostkey.pem");
+        myPrivateKey = getTestResource("tmp_rsa").getAbsoluteFile();
+        myPassphraselessKey = getTestResource("passphraseless").getAbsoluteFile();
 
         myServer.setPublickeyAuthenticator(new PublickeyAuthenticator() {
             @Override
