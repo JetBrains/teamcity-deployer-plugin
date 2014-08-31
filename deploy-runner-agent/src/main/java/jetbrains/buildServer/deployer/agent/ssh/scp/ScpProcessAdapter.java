@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ssh.scp;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -11,7 +12,6 @@ import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
-import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -26,7 +26,7 @@ import java.util.Map;
 public class ScpProcessAdapter extends SyncBuildProcessAdapter {
 
     private final List<ArtifactsCollection> myArtifacts;
-    private final Logger myInternalLog = Logger.getLogger(getClass());
+    private static final Logger myInternalLog = Logger.getInstance(ScpProcessAdapter.class.getName());
 
 
     private SSHSessionProvider mySessionProvider;

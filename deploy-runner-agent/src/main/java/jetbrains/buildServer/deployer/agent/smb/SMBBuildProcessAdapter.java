@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.smb;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
@@ -10,7 +11,6 @@ import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.FileUtil;
-import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +25,7 @@ import java.util.Map;
 class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
     public static final String SMB = "smb://";
 
-    private final Logger myInternalLog = Logger.getLogger(getClass());
+    private static final Logger myInternalLog = Logger.getInstance(SMBBuildProcessAdapter.class.getName());
 
     private final String myTarget;
     private final String myUsername;

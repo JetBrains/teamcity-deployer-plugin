@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ssh.sftp;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.Session;
@@ -10,8 +11,6 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
-import jetbrains.buildServer.log.Loggers;
-import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -21,7 +20,7 @@ import java.util.Map;
 
 public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
-    private final Logger myInternalLog = Logger.getLogger(getClass());
+    private static final Logger myInternalLog = Logger.getInstance(SftpBuildProcessAdapter.class.getName());
     private final List<ArtifactsCollection> myArtifacts;
     private SSHSessionProvider mySessionProvider;
 

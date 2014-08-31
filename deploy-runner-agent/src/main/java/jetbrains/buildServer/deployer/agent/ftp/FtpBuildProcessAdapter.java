@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
+import com.intellij.openapi.diagnostic.Logger;
 import it.sauronsoftware.ftp4j.FTPClient;
 import it.sauronsoftware.ftp4j.FTPException;
 import jetbrains.buildServer.RunBuildException;
@@ -11,7 +12,6 @@ import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.util.WaitFor;
-import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     private static final String FTP_PROTOCOL = "ftp://";
 
-    private final Logger myInternalLog = Logger.getLogger(getClass());
+    private static final Logger myInternalLog = Logger.getInstance(FtpBuildProcessAdapter.class.getName());
 
     private final String myTarget;
     private final String myUsername;
@@ -130,6 +130,9 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                             myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
                         }
                     } catch (Exception t) {
+                        final String message = "Exception while uploading files: " + t.getMessage();
+                        myLogger.error(message);
+                        myInternalLog.debug(message, t);
                         innerException.set(t);
                     }
                 }
