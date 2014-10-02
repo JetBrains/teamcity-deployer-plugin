@@ -1,11 +1,9 @@
 package jetbrains.buildServer.deployer.agent.base;
 
-import com.intellij.openapi.util.SystemInfo;
 import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsBuilder;
-import jetbrains.buildServer.agent.impl.artifacts.ArtifactsBuilderAdapter;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.util.StringUtil;
@@ -43,8 +41,6 @@ public abstract class BaseDeployerRunner implements AgentBuildRunner {
         builder.setPreprocessors(preprocessors);
         builder.setBaseDir(runningBuild.getCheckoutDirectory());
         builder.setArtifactsPaths(sourcePaths);
-
-        builder.addListener(new ArtifactsBuilderAdapter());
 
         final List<ArtifactsCollection> artifactsCollections = builder.build();
 
