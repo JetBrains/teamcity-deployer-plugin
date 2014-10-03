@@ -143,7 +143,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
             uploadThread.start();
 
-            new WaitFor() {
+            new WaitFor(Long.MAX_VALUE, 1000) {
                 @Override
                 protected boolean condition() {
                     if (uploadThread.getState() == Thread.State.TERMINATED) {
@@ -161,6 +161,12 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                     return false;
                 }
             };
+
+          if (uploadThread.getState() != Thread.State.TERMINATED) {
+            myInternalLog.warn("Ftp upload thread did not reach termination state after wait operation, trying to join");
+            uploadThread.join();
+            myInternalLog.warn("thread joined.");
+          }
 
             final Exception exception = innerException.get();
             if (exception != null) {
