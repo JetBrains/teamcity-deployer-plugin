@@ -32,11 +32,13 @@ public class SmbDeployerRunType extends RunType {
         return DeployerRunnerConstants.SMB_RUN_TYPE;
     }
 
+    @NotNull
     @Override
     public String getDisplayName() {
         return "SMB Deployer";
     }
 
+    @NotNull
     @Override
     public String getDescription() {
         return "Runner able to deploy build artifacts via SMB (Windows share)";
@@ -85,8 +87,6 @@ public class SmbDeployerRunType extends RunType {
     @NotNull
     @Override
     public String describeParameters(@NotNull Map<String, String> parameters) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Target SMB share: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
-        return sb.toString();
+        return "Target SMB share: " + parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL);
     }
 }
