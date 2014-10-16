@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 
-class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
+public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
     public static final String SMB = "smb://";
 
     private static final Logger myInternalLog = Logger.getInstance(SMBBuildProcessAdapter.class.getName());
@@ -38,19 +38,24 @@ class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
                                   @NotNull final String password,
                                   @Nullable final String domain,
                                   @NotNull final String target,
-                                  @NotNull final List<ArtifactsCollection> artifactsCollections) {
+                                  @NotNull final List<ArtifactsCollection> artifactsCollections,
+                                  final boolean dnsOnlyNameResolution) {
         super(context.getBuild().getBuildLogger());
         myTarget = target;
         myUsername = username;
         myPassword = password;
         myDomain = domain;
         myArtifactsCollections = artifactsCollections;
+
+        jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
+        if (dnsOnlyNameResolution) {
+            jcifs.Config.setProperty("jcifs.resolveOrder", "DNS");
+            jcifs.Config.setProperty("jcifs.smb.client.dfs.disabled", "true");
+        }
     }
 
     @Override
     public void runProcess() throws RunBuildException {
-
-        jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
 
         String targetWithProtocol;
         if (myTarget.startsWith("\\\\")) {

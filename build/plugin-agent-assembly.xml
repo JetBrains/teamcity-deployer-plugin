@@ -18,6 +18,9 @@
                 <include>jetbrains.buildServer.deployer:deploy-runner-agent</include>
                 <include>jetbrains.buildServer.deployer:deploy-runner-common</include>
             </includes>
+            <excludes>
+                <exclude>jetbrains.buildServer.deployer:deploy-runner-agent-smb</exclude>
+            </excludes>
             <binaries>
                 <outputDirectory>lib</outputDirectory>
                 <unpack>false</unpack>
@@ -25,6 +28,26 @@
                     <dependencySet>
                         <includes>
                             <include>*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>jcifs:jcifs</exclude>
+                        </excludes>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
+        <moduleSet>
+            <useAllReactorProjects>true</useAllReactorProjects>
+            <includes>
+                <include>jetbrains.buildServer.deployer:deploy-runner-agent-smb</include>
+            </includes>
+            <binaries>
+                <outputDirectory>smbLib</outputDirectory>
+                <unpack>false</unpack>
+                <dependencySets>
+                    <dependencySet>
+                        <includes>
+                            <include>jcifs:jcifs</include>
                         </includes>
                     </dependencySet>
                 </dependencySets>

@@ -1,4 +1,5 @@
 <%@ page import="jetbrains.buildServer.deployer.common.DeployerRunnerConstants" %>
+<%@ page import="jetbrains.buildServer.deployer.common.SMBRunnerConstants" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -10,6 +11,11 @@
         <th><label for="jetbrains.buildServer.deployer.targetUrl">Target URL: <l:star/></label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"  className="longField" maxlength="256"/>
             <span class="smallNote">Enter target path in form \\host\share[\subdir]</span><span class="error" id="error_jetbrains.buildServer.deployer.targetUrl"></span>
+        </td>
+    </tr>
+    <tr class="advancedSetting">
+        <th><label for="jetbrains.buildServer.deployer.smb.dns_only">Name resolution:</label></th>
+        <td><props:checkboxProperty name="<%=SMBRunnerConstants.DNS_ONLY_NAME_RESOLUTION%>"/><label for="jetbrains.buildServer.deployer.smb.dns_only">Use DNS only name resolution</label>
         </td>
     </tr>
 </l:settingsGroup>

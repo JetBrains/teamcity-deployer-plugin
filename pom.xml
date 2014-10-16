@@ -38,6 +38,7 @@
     </build>
     <modules>
         <module>deploy-runner-server</module>
+        <module>deploy-runner-agent-smb</module>
         <module>deploy-runner-agent</module>
         <module>deploy-runner-common</module>
         <module>build</module>
