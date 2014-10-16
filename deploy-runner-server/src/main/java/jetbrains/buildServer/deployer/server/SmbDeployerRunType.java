@@ -57,7 +57,14 @@ public class SmbDeployerRunType extends RunType {
     }
 
     private boolean isValidUNC(@Nullable String string) {
-        return string != null && SIMPLE_UNC_REGEX.matcher(string).matches();
+        if (string == null) {
+            return false;
+        } else {
+            final boolean matchesUNCRegexp = SIMPLE_UNC_REGEX.matcher(string).matches();
+            final boolean containsParameters = string.indexOf('%') > -1;
+            return containsParameters || matchesUNCRegexp;
+        }
+
     }
 
     @Override

@@ -11,20 +11,19 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.testng.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by Nikita.Skvortsov
  * Date: 7/25/13, 4:55 PM
  */
 public class SMBDeployerRunTypeTest extends  DeployerRunTypeTest {
-    private SmbDeployerRunType myRunType;
+    public static final InvalidProperty TARGET_URL = new InvalidProperty(DeployerRunnerConstants.PARAM_TARGET_URL, "Invalid UNC path.");
     private PropertiesProcessor processor;
 
     @Override
     protected void createRunType(RunTypeRegistry registry, PluginDescriptor descriptor) {
-        myRunType = new SmbDeployerRunType(registry, descriptor);
-        processor = myRunType.getRunnerPropertiesProcessor();
+        processor = new SmbDeployerRunType(registry, descriptor).getRunnerPropertiesProcessor();
     }
 
     @Test
@@ -33,9 +32,9 @@ public class SMBDeployerRunTypeTest extends  DeployerRunTypeTest {
         assertIllegalTarget("host");
         assertIllegalTarget("..abracadabra");
         assertIllegalTarget("\\\\host");
-        assertIllegalTarget("%variable");
-        assertIllegalTarget("variable%");
         assertLegalTarget("%variable%");
+        assertLegalTarget("%variable1%_%variable2%");
+        assertLegalTarget("%variable%\\share");
         assertLegalTarget("\\\\%variable%");
         assertLegalTarget("\\\\host\\%variable%");
         assertLegalTarget("\\\\host\\%variable%\\subdir");
@@ -58,19 +57,20 @@ public class SMBDeployerRunTypeTest extends  DeployerRunTypeTest {
     }
 
     private void assertIllegalTarget(String value) {
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(DeployerRunnerConstants.PARAM_TARGET_URL, value);
-        final Collection<InvalidProperty> invalidProperties = processor.process(properties);
-        assertEquals(invalidProperties.size(), 1, "Should report 1 invalid property");
-        InvalidProperty next = invalidProperties.iterator().next();
-        assertEquals(next.getPropertyName(), DeployerRunnerConstants.PARAM_TARGET_URL);
+        final Collection<InvalidProperty> invalidProperties = getInvalidPropertiesForTargetUrl(value);
+        assertThat(invalidProperties).containsExactly(TARGET_URL);
     }
 
     private void assertLegalTarget(String value) {
+        final Collection<InvalidProperty> invalidProperties = getInvalidPropertiesForTargetUrl(value);
+        assertThat(invalidProperties).isEmpty();
+    }
+
+    private Collection<InvalidProperty> getInvalidPropertiesForTargetUrl(String value) {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(DeployerRunnerConstants.PARAM_TARGET_URL, value);
-        final Collection<InvalidProperty> invalidProperties = processor.process(properties);
-        assertEquals(invalidProperties.size(), 0, "Should not report any invalid property");
+        return processor.process(properties);
     }
+
 }
 
