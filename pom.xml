@@ -20,6 +20,11 @@
             <url>http://repository.jetbrains.com/all</url>
         </pluginRepository>
     </pluginRepositories>
+    <scm>
+        <connection>scm:git:ssh://git@bitbucket.org/nskvortsov/deployer.git</connection>
+        <developerConnection>scm:git:ssh://git@bitbucket.org/nskvortsov/deployer.git</developerConnection>
+        <url>https://bitbucket.orgnskvortsov/deployer</url>
+    </scm>
     <build>
         <pluginManagement>
             <plugins>
