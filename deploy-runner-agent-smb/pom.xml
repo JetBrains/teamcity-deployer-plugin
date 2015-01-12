@@ -4,7 +4,7 @@
     <parent>
         <artifactId>deploy-runner</artifactId>
         <groupId>jetbrains.buildServer.deployer</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>0.5</version>
     </parent>
     <artifactId>deploy-runner-agent-smb</artifactId>
     <packaging>jar</packaging>
@@ -21,7 +21,7 @@
         <dependency>
               <groupId>jetbrains.buildServer.deployer</groupId>
               <artifactId>deploy-runner-agent</artifactId>
-              <version>1.0-SNAPSHOT</version>
+              <version>0.5</version>
               <scope>compile</scope>
           </dependency>
 

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>jetbrains.buildServer.deployer</groupId>
     <artifactId>deploy-runner</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.5</version>
     <packaging>pom</packaging>
     <properties>
         <teamcity-version>8.1.3</teamcity-version>
@@ -24,7 +24,8 @@
         <connection>scm:git:ssh://git@bitbucket.org/nskvortsov/deployer.git</connection>
         <developerConnection>scm:git:ssh://git@bitbucket.org/nskvortsov/deployer.git</developerConnection>
         <url>https://bitbucket.orgnskvortsov/deployer</url>
-    </scm>
+      <tag>0.5</tag>
+  </scm>
     <build>
         <pluginManagement>
             <plugins>
