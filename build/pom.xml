@@ -4,7 +4,7 @@
   <parent>
     <artifactId>deploy-runner</artifactId>
     <groupId>jetbrains.buildServer.deployer</groupId>
-    <version>0.5</version>
+    <version>0.6-SNAPSHOT</version>
   </parent>
   <artifactId>build</artifactId>
   <packaging>pom</packaging>
@@ -15,17 +15,17 @@
       <dependency>
            <groupId>jetbrains.buildServer.deployer</groupId>
            <artifactId>deploy-runner-agent</artifactId>
-           <version>0.5</version>
+           <version>0.6-SNAPSHOT</version>
       </dependency>
       <dependency>
            <groupId>jetbrains.buildServer.deployer</groupId>
            <artifactId>deploy-runner-common</artifactId>
-           <version>0.5</version>
+           <version>0.6-SNAPSHOT</version>
       </dependency>
       <dependency>
            <groupId>jetbrains.buildServer.deployer</groupId>
            <artifactId>deploy-runner-server</artifactId>
-           <version>0.5</version>
+           <version>0.6-SNAPSHOT</version>
       </dependency>
   </dependencies>
   <build>
