@@ -21,11 +21,11 @@
         </pluginRepository>
     </pluginRepositories>
     <scm>
-        <connection>scm:git:ssh://git@bitbucket.org/nskvortsov/deployer.git</connection>
-        <developerConnection>scm:git:ssh://git@bitbucket.org/nskvortsov/deployer.git</developerConnection>
-        <url>https://bitbucket.orgnskvortsov/deployer</url>
-      <tag>HEAD</tag>
-  </scm>
+        <connection>scm:git:ssh://git@github.com/nskvortsov/deployer.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/nskvortsov/deployer.git</developerConnection>
+        <url>https://@github.com/nskvortsov/deployer</url>
+        <tag>HEAD</tag>
+    </scm>
     <build>
         <pluginManagement>
             <plugins>
