@@ -40,13 +40,14 @@
         </td>
     </tr>
 </l:settingsGroup>
-
-<l:settingsGroup title="Deployment Source">
+<l:settingsGroup title="Deployment Mode">
     <tr>
-        <th><label for="jetbrains.buildServer.deployer.smb.clear_folder">Clear before deploy: </label></th>
-        <td><props:checkboxProperty name="<%=SMBRunnerConstants.DEPLOY_CLEAR_FOLDER%>"/><label for="jetbrains.buildServer.deployer.smb.clear_folder">Check if you want to clear folder before deploy</label>
+        <th><label for="jetbrains.buildServer.deployer.smb.clear_folder">Clear destination folder before deploy: </label></th>
+        <td><props:checkboxProperty name="<%=SMBRunnerConstants.DEPLOY_CLEAR_FOLDER%>"/><label for="jetbrains.buildServer.deployer.smb.clear_folder">Check if you want to clear destination folder before deploy</label>
         </td>
     </tr>
+</l:settingsGroup>
+<l:settingsGroup title="Deployment Source">
     <tr>
         <th><label for="jetbrains.buildServer.deployer.sourcePath">Artifacts path: </label></th>
         <td>
