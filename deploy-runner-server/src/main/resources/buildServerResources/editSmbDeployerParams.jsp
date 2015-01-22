@@ -43,6 +43,11 @@
 
 <l:settingsGroup title="Deployment Source">
     <tr>
+        <th><label for="jetbrains.buildServer.deployer.smb.clear_folder">Clear before deploy: </label></th>
+        <td><props:checkboxProperty name="<%=SMBRunnerConstants.DEPLOY_CLEAR_FOLDER%>"/><label for="jetbrains.buildServer.deployer.smb.clear_folder">Check if you want to clear folder before deploy</label>
+        </td>
+    </tr>
+    <tr>
         <th><label for="jetbrains.buildServer.deployer.sourcePath">Artifacts path: </label></th>
         <td>
             <props:multilineProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" className="longField" cols="30" rows="4" expanded="true" linkTitle="Enter artifacts paths"/>

@@ -9,6 +9,7 @@ import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
+import jetbrains.buildServer.deployer.common.SMBRunnerConstants;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +33,7 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
     private final String myPassword;
     private final List<ArtifactsCollection> myArtifactsCollections;
     private final String myDomain;
+    private final boolean clearFolder;
 
     public SMBBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                   @NotNull final String username,
@@ -46,6 +48,7 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
         myPassword = password;
         myDomain = domain;
         myArtifactsCollections = artifactsCollections;
+        clearFolder = Boolean.valueOf(context.getRunnerParameters().get(SMBRunnerConstants.DEPLOY_CLEAR_FOLDER));
 
         jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
         if (dnsOnlyNameResolution) {
@@ -85,6 +88,10 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
             myLogger.message("Starting upload via SMB to " + myTarget);
             SmbFile destinationDir = new SmbFile(targetWithProtocol, auth);
 
+            if (clearFolder && destinationDir.exists())
+                for (SmbFile smbFile : destinationDir.listFiles())
+                    smbFile.delete();
+
             for (ArtifactsCollection artifactsCollection : myArtifactsCollections) {
                 final int numOfUploadedFiles = upload(artifactsCollection.getFilePathMap(), destinationDir);
                 myLogger.message("Uploaded [" + numOfUploadedFiles + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
@@ -110,6 +117,7 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
                 destDirectory = new SmbFile(destination, targetPath + "/");
             }
 
+
             final SmbFile destFile = new SmbFile(destDirectory, source.getName());
 
             Loggers.AGENT.debug("Uploading source=[" + source.getAbsolutePath() + "] to \n" +
@@ -124,6 +132,7 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
                 if (!destDirectory.exists()) {
                     destDirectory.mkdirs();
                 }
+
                 inputStream = new FileInputStream(source);
                 outputStream = destFile.getOutputStream();
                 copyInterruptibly(inputStream, outputStream);
