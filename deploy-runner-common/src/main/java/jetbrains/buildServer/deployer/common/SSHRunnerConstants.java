@@ -27,6 +27,7 @@ public class SSHRunnerConstants {
     public static final String AUTH_METHOD_DEFAULT_KEY = "DEFAULT_KEY";
     public static final String AUTH_METHOD_CUSTOM_KEY = "CUSTOM_KEY";
     public static final String AUTH_METHOD_USERNAME_PWD = "PWD";
+    public static final String AUTH_METHOD_SSH_AGENT = "SSH_AGENT";
 
     public String getTransportType() {
         return PARAM_TRANSPORT;
