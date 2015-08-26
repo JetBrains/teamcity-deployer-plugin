@@ -1,10 +1,15 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.jcraft.jsch.*;
+import com.jcraft.jsch.agentproxy.AgentProxyException;
+import com.jcraft.jsch.agentproxy.Connector;
+import com.jcraft.jsch.agentproxy.ConnectorFactory;
+import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.InternalPropertiesHolder;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
+import jetbrains.buildServer.parameters.ProcessingResult;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 import org.apache.log4j.Logger;
@@ -78,7 +83,14 @@ public class SSHSessionProvider {
             final File keyFile = FileUtil.resolvePath(context.getBuild().getCheckoutDirectory(), keyFilePath);
             myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
             initSessionKeyFile(username, password, keyFile, jsch);
-        } else {
+        } else if (SSHRunnerConstants.AUTH_METHOD_SSH_AGENT.equals(authMethod)) {
+            final ProcessingResult result = context.getParametersResolver().resolve("%env.SSH_AUTH_SOCK%");
+            String socketPath = null;
+            if (result.isFullyResolved()) {
+                socketPath = result.getResult();
+            }
+            initSessionSshAgent(username, socketPath, jsch);
+        }else {
             myLog.debug("Using provided username/password");
             initSessionUserPassword(username, password, jsch);
         }
@@ -115,6 +127,23 @@ public class SSHSessionProvider {
             mySession.setConfig("PreferredAuthentications", "publickey");
         } catch (IOException e) {
             throw new JSchException("Failed to use key file", e);
+        }
+    }
+
+    private void initSessionSshAgent(String username, String socketPath, JSch jsch) throws JSchException {
+        mySession = jsch.getSession(username, myHost, myPort);
+        mySession.setConfig("PreferredAuthentications", "publickey");
+
+        try {
+            ConnectorFactory cf = ConnectorFactory.getDefault();
+            cf.setUSocketPath(socketPath);
+            Connector con = cf.createConnector();
+            IdentityRepository irepo = new RemoteIdentityRepository(con);
+            jsch.setIdentityRepository(irepo);
+        }
+        catch(AgentProxyException e){
+            myLog.error("Unable to create connection to agent", e);
+            return;
         }
     }
 
