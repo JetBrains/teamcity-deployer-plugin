@@ -1,7 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.io.FileUtil;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;

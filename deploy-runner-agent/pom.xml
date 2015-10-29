@@ -11,15 +11,9 @@
     <packaging>jar</packaging>
 
     <repositories>
-        <!--
-                <repository>
-                    <id>my</id>
-                    <url>file://${basedir}/lib</url>
-                </repository>
-        -->
         <repository>
             <id>ApacheSnapshots</id>
-            <url>https://repository.apache.org/content/groups/snapshots</url>
+            <url>http://repository.apache.org/content/groups/snapshots</url>
         </repository>
     </repositories>
 
@@ -54,12 +48,6 @@
         </dependency>
 
         <!-- Third party dependencies -->
-        <!-- <dependency>
-             <groupId>it.sauronsoftware</groupId>
-             <artifactId>ftp4j</artifactId>
-             <version>1.7.2</version>
-             <scope>compile</scope>
-         </dependency>-->
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
