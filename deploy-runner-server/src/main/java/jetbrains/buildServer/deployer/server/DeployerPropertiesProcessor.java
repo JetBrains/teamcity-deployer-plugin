@@ -15,12 +15,12 @@ import java.util.Map;
  * Date: 24.03.12 - 17:16
  */
 public class DeployerPropertiesProcessor implements PropertiesProcessor {
-    @Override
-    public Collection<InvalidProperty> process(Map<String, String> properties) {
-        Collection<InvalidProperty> result = new HashSet<InvalidProperty>();
-        if (StringUtil.isEmptyOrSpaces(properties.get(DeployerRunnerConstants.PARAM_TARGET_URL))) {
-            result.add(new InvalidProperty(DeployerRunnerConstants.PARAM_TARGET_URL, "The target must be specified."));
-        }
-        return result;
+  @Override
+  public Collection<InvalidProperty> process(Map<String, String> properties) {
+    Collection<InvalidProperty> result = new HashSet<InvalidProperty>();
+    if (StringUtil.isEmptyOrSpaces(properties.get(DeployerRunnerConstants.PARAM_TARGET_URL))) {
+      result.add(new InvalidProperty(DeployerRunnerConstants.PARAM_TARGET_URL, "The target must be specified."));
     }
+    return result;
+  }
 }

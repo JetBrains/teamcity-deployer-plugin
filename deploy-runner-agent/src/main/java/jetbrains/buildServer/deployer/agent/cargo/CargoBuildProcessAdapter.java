@@ -32,81 +32,81 @@ import java.io.File;
  */
 public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
 
-    private final String myHost;
-    private final String myPort;
-    private final String myUsername;
-    private final String myPassword;
-    private final BuildRunnerContext myContext;
-    private final String mySourcePath;
-    private final String myContainerType;
+  private final String myHost;
+  private final String myPort;
+  private final String myUsername;
+  private final String myPassword;
+  private final BuildRunnerContext myContext;
+  private final String mySourcePath;
+  private final String myContainerType;
 
-    public CargoBuildProcessAdapter(@NotNull String target,
-                                    @NotNull String username,
-                                    @NotNull String password,
-                                    @NotNull BuildRunnerContext context,
-                                    @NotNull String sourcePath) {
-        super(context.getBuild().getBuildLogger());
-        myHost = getHost(target);
-        myPort = getPort(target);
-        myUsername = username;
-        myPassword = password;
-        myContext = context;
-        mySourcePath = sourcePath;
-        myContainerType = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_CONTAINER_TYPE);
+  public CargoBuildProcessAdapter(@NotNull String target,
+                                  @NotNull String username,
+                                  @NotNull String password,
+                                  @NotNull BuildRunnerContext context,
+                                  @NotNull String sourcePath) {
+    super(context.getBuild().getBuildLogger());
+    myHost = getHost(target);
+    myPort = getPort(target);
+    myUsername = username;
+    myPassword = password;
+    myContext = context;
+    mySourcePath = sourcePath;
+    myContainerType = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_CONTAINER_TYPE);
+  }
+
+  private String getHost(@NotNull String target) {
+    if (target.indexOf(':') > 0) {
+      return target.substring(0, target.indexOf(':'));
     }
+    return target;
+  }
 
-    private String getHost(@NotNull String target) {
-        if (target.indexOf(':') > 0) {
-            return target.substring(0, target.indexOf(':'));
-        }
-        return target;
+  private String getPort(@NotNull String target) {
+    if (target.indexOf(':') > 0) {
+      return target.substring(target.indexOf(':') + 1);
     }
+    return "";
+  }
 
-    private String getPort(@NotNull String target) {
-        if (target.indexOf(':') > 0) {
-            return target.substring(target.indexOf(':') + 1);
-        }
-        return "";
+  @Override
+  protected void runProcess() throws RunBuildException {
+    try {
+      final ConfigurationFactory configFactory = new DefaultConfigurationFactory();
+      final Configuration configuration = configFactory.createConfiguration(myContainerType, ContainerType.REMOTE, ConfigurationType.RUNTIME);
+
+      configuration.setProperty(RemotePropertySet.USERNAME, myUsername);
+      configuration.setProperty(RemotePropertySet.PASSWORD, myPassword);
+      configuration.setProperty(GeneralPropertySet.HOSTNAME, myHost);
+      if (!StringUtil.isEmpty(myPort)) {
+        configuration.setProperty(ServletPropertySet.PORT, myPort);
+      }
+
+
+      final DefaultContainerFactory containerFactory = new DefaultContainerFactory();
+      final Container container = containerFactory.createContainer(myContainerType, ContainerType.REMOTE, configuration);
+
+      final DefaultDeployerFactory deployerFactory = new DefaultDeployerFactory();
+      final Deployer deployer = deployerFactory.createDeployer(container);
+
+      final DefaultDeployableFactory deployableFactory = new DefaultDeployableFactory();
+      final Deployable deployable = deployableFactory.createDeployable(container.getId(), getLocation(mySourcePath), DeployableType.WAR);
+      myLogger.message("Deploying [" + mySourcePath + "] to ["
+          + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
+          + "], container type [" + myContainerType + "]");
+
+
+      final SimpleLogger simpleLogger = new SimpleLogger();
+      simpleLogger.setLevel(LogLevel.DEBUG);
+      deployer.setLogger(simpleLogger);
+      deployer.redeploy(deployable);
+    } catch (Exception e) {
+      throw new RunBuildException(e);
     }
+    myLogger.message("Deploy finished.");
+  }
 
-    @Override
-    protected void runProcess() throws RunBuildException {
-        try {
-            final ConfigurationFactory configFactory = new DefaultConfigurationFactory();
-            final Configuration configuration = configFactory.createConfiguration(myContainerType, ContainerType.REMOTE, ConfigurationType.RUNTIME);
-
-            configuration.setProperty(RemotePropertySet.USERNAME, myUsername);
-            configuration.setProperty(RemotePropertySet.PASSWORD, myPassword);
-            configuration.setProperty(GeneralPropertySet.HOSTNAME, myHost);
-            if (!StringUtil.isEmpty(myPort)) {
-                configuration.setProperty(ServletPropertySet.PORT, myPort);
-            }
-
-
-            final DefaultContainerFactory containerFactory = new DefaultContainerFactory();
-            final Container container = containerFactory.createContainer(myContainerType, ContainerType.REMOTE, configuration);
-
-            final DefaultDeployerFactory deployerFactory  = new DefaultDeployerFactory();
-            final Deployer deployer = deployerFactory.createDeployer(container);
-
-            final DefaultDeployableFactory deployableFactory = new DefaultDeployableFactory();
-            final Deployable deployable = deployableFactory.createDeployable(container.getId(), getLocation(mySourcePath), DeployableType.WAR);
-            myLogger.message("Deploying [" + mySourcePath + "] to ["
-                    + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
-                    + "], container type [" + myContainerType +"]");
-
-
-            final SimpleLogger simpleLogger = new SimpleLogger();
-            simpleLogger.setLevel(LogLevel.DEBUG);
-            deployer.setLogger(simpleLogger);
-            deployer.redeploy(deployable);
-        } catch (Exception e) {
-            throw new RunBuildException(e);
-        }
-        myLogger.message("Deploy finished.");
-    }
-
-    private String getLocation(String mySourcePath) {
-        return new File(myContext.getWorkingDirectory(), mySourcePath).getAbsolutePath();
-    }
+  private String getLocation(String mySourcePath) {
+    return new File(myContext.getWorkingDirectory(), mySourcePath).getAbsolutePath();
+  }
 }

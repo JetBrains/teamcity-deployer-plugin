@@ -8,17 +8,17 @@ import org.testng.annotations.Test;
 @Test
 public class ScpProcessAdapterTest extends BaseSSHTransferTest {
 
-    @BeforeMethod
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-    }
+  @BeforeMethod
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+  }
 
-    @Override
-    protected ScpProcessAdapter getProcess(String targetBasePath) throws Exception {
-        myRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, targetBasePath);
+  @Override
+  protected ScpProcessAdapter getProcess(String targetBasePath) throws Exception {
+    myRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, targetBasePath);
 
-        final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder);
-        return new ScpProcessAdapter(myContext, myArtifactsCollections, provider);
-    }
+    final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder);
+    return new ScpProcessAdapter(myContext, myArtifactsCollections, provider);
+  }
 }

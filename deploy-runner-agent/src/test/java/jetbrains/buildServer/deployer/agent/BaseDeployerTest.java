@@ -14,32 +14,32 @@ import java.io.File;
  */
 public class BaseDeployerTest {
 
-    protected TestLogger myLogger = new TestLogger();
-    protected TempFiles myTempFiles = new TempFiles();
+  protected TestLogger myLogger = new TestLogger();
+  protected TempFiles myTempFiles = new TempFiles();
 
 
-    @BeforeClass
-    public void setUpClass() throws Exception {
-        myLogger.onSuiteStart();
+  @BeforeClass
+  public void setUpClass() throws Exception {
+    myLogger.onSuiteStart();
+  }
+
+  @BeforeMethod
+  public void setUp() throws Exception {
+    myLogger.onTestStart();
+  }
+
+  @AfterMethod
+  public void tearDown() throws Exception {
+    myTempFiles.cleanup();
+    myLogger.onTestFinish(true);
+  }
+
+  protected File getTestResource(String fileName) {
+    final String pathInBuildAgentModule = "src/test/resources/" + fileName;
+    File file = new File(pathInBuildAgentModule);
+    if (!file.exists()) {
+      file = new File("deploy-runner-agent/" + pathInBuildAgentModule);
     }
-
-    @BeforeMethod
-    public void setUp() throws Exception {
-        myLogger.onTestStart();
-    }
-
-    @AfterMethod
-    public void tearDown() throws Exception {
-        myTempFiles.cleanup();
-        myLogger.onTestFinish(true);
-    }
-
-    protected File getTestResource(String fileName) {
-        final String pathInBuildAgentModule = "src/test/resources/" + fileName;
-        File file = new File(pathInBuildAgentModule);
-        if (!file.exists()) {
-            file = new File("deploy-runner-agent/" + pathInBuildAgentModule);
-        }
-        return file;
-    }
+    return file;
+  }
 }

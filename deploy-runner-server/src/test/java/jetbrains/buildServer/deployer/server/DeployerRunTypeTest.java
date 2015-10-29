@@ -11,18 +11,18 @@ import org.testng.annotations.BeforeMethod;
  * Date: 7/25/13, 4:54 PM
  */
 public abstract class DeployerRunTypeTest {
-    Mockery myContext;
+  Mockery myContext;
 
-    @BeforeMethod
-    public void setUp() {
-        myContext = new Mockery();
-        final RunTypeRegistry registry = myContext.mock(RunTypeRegistry.class);
-        final PluginDescriptor descriptor = myContext.mock(PluginDescriptor.class);
-        myContext.checking(new Expectations(){{
-            allowing(registry).registerRunType(with(aNonNull(SSHExecRunType.class)));
-        }});
-        createRunType(registry, descriptor);
-    }
+  @BeforeMethod
+  public void setUp() {
+    myContext = new Mockery();
+    final RunTypeRegistry registry = myContext.mock(RunTypeRegistry.class);
+    final PluginDescriptor descriptor = myContext.mock(PluginDescriptor.class);
+    myContext.checking(new Expectations() {{
+      allowing(registry).registerRunType(with(aNonNull(SSHExecRunType.class)));
+    }});
+    createRunType(registry, descriptor);
+  }
 
-    protected abstract void createRunType(RunTypeRegistry registry, PluginDescriptor descriptor);
+  protected abstract void createRunType(RunTypeRegistry registry, PluginDescriptor descriptor);
 }

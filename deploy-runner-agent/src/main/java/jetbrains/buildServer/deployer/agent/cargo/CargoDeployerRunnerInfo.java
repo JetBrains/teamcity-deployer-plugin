@@ -8,14 +8,14 @@ import org.jetbrains.annotations.NotNull;
 
 class CargoDeployerRunnerInfo implements AgentBuildRunnerInfo {
 
-    @NotNull
-    @Override
-    public String getType() {
-        return DeployerRunnerConstants.CARGO_RUN_TYPE;
-    }
+  @NotNull
+  @Override
+  public String getType() {
+    return DeployerRunnerConstants.CARGO_RUN_TYPE;
+  }
 
-    @Override
-    public boolean canRun(@NotNull BuildAgentConfiguration agentConfiguration) {
-        return true;
-    }
+  @Override
+  public boolean canRun(@NotNull BuildAgentConfiguration agentConfiguration) {
+    return true;
+  }
 }

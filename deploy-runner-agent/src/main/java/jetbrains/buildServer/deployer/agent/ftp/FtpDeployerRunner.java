@@ -15,35 +15,35 @@ import java.util.Map;
 
 public class FtpDeployerRunner extends BaseDeployerRunner {
 
-    public FtpDeployerRunner(@NotNull final ExtensionHolder extensionHolder) {
-        super(extensionHolder);
+  public FtpDeployerRunner(@NotNull final ExtensionHolder extensionHolder) {
+    super(extensionHolder);
+  }
+
+
+  @Override
+  protected BuildProcess getDeployerProcess(@NotNull final BuildRunnerContext context,
+                                            @NotNull final String username,
+                                            @NotNull final String password,
+                                            @NotNull final String target,
+                                            @NotNull final List<ArtifactsCollection> artifactsCollections) throws RunBuildException {
+    final Map<String, String> runnerParameters = context.getRunnerParameters();
+    final String authMethod = runnerParameters.get(FTPRunnerConstants.PARAM_AUTH_METHOD);
+
+    if (FTPRunnerConstants.AUTH_METHOD_USER_PWD.equals(authMethod)) {
+      return new FtpBuildProcessAdapter(context, target, username, password, artifactsCollections);
+    } else if (FTPRunnerConstants.AUTH_METHOD_ANONYMOUS.equals(authMethod)) {
+      return new FtpBuildProcessAdapter(context, target, "anonymous", " ", artifactsCollections);
+    } else {
+      throw new RunBuildException("Unknown FTP authentication method: [" + authMethod + "]");
     }
 
+  }
 
-    @Override
-    protected BuildProcess getDeployerProcess(@NotNull final BuildRunnerContext context,
-                                              @NotNull final String username,
-                                              @NotNull final String password,
-                                              @NotNull final String target,
-                                              @NotNull final List<ArtifactsCollection> artifactsCollections) throws RunBuildException {
-        final Map<String,String> runnerParameters = context.getRunnerParameters();
-        final String authMethod = runnerParameters.get(FTPRunnerConstants.PARAM_AUTH_METHOD);
-
-        if (FTPRunnerConstants.AUTH_METHOD_USER_PWD.equals(authMethod)) {
-            return new FtpBuildProcessAdapter(context, target, username, password, artifactsCollections);
-        } else if (FTPRunnerConstants.AUTH_METHOD_ANONYMOUS.equals(authMethod)) {
-            return new FtpBuildProcessAdapter(context, target, "anonymous", " ", artifactsCollections);
-        } else {
-            throw new RunBuildException("Unknown FTP authentication method: [" + authMethod + "]");
-        }
-
-    }
-
-    @NotNull
-    @Override
-    public AgentBuildRunnerInfo getRunnerInfo() {
-        return new FtpDeployerRunnerInfo();
-    }
+  @NotNull
+  @Override
+  public AgentBuildRunnerInfo getRunnerInfo() {
+    return new FtpDeployerRunnerInfo();
+  }
 
 
 }

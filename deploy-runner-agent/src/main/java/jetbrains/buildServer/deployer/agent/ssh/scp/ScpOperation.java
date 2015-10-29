@@ -7,6 +7,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface ScpOperation {
-    void execute(@NotNull final OutputStream out,
-                 @NotNull final InputStream in) throws IOException;
+  void execute(@NotNull final OutputStream out,
+               @NotNull final InputStream in) throws IOException;
 }

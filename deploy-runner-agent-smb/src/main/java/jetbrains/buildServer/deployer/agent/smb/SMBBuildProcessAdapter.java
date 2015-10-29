@@ -23,128 +23,128 @@ import java.util.Map;
 
 
 public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
-    public static final String SMB = "smb://";
+  public static final String SMB = "smb://";
 
-    private static final Logger myInternalLog = Logger.getInstance(SMBBuildProcessAdapter.class.getName());
+  private static final Logger myInternalLog = Logger.getInstance(SMBBuildProcessAdapter.class.getName());
 
-    private final String myTarget;
-    private final String myUsername;
-    private final String myPassword;
-    private final List<ArtifactsCollection> myArtifactsCollections;
-    private final String myDomain;
+  private final String myTarget;
+  private final String myUsername;
+  private final String myPassword;
+  private final List<ArtifactsCollection> myArtifactsCollections;
+  private final String myDomain;
 
-    public SMBBuildProcessAdapter(@NotNull final BuildRunnerContext context,
-                                  @NotNull final String username,
-                                  @NotNull final String password,
-                                  @Nullable final String domain,
-                                  @NotNull final String target,
-                                  @NotNull final List<ArtifactsCollection> artifactsCollections,
-                                  final boolean dnsOnlyNameResolution) {
-        super(context.getBuild().getBuildLogger());
-        myTarget = target;
-        myUsername = username;
-        myPassword = password;
-        myDomain = domain;
-        myArtifactsCollections = artifactsCollections;
+  public SMBBuildProcessAdapter(@NotNull final BuildRunnerContext context,
+                                @NotNull final String username,
+                                @NotNull final String password,
+                                @Nullable final String domain,
+                                @NotNull final String target,
+                                @NotNull final List<ArtifactsCollection> artifactsCollections,
+                                final boolean dnsOnlyNameResolution) {
+    super(context.getBuild().getBuildLogger());
+    myTarget = target;
+    myUsername = username;
+    myPassword = password;
+    myDomain = domain;
+    myArtifactsCollections = artifactsCollections;
 
-        jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
-        if (dnsOnlyNameResolution) {
-            jcifs.Config.setProperty("jcifs.resolveOrder", "DNS");
-            jcifs.Config.setProperty("jcifs.smb.client.dfs.disabled", "true");
-        }
+    jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
+    if (dnsOnlyNameResolution) {
+      jcifs.Config.setProperty("jcifs.resolveOrder", "DNS");
+      jcifs.Config.setProperty("jcifs.smb.client.dfs.disabled", "true");
+    }
+  }
+
+  @Override
+  public void runProcess() throws RunBuildException {
+
+    String targetWithProtocol;
+    if (myTarget.startsWith("\\\\")) {
+      targetWithProtocol = SMB + myTarget.substring(2);
+    } else if (!myTarget.startsWith(SMB)) {
+      targetWithProtocol = SMB + myTarget;
+    } else {
+      targetWithProtocol = myTarget;
     }
 
-    @Override
-    public void runProcess() throws RunBuildException {
-
-        String targetWithProtocol;
-        if (myTarget.startsWith("\\\\")) {
-            targetWithProtocol = SMB + myTarget.substring(2);
-        } else if (!myTarget.startsWith(SMB)) {
-            targetWithProtocol = SMB + myTarget;
-        } else {
-            targetWithProtocol = myTarget;
-        }
-
-        // Share and directories names require trailing /
-        if (!targetWithProtocol.endsWith("/")) {
-            targetWithProtocol = targetWithProtocol + "/";
-        }
-
-        targetWithProtocol = targetWithProtocol.replaceAll("\\\\", "/");
-
-        NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(myDomain == null ? "" : myDomain,
-                myUsername, myPassword);
-
-        final String settingsString = "Trying to connect with following parameters:\n" +
-                "username=[" + myUsername + "]\n" +
-                "domain=[" + (myDomain == null ? "" : myDomain) + "]\n" +
-                "target=[" + targetWithProtocol + "]";
-        try {
-            Loggers.AGENT.debug(settingsString);
-            myLogger.message("Starting upload via SMB to " + myTarget);
-            SmbFile destinationDir = new SmbFile(targetWithProtocol, auth);
-
-            for (ArtifactsCollection artifactsCollection : myArtifactsCollections) {
-                final int numOfUploadedFiles = upload(artifactsCollection.getFilePathMap(), destinationDir);
-                myLogger.message("Uploaded [" + numOfUploadedFiles + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
-            }
-        } catch (UploadInterruptedException e) {
-            myLogger.warning("SMB upload interrupted.");
-        } catch (Exception e) {
-            Loggers.AGENT.error(settingsString, e);
-            throw new RunBuildException(e);
-        }
+    // Share and directories names require trailing /
+    if (!targetWithProtocol.endsWith("/")) {
+      targetWithProtocol = targetWithProtocol + "/";
     }
 
-    private int upload(Map<File, String> filePathMap, SmbFile destination) throws IOException {
-        int count = 0;
-        for (Map.Entry<File, String> fileDestEntry : filePathMap.entrySet()) {
-            checkIsInterrupted();
-            final File source = fileDestEntry.getKey();
-            final String targetPath = fileDestEntry.getValue();
-            final SmbFile destDirectory;
-            if (StringUtil.isEmpty(targetPath)) {
-                destDirectory = destination;
-            } else {
-                destDirectory = new SmbFile(destination, targetPath + "/");
-            }
+    targetWithProtocol = targetWithProtocol.replaceAll("\\\\", "/");
 
-            final SmbFile destFile = new SmbFile(destDirectory, source.getName());
+    NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(myDomain == null ? "" : myDomain,
+        myUsername, myPassword);
 
-            Loggers.AGENT.debug("Uploading source=[" + source.getAbsolutePath() + "] to \n" +
-                    "destDirectory=[" + destDirectory.getCanonicalPath() +
-                    "] destFile=[" + destFile.getCanonicalPath() + "]");
+    final String settingsString = "Trying to connect with following parameters:\n" +
+        "username=[" + myUsername + "]\n" +
+        "domain=[" + (myDomain == null ? "" : myDomain) + "]\n" +
+        "target=[" + targetWithProtocol + "]";
+    try {
+      Loggers.AGENT.debug(settingsString);
+      myLogger.message("Starting upload via SMB to " + myTarget);
+      SmbFile destinationDir = new SmbFile(targetWithProtocol, auth);
 
-            FileInputStream inputStream = null;
-            OutputStream outputStream = null;
-
-            myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destDirectory.getCanonicalPath() + "] destFile=[" + destFile.getCanonicalPath() + "]");
-            try {
-                if (!destDirectory.exists()) {
-                    destDirectory.mkdirs();
-                }
-                inputStream = new FileInputStream(source);
-                outputStream = destFile.getOutputStream();
-                copyInterruptibly(inputStream, outputStream);
-                outputStream.flush();
-            } finally {
-                FileUtil.close(inputStream);
-                FileUtil.close(outputStream);
-            }
-            myInternalLog.debug("Done transferring [" + source.getAbsolutePath() + "]");
-            count++;
-        }
-        return count;
+      for (ArtifactsCollection artifactsCollection : myArtifactsCollections) {
+        final int numOfUploadedFiles = upload(artifactsCollection.getFilePathMap(), destinationDir);
+        myLogger.message("Uploaded [" + numOfUploadedFiles + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
+      }
+    } catch (UploadInterruptedException e) {
+      myLogger.warning("SMB upload interrupted.");
+    } catch (Exception e) {
+      Loggers.AGENT.error(settingsString, e);
+      throw new RunBuildException(e);
     }
+  }
 
-    private void copyInterruptibly(@NotNull FileInputStream inputStream, @NotNull OutputStream outputStream) throws IOException {
-        byte[] buf = new byte[4096];
-        int read;
-        while ((read = inputStream.read(buf)) > -1) {
-            checkIsInterrupted();
-            outputStream.write(buf, 0, read);
+  private int upload(Map<File, String> filePathMap, SmbFile destination) throws IOException {
+    int count = 0;
+    for (Map.Entry<File, String> fileDestEntry : filePathMap.entrySet()) {
+      checkIsInterrupted();
+      final File source = fileDestEntry.getKey();
+      final String targetPath = fileDestEntry.getValue();
+      final SmbFile destDirectory;
+      if (StringUtil.isEmpty(targetPath)) {
+        destDirectory = destination;
+      } else {
+        destDirectory = new SmbFile(destination, targetPath + "/");
+      }
+
+      final SmbFile destFile = new SmbFile(destDirectory, source.getName());
+
+      Loggers.AGENT.debug("Uploading source=[" + source.getAbsolutePath() + "] to \n" +
+          "destDirectory=[" + destDirectory.getCanonicalPath() +
+          "] destFile=[" + destFile.getCanonicalPath() + "]");
+
+      FileInputStream inputStream = null;
+      OutputStream outputStream = null;
+
+      myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destDirectory.getCanonicalPath() + "] destFile=[" + destFile.getCanonicalPath() + "]");
+      try {
+        if (!destDirectory.exists()) {
+          destDirectory.mkdirs();
         }
+        inputStream = new FileInputStream(source);
+        outputStream = destFile.getOutputStream();
+        copyInterruptibly(inputStream, outputStream);
+        outputStream.flush();
+      } finally {
+        FileUtil.close(inputStream);
+        FileUtil.close(outputStream);
+      }
+      myInternalLog.debug("Done transferring [" + source.getAbsolutePath() + "]");
+      count++;
     }
+    return count;
+  }
+
+  private void copyInterruptibly(@NotNull FileInputStream inputStream, @NotNull OutputStream outputStream) throws IOException {
+    byte[] buf = new byte[4096];
+    int read;
+    while ((read = inputStream.read(buf)) > -1) {
+      checkIsInterrupted();
+      outputStream.write(buf, 0, read);
+    }
+  }
 
 }

@@ -10,8 +10,10 @@
 <l:settingsGroup title="Deployment Target">
     <tr>
         <th><label for="jetbrains.buildServer.deployer.targetUrl">Target: <l:star/></label></th>
-        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter target url in form {hostname|ip_address}[:path/to/target/folder]</span><span class="error" id="error_jetbrains.buildServer.deployer.targetUrl"></span>
+        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>" className="longField"
+                                maxlength="256"/>
+            <span class="smallNote">Enter target url in form {hostname|ip_address}[:path/to/target/folder]</span><span
+                    class="error" id="error_jetbrains.buildServer.deployer.targetUrl"></span>
         </td>
     </tr>
 
@@ -28,7 +30,7 @@
     </tr>
     <tr>
         <th><label for="jetbrains.buildServer.sshexec.port">Port: </label></th>
-        <td><props:textProperty name="<%=SSHRunnerConstants.PARAM_PORT%>"  className="longField" maxlength="256"/>
+        <td><props:textProperty name="<%=SSHRunnerConstants.PARAM_PORT%>" className="longField" maxlength="256"/>
             <span class="smallNote">Optional. Default value: 22</span>
         </td>
     </tr>
@@ -40,7 +42,8 @@
     <tr>
         <th><label for="jetbrains.buildServer.deployer.sourcePath">Artifacts path: </label></th>
         <td>
-            <props:multilineProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" className="longField" cols="30" rows="4" expanded="true" linkTitle="Enter artifacts paths"/>
+            <props:multilineProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" className="longField"
+                                     cols="30" rows="4" expanded="true" linkTitle="Enter artifacts paths"/>
             <span class="smallNote">New line or comma separated paths to build artifacts. Ant-style wildcards like dir/**/*.zip and target directories like *.zip => winFiles,unix/distro.tgz => linuxFiles, where winFiles and linuxFiles are target directories are supported.
             <bs:help file="Configuring+General+Settings" anchor="artifactPaths"/></span>
         </td>

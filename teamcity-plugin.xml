@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<teamcity-plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:shemas-jetbrains-com:teamcity-plugin-v1-xml">
-  <info>
-    <name>deploy-runner</name>
-    <display-name>Artifact Deployer</display-name>
-    <version>@Version@</version>
-    <description>Set of Runners for basic deployment tasks</description>
-    <download-url>http://confluence.jetbrains.com/display/TW/Deployer+plugin</download-url>
-    <email>n.s.skvortsov@gmail.com</email>
-    <vendor>
-      <name>Nikita Skvortsov</name>
-      <url></url>
-      <logo></logo>
-    </vendor>
-  </info>
-  <deployment use-separate-classloader="true" />
+<teamcity-plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:noNamespaceSchemaLocation="urn:shemas-jetbrains-com:teamcity-plugin-v1-xml">
+    <info>
+        <name>deploy-runner</name>
+        <display-name>Artifact Deployer</display-name>
+        <version>@Version@</version>
+        <description>Set of Runners for basic deployment tasks</description>
+        <download-url>http://confluence.jetbrains.com/display/TW/Deployer+plugin</download-url>
+        <email>n.s.skvortsov@gmail.com</email>
+        <vendor>
+            <name>Nikita Skvortsov</name>
+            <url></url>
+            <logo></logo>
+        </vendor>
+    </info>
+    <deployment use-separate-classloader="true"/>
 </teamcity-plugin>

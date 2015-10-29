@@ -4,13 +4,16 @@
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 
 <div class="parameter">
-  FTP server: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>" emptyValue="default"/></strong>
+    FTP server: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"
+                                            emptyValue="default"/></strong>
 </div>
 
 <div class="parameter">
-  Username: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_USERNAME%>" emptyValue="none"/></strong>
+    Username: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_USERNAME%>"
+                                          emptyValue="none"/></strong>
 </div>
 
 <div class="parameter">
-  Source: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" emptyValue="none"/></strong>
+    Source: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>"
+                                        emptyValue="none"/></strong>
 </div>

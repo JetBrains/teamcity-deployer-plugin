@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>deploy-runner</artifactId>
@@ -10,20 +11,26 @@
     <packaging>jar</packaging>
 
     <repositories>
+        <!--
+                <repository>
+                    <id>my</id>
+                    <url>file://${basedir}/lib</url>
+                </repository>
+        -->
         <repository>
-            <id>my</id>
-            <url>file://${basedir}/lib</url>
+            <id>ApacheSnapshots</id>
+            <url>https://repository.apache.org/content/groups/snapshots</url>
         </repository>
     </repositories>
 
     <dependencies>
 
         <dependency>
-              <groupId>jetbrains.buildServer.deployer</groupId>
-              <artifactId>deploy-runner-common</artifactId>
-              <version>0.6-SNAPSHOT</version>
-              <scope>compile</scope>
-          </dependency>
+            <groupId>jetbrains.buildServer.deployer</groupId>
+            <artifactId>deploy-runner-common</artifactId>
+            <version>0.6-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.jetbrains.teamcity</groupId>
@@ -47,11 +54,16 @@
         </dependency>
 
         <!-- Third party dependencies -->
+        <!-- <dependency>
+             <groupId>it.sauronsoftware</groupId>
+             <artifactId>ftp4j</artifactId>
+             <version>1.7.2</version>
+             <scope>compile</scope>
+         </dependency>-->
         <dependency>
-            <groupId>it.sauronsoftware</groupId>
-            <artifactId>ftp4j</artifactId>
-            <version>1.7.2</version>
-            <scope>compile</scope>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>3.4-SNAPSHOT</version>
         </dependency>
 
         <dependency>

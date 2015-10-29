@@ -15,20 +15,20 @@ import static org.testng.Assert.assertEquals;
 @Test
 public class SSHExecRunTypeTest extends DeployerRunTypeTest {
 
-    SSHExecRunType myRunType;
+  SSHExecRunType myRunType;
 
-    @Override
-    protected void createRunType(RunTypeRegistry registry, PluginDescriptor descriptor) {
-        myRunType = new SSHExecRunType(registry, descriptor);
-    }
+  @Override
+  protected void createRunType(RunTypeRegistry registry, PluginDescriptor descriptor) {
+    myRunType = new SSHExecRunType(registry, descriptor);
+  }
 
 
-    public void testGetDescription() throws Exception {
-        assertEquals(myRunType.getDescription(), "Runner able to execute commands over SSH");
-    }
+  public void testGetDescription() throws Exception {
+    assertEquals(myRunType.getDescription(), "Runner able to execute commands over SSH");
+  }
 
-    public void testDescribeEmptyParameters() throws Exception {
-        //noinspection unchecked
-        myRunType.describeParameters(Collections.EMPTY_MAP);
-    }
+  public void testDescribeEmptyParameters() throws Exception {
+    //noinspection unchecked
+    myRunType.describeParameters(Collections.EMPTY_MAP);
+  }
 }

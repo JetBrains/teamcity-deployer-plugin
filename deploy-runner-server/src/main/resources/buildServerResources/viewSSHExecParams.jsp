@@ -5,7 +5,8 @@
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 
 <div class="parameter">
-  Target host: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>" emptyValue="default"/></strong>
+    Target host: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"
+                                             emptyValue="default"/></strong>
 </div>
 
 <div class="parameter">
@@ -13,13 +14,14 @@
 </div>
 
 <div class="parameter">
-  Use pty: <strong><props:displayValue name="<%=SSHRunnerConstants.PARAM_PTY%>" emptyValue="none"/></strong>
+    Use pty: <strong><props:displayValue name="<%=SSHRunnerConstants.PARAM_PTY%>" emptyValue="none"/></strong>
 </div>
 
 <div class="parameter">
-  Username: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_USERNAME%>" emptyValue="none"/></strong>
+    Username: <strong><props:displayValue name="<%=DeployerRunnerConstants.PARAM_USERNAME%>"
+                                          emptyValue="none"/></strong>
 </div>
 
 <div class="parameter">
-  Commands: <strong><props:displayValue name="<%=SSHRunnerConstants.PARAM_COMMAND%>" emptyValue="none"/></strong>
+    Commands: <strong><props:displayValue name="<%=SSHRunnerConstants.PARAM_COMMAND%>" emptyValue="none"/></strong>
 </div>

@@ -7,14 +7,14 @@ import org.jetbrains.annotations.NotNull;
 
 
 class FtpDeployerRunnerInfo implements AgentBuildRunnerInfo {
-    @NotNull
-    @Override
-    public String getType() {
-        return DeployerRunnerConstants.FTP_RUN_TYPE;
-    }
+  @NotNull
+  @Override
+  public String getType() {
+    return DeployerRunnerConstants.FTP_RUN_TYPE;
+  }
 
-    @Override
-    public boolean canRun(@NotNull BuildAgentConfiguration agentConfiguration) {
-        return true;
-    }
+  @Override
+  public boolean canRun(@NotNull BuildAgentConfiguration agentConfiguration) {
+    return true;
+  }
 }

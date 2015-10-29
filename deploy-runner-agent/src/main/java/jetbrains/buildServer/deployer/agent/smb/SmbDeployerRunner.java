@@ -25,54 +25,54 @@ public class SmbDeployerRunner extends BaseDeployerRunner {
   private final File root;
 
   public SmbDeployerRunner(@NotNull final ExtensionHolder extensionHolder,
-                             @NotNull final PluginDescriptor pluginDescriptor) {
-      super(extensionHolder);
-      root = pluginDescriptor.getPluginRoot();
-    }
+                           @NotNull final PluginDescriptor pluginDescriptor) {
+    super(extensionHolder);
+    root = pluginDescriptor.getPluginRoot();
+  }
 
 
-    @Override
-    protected BuildProcess getDeployerProcess(@NotNull final BuildRunnerContext context,
-                                              @NotNull final String username,
-                                              @NotNull final String password,
-                                              @NotNull final String target,
-                                              @NotNull final List<ArtifactsCollection> artifactsCollections) {
+  @Override
+  protected BuildProcess getDeployerProcess(@NotNull final BuildRunnerContext context,
+                                            @NotNull final String username,
+                                            @NotNull final String password,
+                                            @NotNull final String target,
+                                            @NotNull final List<ArtifactsCollection> artifactsCollections) {
 
-      try {
-        final File[] files = new File(root, "smbLib").listFiles();
-        final URL[] urls = CollectionsUtil.convertCollection(Arrays.asList(files), new Converter<URL, File>() {
-          @Override
-          public URL createFrom(@NotNull File file) {
-            try {
-              return file.toURI().toURL();
-            } catch (Exception e) {
-              throw new RuntimeException(e);
-            }
+    try {
+      final File[] files = new File(root, "smbLib").listFiles();
+      final URL[] urls = CollectionsUtil.convertCollection(Arrays.asList(files), new Converter<URL, File>() {
+        @Override
+        public URL createFrom(@NotNull File file) {
+          try {
+            return file.toURI().toURL();
+          } catch (Exception e) {
+            throw new RuntimeException(e);
           }
-        }).toArray(new URL[files.length]);
+        }
+      }).toArray(new URL[files.length]);
 
-        final ClassLoader jcifsCL = new URLClassLoader(urls, getClass().getClassLoader());
-        final Class smbBuildProcessClass = jcifsCL.loadClass("jetbrains.buildServer.deployer.agent.smb.SMBBuildProcessAdapter");
+      final ClassLoader jcifsCL = new URLClassLoader(urls, getClass().getClassLoader());
+      final Class smbBuildProcessClass = jcifsCL.loadClass("jetbrains.buildServer.deployer.agent.smb.SMBBuildProcessAdapter");
 
-        final String domain = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_DOMAIN);
-        final boolean dnsOnly = Boolean.valueOf(context.getRunnerParameters().get(SMBRunnerConstants.DNS_ONLY_NAME_RESOLUTION));
+      final String domain = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_DOMAIN);
+      final boolean dnsOnly = Boolean.valueOf(context.getRunnerParameters().get(SMBRunnerConstants.DNS_ONLY_NAME_RESOLUTION));
 
-        final Constructor constructor = smbBuildProcessClass.getConstructor(BuildRunnerContext.class,
-            String.class, String.class, String.class, String.class,
-            List.class, boolean.class);
-        return (BuildProcess) constructor.newInstance(context, username, password, domain, target, artifactsCollections, dnsOnly);
+      final Constructor constructor = smbBuildProcessClass.getConstructor(BuildRunnerContext.class,
+          String.class, String.class, String.class, String.class,
+          List.class, boolean.class);
+      return (BuildProcess) constructor.newInstance(context, username, password, domain, target, artifactsCollections, dnsOnly);
 
-        // return new SMBBuildProcessAdapter(context, username, password, domain, target, artifactsCollections, dnsOnly);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+      // return new SMBBuildProcessAdapter(context, username, password, domain, target, artifactsCollections, dnsOnly);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    @NotNull
-    @Override
-    public AgentBuildRunnerInfo getRunnerInfo() {
-        return new SmbDeployerRunnerInfo();
-    }
+  @NotNull
+  @Override
+  public AgentBuildRunnerInfo getRunnerInfo() {
+    return new SmbDeployerRunnerInfo();
+  }
 
 
 }

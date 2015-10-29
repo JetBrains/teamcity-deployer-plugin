@@ -9,17 +9,17 @@ import org.testng.annotations.Test;
 @Test
 public class SftpProcessAdapterTest extends BaseSSHTransferTest {
 
-    @BeforeMethod
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-    }
+  @BeforeMethod
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+  }
 
-    @Override
-    protected BuildProcess getProcess(String targetBasePath) throws Exception {
-        myRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, targetBasePath);
+  @Override
+  protected BuildProcess getProcess(String targetBasePath) throws Exception {
+    myRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, targetBasePath);
 
-        final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder);
-        return new SftpBuildProcessAdapter(myContext, myArtifactsCollections, provider);
-    }
+    final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder);
+    return new SftpBuildProcessAdapter(myContext, myArtifactsCollections, provider);
+  }
 }

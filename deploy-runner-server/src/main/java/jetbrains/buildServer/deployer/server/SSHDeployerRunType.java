@@ -14,62 +14,62 @@ import java.util.Map;
 
 public class SSHDeployerRunType extends RunType {
 
-    private final PluginDescriptor myDescriptor;
+  private final PluginDescriptor myDescriptor;
 
-    public SSHDeployerRunType(@NotNull final RunTypeRegistry registry,
-                              @NotNull final PluginDescriptor descriptor) {
-        myDescriptor = descriptor;
-        registry.registerRunType(this);
-    }
+  public SSHDeployerRunType(@NotNull final RunTypeRegistry registry,
+                            @NotNull final PluginDescriptor descriptor) {
+    myDescriptor = descriptor;
+    registry.registerRunType(this);
+  }
 
-    @NotNull
-    @Override
-    public String getType() {
-        return DeployerRunnerConstants.SSH_RUN_TYPE;
-    }
+  @NotNull
+  @Override
+  public String getType() {
+    return DeployerRunnerConstants.SSH_RUN_TYPE;
+  }
 
-    @Override
-    public String getDisplayName() {
-        return "SSH Deployer";
-    }
+  @Override
+  public String getDisplayName() {
+    return "SSH Deployer";
+  }
 
-    @Override
-    public String getDescription() {
-        return "Runner able to deploy build artifacts via SSH";
-    }
+  @Override
+  public String getDescription() {
+    return "Runner able to deploy build artifacts via SSH";
+  }
 
-    @Override
-    public PropertiesProcessor getRunnerPropertiesProcessor() {
-        return new SSHDeployerPropertiesProcessor();
-    }
+  @Override
+  public PropertiesProcessor getRunnerPropertiesProcessor() {
+    return new SSHDeployerPropertiesProcessor();
+  }
 
-    @Override
-    public String getEditRunnerParamsJspFilePath() {
-        return myDescriptor.getPluginResourcesPath() + "editSSHDeployerParams.jsp";
-    }
+  @Override
+  public String getEditRunnerParamsJspFilePath() {
+    return myDescriptor.getPluginResourcesPath() + "editSSHDeployerParams.jsp";
+  }
 
-    @Override
-    public String getViewRunnerParamsJspFilePath() {
-        return  myDescriptor.getPluginResourcesPath() + "viewSSHDeployerParams.jsp";
-    }
+  @Override
+  public String getViewRunnerParamsJspFilePath() {
+    return myDescriptor.getPluginResourcesPath() + "viewSSHDeployerParams.jsp";
+  }
 
-    @Override
-    public Map<String, String> getDefaultRunnerProperties() {
-        return new HashMap<String, String>();
-    }
+  @Override
+  public Map<String, String> getDefaultRunnerProperties() {
+    return new HashMap<String, String>();
+  }
 
-    @NotNull
-    @Override
-    public String describeParameters(@NotNull Map<String, String> parameters) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Target: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
-        final String port = parameters.get(SSHRunnerConstants.PARAM_PORT);
-        if (StringUtil.isNotEmpty(port)) {
-            sb.append('\n').append(" Port: ").append(port);
-        }
-        final Map<String, String> transportTypeValues = new SSHRunnerConstants().getTransportTypeValues();
-        sb.append('\n').append("Protocol: ").append(transportTypeValues.get(parameters.get(SSHRunnerConstants.PARAM_TRANSPORT)));
-        return sb.toString();
+  @NotNull
+  @Override
+  public String describeParameters(@NotNull Map<String, String> parameters) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Target: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
+    final String port = parameters.get(SSHRunnerConstants.PARAM_PORT);
+    if (StringUtil.isNotEmpty(port)) {
+      sb.append('\n').append(" Port: ").append(port);
     }
+    final Map<String, String> transportTypeValues = new SSHRunnerConstants().getTransportTypeValues();
+    sb.append('\n').append("Protocol: ").append(transportTypeValues.get(parameters.get(SSHRunnerConstants.PARAM_TRANSPORT)));
+    return sb.toString();
+  }
 
 }

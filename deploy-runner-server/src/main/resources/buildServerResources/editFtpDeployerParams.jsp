@@ -9,8 +9,10 @@
 <l:settingsGroup title="Deployment Target">
     <tr>
         <th><label for="jetbrains.buildServer.deployer.targetUrl">Target host: <l:star/></label></th>
-        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>"  className="longField" maxlength="256"/>
-            <span class="smallNote">Enter hostname or IP address</span><span class="error" id="error_jetbrains.buildServer.deployer.targetUrl"></span>
+        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_TARGET_URL%>" className="longField"
+                                maxlength="256"/>
+            <span class="smallNote">Enter hostname or IP address</span><span class="error"
+                                                                             id="error_jetbrains.buildServer.deployer.targetUrl"></span>
         </td>
     </tr>
     <tr>
@@ -35,13 +37,15 @@
     </tr>
     <tr id="user_row">
         <th><label for="jetbrains.buildServer.deployer.username">Username:</label></th>
-        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>"  className="longField" maxlength="256"/>
+        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>" className="longField"
+                                maxlength="256"/>
             <span class="smallNote">Enter username</span>
         </td>
     </tr>
     <tr id="pwd_row">
         <th><label for="secure:jetbrains.buildServer.deployer.password">Password:</label></th>
-        <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>"  className="longField" maxlength="256"/>
+        <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>" className="longField"
+                                    maxlength="256"/>
             <span class="smallNote">Enter password. Configuration parameters can be used</span>
         </td>
     </tr>
@@ -64,7 +68,8 @@
     <tr>
         <th><label for="jetbrains.buildServer.deployer.sourcePath">Artifacts path: </label></th>
         <td>
-            <props:multilineProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" className="longField" cols="30" rows="4" expanded="true" linkTitle="Enter artifacts paths"/>
+            <props:multilineProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" className="longField"
+                                     cols="30" rows="4" expanded="true" linkTitle="Enter artifacts paths"/>
             <span class="smallNote">New line or comma separated paths to build artifacts. Ant-style wildcards like dir/**/*.zip and target directories like *.zip => winFiles,unix/distro.tgz => linuxFiles, where winFiles and linuxFiles are target directories are supported.
             <bs:help file="Configuring+General+Settings" anchor="artifactPaths"/></span>
         </td>

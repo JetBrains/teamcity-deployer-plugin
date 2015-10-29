@@ -13,53 +13,53 @@ import java.util.Map;
 
 public class CargoDeployerRunType extends RunType {
 
-    private final PluginDescriptor myDescriptor;
+  private final PluginDescriptor myDescriptor;
 
-    public CargoDeployerRunType(@NotNull final RunTypeRegistry registry,
-                                @NotNull final PluginDescriptor descriptor) {
-        registry.registerRunType(this);
-        myDescriptor = descriptor;
-    }
+  public CargoDeployerRunType(@NotNull final RunTypeRegistry registry,
+                              @NotNull final PluginDescriptor descriptor) {
+    registry.registerRunType(this);
+    myDescriptor = descriptor;
+  }
 
-    @NotNull
-    @Override
-    public String getType() {
-        return DeployerRunnerConstants.CARGO_RUN_TYPE;
-    }
+  @NotNull
+  @Override
+  public String getType() {
+    return DeployerRunnerConstants.CARGO_RUN_TYPE;
+  }
 
-    @Override
-    public String getDisplayName() {
-        return "Container Deployer";
-    }
+  @Override
+  public String getDisplayName() {
+    return "Container Deployer";
+  }
 
-    @Override
-    public String getDescription() {
-        return "Runner able to deploy WAR apps to different containers";
-    }
+  @Override
+  public String getDescription() {
+    return "Runner able to deploy WAR apps to different containers";
+  }
 
-    @Override
-    public PropertiesProcessor getRunnerPropertiesProcessor() {
-        return new DeployerPropertiesProcessor();
-    }
+  @Override
+  public PropertiesProcessor getRunnerPropertiesProcessor() {
+    return new DeployerPropertiesProcessor();
+  }
 
-    @Override
-    public String getEditRunnerParamsJspFilePath() {
-        return  myDescriptor.getPluginResourcesPath() + "editCargoDeployerParams.jsp";
-    }
+  @Override
+  public String getEditRunnerParamsJspFilePath() {
+    return myDescriptor.getPluginResourcesPath() + "editCargoDeployerParams.jsp";
+  }
 
-    @Override
-    public String getViewRunnerParamsJspFilePath() {
-        return  myDescriptor.getPluginResourcesPath() + "viewCargoDeployerParams.jsp";
-    }
+  @Override
+  public String getViewRunnerParamsJspFilePath() {
+    return myDescriptor.getPluginResourcesPath() + "viewCargoDeployerParams.jsp";
+  }
 
-    @Override
-    public Map<String, String> getDefaultRunnerProperties() {
-        return new HashMap<String, String>();
-    }
+  @Override
+  public Map<String, String> getDefaultRunnerProperties() {
+    return new HashMap<String, String>();
+  }
 
-    @NotNull
-    @Override
-    public String describeParameters(@NotNull Map<String, String> parameters) {
-        return "Target container url: " + parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL);
-    }
+  @NotNull
+  @Override
+  public String describeParameters(@NotNull Map<String, String> parameters) {
+    return "Target container url: " + parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL);
+  }
 }
