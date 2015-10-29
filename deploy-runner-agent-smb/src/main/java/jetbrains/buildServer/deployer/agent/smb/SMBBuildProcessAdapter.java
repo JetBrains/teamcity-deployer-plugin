@@ -26,6 +26,7 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
   public static final String SMB = "smb://";
 
   private static final Logger myInternalLog = Logger.getInstance(SMBBuildProcessAdapter.class.getName());
+  private static final int STREAM_BUFFER_SIZE = 1024 * 1024; // use 1 Mb buffer
 
   private final String myTarget;
   private final String myUsername;
@@ -139,7 +140,7 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   private void copyInterruptibly(@NotNull FileInputStream inputStream, @NotNull OutputStream outputStream) throws IOException {
-    byte[] buf = new byte[4096];
+    byte[] buf = new byte[STREAM_BUFFER_SIZE];
     int read;
     while ((read = inputStream.read(buf)) > -1) {
       checkIsInterrupted();
