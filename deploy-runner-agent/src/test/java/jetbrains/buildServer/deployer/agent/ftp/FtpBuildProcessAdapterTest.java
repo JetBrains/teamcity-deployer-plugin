@@ -1,6 +1,5 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
-import it.sauronsoftware.ftp4j.FTPClient;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
@@ -204,7 +203,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 //        System.setProperty("javax.net.ssl.trustStore", getTestResource("ftpserver.jks").getAbsolutePath());
 //        System.setProperty("javax.net.ssl.trustStorePassword", "password");
 
-    myRunnerParameters.put(FTPRunnerConstants.PARAM_SSL_MODE, String.valueOf(FTPClient.SECURITY_FTPES));
+    myRunnerParameters.put(FTPRunnerConstants.PARAM_SSL_MODE, "2");
     myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
     final BuildProcess process = getProcess("localhost:" + TEST_PORT);
     DeployTestUtils.runProcess(process, 5000);
