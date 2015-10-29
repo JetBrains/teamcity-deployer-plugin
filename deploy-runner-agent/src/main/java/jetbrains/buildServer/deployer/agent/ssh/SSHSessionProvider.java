@@ -30,6 +30,7 @@ public class SSHSessionProvider {
   private String myHost;
   private int myPort;
   private String myRemotePath;
+  private final String myDefaultKeyPath = System.getProperty("user.home") + "/.ssh/id_rsa";
 
 
   public SSHSessionProvider(@NotNull final BuildRunnerContext context, @NotNull final InternalPropertiesHolder holder) throws JSchException {
@@ -72,14 +73,17 @@ public class SSHSessionProvider {
         myLog.debug("Found config at [" + config.getAbsolutePath() + "], reading.");
         initSessionSSHConfig(jsch, config);
       } else {
-        final String keyPath = holder.getInternalProperty(TEAMCITY_DEPLOYER_SSH_DEFAULT_KEY, System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa");
+        final String keyPath = holder.getInternalProperty(TEAMCITY_DEPLOYER_SSH_DEFAULT_KEY, myDefaultKeyPath);
         //noinspection ConstantConditions
         final File keyFile = new File(keyPath);
         myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
         initSessionKeyFile(username, password, keyFile, jsch);
       }
     } else if (SSHRunnerConstants.AUTH_METHOD_CUSTOM_KEY.equals(authMethod)) {
-      final String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
+      String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
+      if (StringUtil.isEmpty(keyFilePath)) {
+        keyFilePath = myDefaultKeyPath;
+      }
       final File keyFile = FileUtil.resolvePath(context.getBuild().getCheckoutDirectory(), keyFilePath);
       myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
       initSessionKeyFile(username, password, keyFile, jsch);
