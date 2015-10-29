@@ -51,7 +51,7 @@
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.4-SNAPSHOT</version>
+            <version>3.4-20150905.172252-90</version>
         </dependency>
 
         <dependency>
