@@ -45,105 +45,13 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private final static Set<String> ourKnownAsciiExts = new HashSet<String>();
 
   static {
-    ourKnownAsciiExts.add("abc");
-    ourKnownAsciiExts.add("acgi");
-    ourKnownAsciiExts.add("aip");
-    ourKnownAsciiExts.add("asm");
-    ourKnownAsciiExts.add("asp");
-    ourKnownAsciiExts.add("c");
-    ourKnownAsciiExts.add("c");
-    ourKnownAsciiExts.add("cc");
-    ourKnownAsciiExts.add("cc");
-    ourKnownAsciiExts.add("com");
-    ourKnownAsciiExts.add("conf");
-    ourKnownAsciiExts.add("cpp");
-    ourKnownAsciiExts.add("csh");
-    ourKnownAsciiExts.add("css");
-    ourKnownAsciiExts.add("cxx");
-    ourKnownAsciiExts.add("def");
-    ourKnownAsciiExts.add("el");
-    ourKnownAsciiExts.add("etx");
-    ourKnownAsciiExts.add("f");
-    ourKnownAsciiExts.add("f");
-    ourKnownAsciiExts.add("f77");
-    ourKnownAsciiExts.add("f90");
-    ourKnownAsciiExts.add("f90");
-    ourKnownAsciiExts.add("flx");
-    ourKnownAsciiExts.add("for");
-    ourKnownAsciiExts.add("for");
-    ourKnownAsciiExts.add("g");
-    ourKnownAsciiExts.add("h");
-    ourKnownAsciiExts.add("h");
-    ourKnownAsciiExts.add("hh");
-    ourKnownAsciiExts.add("hh");
-    ourKnownAsciiExts.add("hlb");
-    ourKnownAsciiExts.add("htc");
-    ourKnownAsciiExts.add("htm");
-    ourKnownAsciiExts.add("html");
-    ourKnownAsciiExts.add("htmls");
-    ourKnownAsciiExts.add("htt");
-    ourKnownAsciiExts.add("htx");
-    ourKnownAsciiExts.add("idc");
-    ourKnownAsciiExts.add("jav");
-    ourKnownAsciiExts.add("jav");
-    ourKnownAsciiExts.add("java");
-    ourKnownAsciiExts.add("java");
-    ourKnownAsciiExts.add("js");
-    ourKnownAsciiExts.add("ksh");
-    ourKnownAsciiExts.add("list");
-    ourKnownAsciiExts.add("log");
-    ourKnownAsciiExts.add("lsp");
-    ourKnownAsciiExts.add("lst");
-    ourKnownAsciiExts.add("lsx");
-    ourKnownAsciiExts.add("m");
-    ourKnownAsciiExts.add("m");
-    ourKnownAsciiExts.add("mar");
-    ourKnownAsciiExts.add("mcf");
-    ourKnownAsciiExts.add("p");
-    ourKnownAsciiExts.add("pas");
-    ourKnownAsciiExts.add("php");
-    ourKnownAsciiExts.add("pl");
-    ourKnownAsciiExts.add("pl");
-    ourKnownAsciiExts.add("pm");
-    ourKnownAsciiExts.add("py");
-    ourKnownAsciiExts.add("rexx");
-    ourKnownAsciiExts.add("rt");
-    ourKnownAsciiExts.add("rt");
-    ourKnownAsciiExts.add("rtf");
-    ourKnownAsciiExts.add("rtx");
-    ourKnownAsciiExts.add("s");
-    ourKnownAsciiExts.add("scm");
-    ourKnownAsciiExts.add("scm");
-    ourKnownAsciiExts.add("sdml");
-    ourKnownAsciiExts.add("sgm");
-    ourKnownAsciiExts.add("sgm");
-    ourKnownAsciiExts.add("sgml");
-    ourKnownAsciiExts.add("sgml");
-    ourKnownAsciiExts.add("sh");
-    ourKnownAsciiExts.add("shtml");
-    ourKnownAsciiExts.add("shtml");
-    ourKnownAsciiExts.add("spc");
-    ourKnownAsciiExts.add("ssi");
-    ourKnownAsciiExts.add("talk");
-    ourKnownAsciiExts.add("tcl");
-    ourKnownAsciiExts.add("tcsh");
-    ourKnownAsciiExts.add("text");
-    ourKnownAsciiExts.add("tsv");
-    ourKnownAsciiExts.add("txt");
-    ourKnownAsciiExts.add("uil");
-    ourKnownAsciiExts.add("uni");
-    ourKnownAsciiExts.add("unis");
-    ourKnownAsciiExts.add("uri");
-    ourKnownAsciiExts.add("uris");
-    ourKnownAsciiExts.add("uu");
-    ourKnownAsciiExts.add("uue");
-    ourKnownAsciiExts.add("vcs");
-    ourKnownAsciiExts.add("wml");
-    ourKnownAsciiExts.add("wmls");
-    ourKnownAsciiExts.add("wsc");
-    ourKnownAsciiExts.add("xml");
-    ourKnownAsciiExts.add("zsh");
-
+    ourKnownAsciiExts.addAll(Arrays.asList("abc", "acgi", "aip", "asm", "asp", "c", "cc", "com", "conf",
+        "cpp", "csh", "css", "cxx", "def", "el", "etx", "f", "f77", "f90", "flx", "for", "g", "h",
+        "hh", "hh", "hlb", "htc", "htm", "html", "htmls", "htt", "htx", "idc", "jav", "java", "js",
+        "ksh", "list", "log", "lsp", "lst", "lsx", "m", "mar", "mcf", "p", "pas", "php", "pl", "pm", "py",
+        "rexx", "rt", "rtf", "rtx", "s", "scm", "sdml", "sgm", "sgml", "sh", "shtml",
+        "spc", "ssi", "talk", "tcl", "tcsh", "text", "tsv", "txt", "uil", "uni", "unis", "uri", "uris", "uu",
+        "uue", "vcs", "wml", "wmls", "wsc", "xml", "zsh"));
   }
 
   public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
