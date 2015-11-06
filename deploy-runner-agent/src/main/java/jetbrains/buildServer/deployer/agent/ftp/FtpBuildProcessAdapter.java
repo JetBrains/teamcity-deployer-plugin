@@ -17,10 +17,7 @@ import org.apache.commons.net.util.TrustManagerUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.net.ssl.SSLException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
@@ -33,8 +30,8 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private static final String FTP_PROTOCOL = "ftp://";
 
   private static final Logger myInternalLog = Logger.getInstance(FtpBuildProcessAdapter.class.getName());
-  private static final int STREAM_BUFFER_SIZE = 5 * 1024 * 1024; // 5 Mb
-  private static final int SOCKET_BUFFER_SIZE = 1024 * 1024; // 1 Mb
+  public static final int STREAM_BUFFER_SIZE = 5 * 1024 * 1024; // 5 Mb
+  public static final int SOCKET_BUFFER_SIZE = 1024 * 1024; // 1 Mb
 
   private final String myTarget;
   private final String myUsername;
@@ -42,18 +39,6 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private final List<ArtifactsCollection> myArtifacts;
   private final String myTransferMode;
   private final String mySecureMode;
-  private final static Set<String> ourKnownAsciiExts = new HashSet<String>();
-
-  static {
-    ourKnownAsciiExts.addAll(Arrays.asList("abc", "acgi", "aip", "asm", "asp", "c", "cc", "com", "conf",
-        "cpp", "csh", "css", "cxx", "def", "el", "etx", "f", "f77", "f90", "flx", "for", "g", "h",
-        "hh", "hh", "hlb", "htc", "htm", "html", "htmls", "htt", "htx", "idc", "jav", "java", "js",
-        "ksh", "list", "log", "lsp", "lst", "lsx", "m", "mar", "mcf", "p", "pas", "php", "pl", "pm", "py",
-        "rexx", "rt", "rtf", "rtx", "s", "scm", "sdml", "sgm", "sgml", "sh", "shtml",
-        "spc", "ssi", "talk", "tcl", "tcsh", "text", "tsv", "txt", "uil", "uni", "unis", "uri", "uris", "uu",
-        "uue", "vcs", "wml", "wmls", "wsc", "xml", "zsh"));
-  }
-
   public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                 @NotNull final String target,
                                 @NotNull final String username,
@@ -73,111 +58,52 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
     FTPClient clientToDisconnect = null;
     try {
-      final FTPClient client;
-      if (isNone(mySecureMode)) {
-        client = new FTPClient();
+      final URL targetUrl = new URL(myTarget);
+      final String host = targetUrl.getHost();
+      final int port = targetUrl.getPort();
+      final String encodedPath = targetUrl.getPath();
+
+      final String path;
+      if (encodedPath.length() > 0) {
+        path = URLDecoder.decode(encodedPath.substring(1), "UTF-8");
       } else {
-        if (isImplicit(mySecureMode)) {
-          client = new FTPSClient(true);
-        } else {
-          client = new FTPSClient(false);
-        }
-        ((FTPSClient) client).setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
+        path = "";
       }
 
+      final FTPClient client = createClient();
       clientToDisconnect = client;
 
+      if (port > 0) {
+        client.connect(host, port);
+      } else {
+        client.connect(host);
+      }
+
+      client.login(myUsername, myPassword);
+
+
+      boolean isAutoType = false;
+      if (FTPRunnerConstants.TRANSFER_MODE_BINARY.equals(myTransferMode)) {
+        client.setFileType(FTP.BINARY_FILE_TYPE);
+      } else if (FTPRunnerConstants.TRANSFER_MODE_ASCII.equals(myTransferMode)) {
+        client.setFileType(FTP.ASCII_FILE_TYPE);
+      } else {
+        isAutoType = true;
+      }
+
+      client.setControlKeepAliveTimeout(60); // seconds
+
+
       final AtomicReference<Exception> innerException = new AtomicReference<Exception>();
-      final Runnable interruptibleBody = new Runnable() {
-        public void run() {
-          try {
-            final URL targetUrl = new URL(myTarget);
-            final String host = targetUrl.getHost();
-            final int port = targetUrl.getPort();
-            final String encodedPath = targetUrl.getPath();
-
-            final String path;
-            if (encodedPath.length() > 0) {
-              path = URLDecoder.decode(encodedPath.substring(1), "UTF-8");
-            } else {
-              path = "";
-            }
-
-            client.setBufferSize(STREAM_BUFFER_SIZE);
-            client.setSendBufferSize(SOCKET_BUFFER_SIZE);
-
-            if (port > 0) {
-              client.connect(host, port);
-            } else {
-              client.connect(host);
-            }
-
-            client.login(myUsername, myPassword);
-
-            boolean isAutoType = false;
-            if (FTPRunnerConstants.TRANSFER_MODE_BINARY.equals(myTransferMode)) {
-              client.setFileType(FTP.BINARY_FILE_TYPE);
-            } else if (FTPRunnerConstants.TRANSFER_MODE_ASCII.equals(myTransferMode)) {
-              client.setFileType(FTP.ASCII_FILE_TYPE);
-            } else {
-              isAutoType = true;
-            }
-
-            client.setControlKeepAliveTimeout(60); // seconds
-
-            if (!StringUtil.isEmpty(path)) {
-              createPath(client, path);
-              client.changeWorkingDirectory(path);
-            }
-
-            final String remoteRoot = client.printWorkingDirectory();
-
-            myLogger.message("Starting upload via " + (isNone(mySecureMode) ? "FTP" :
-                (isImplicit(mySecureMode) ? "FTPS" : "FTPES")) + " to " + myTarget);
-
-            for (ArtifactsCollection artifactsCollection : myArtifacts) {
-              int count = 0;
-              for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
-                final File source = fileStringEntry.getKey();
-                final String destinationDir = fileStringEntry.getValue();
-
-                if (StringUtil.isNotEmpty(destinationDir)) {
-                  createPath(client, destinationDir);
-                  client.changeWorkingDirectory(destinationDir);
-                }
-                myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationDir + "] under [" + remoteRoot + "]");
-                checkIsInterrupted();
-                InputStream inputStream = null;
-                try {
-                  if (isAutoType) {
-                    client.setFileType(detectType(source.getName()));
-                  }
-                  inputStream = new FileInputStream(source);
-                  client.storeFile(source.getName(), inputStream);
-                } finally {
-                  if (inputStream != null) {
-                    inputStream.close();
-                  }
-                }
-                client.changeWorkingDirectory(remoteRoot);
-                checkIsInterrupted();
-                myInternalLog.debug("done transferring [" + source.getAbsolutePath() + "]");
-                count++;
-              }
-              myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
-            }
-          } catch (Exception t) {
-            final String message = "Exception while uploading files: " + t.getMessage();
-            myLogger.error(message);
-            myInternalLog.debug(message, t);
-            innerException.set(t);
-          }
+      final Runnable interruptableBody = new InterruptableUpload(client, innerException, myLogger, myArtifacts, isAutoType, path) {
+        public boolean checkIsInterrupted() {
+          return FtpBuildProcessAdapter.this.isInterrupted();
         }
       };
+      final Thread uploadThread = new Thread(interruptableBody);
 
-
-      final Thread uploadThread = new Thread(interruptibleBody);
-
+      myLogger.message("Starting upload via " + (isNone(mySecureMode) ? "FTP" :
+          (isImplicit(mySecureMode) ? "FTPS" : "FTPES")) + " to " + myTarget);
       uploadThread.start();
 
       new WaitFor(Long.MAX_VALUE, 1000) {
@@ -235,12 +161,23 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     }
   }
 
-  private int detectType(String name) {
-    if (ourKnownAsciiExts.contains(getExtension(name))) {
-      return FTP.ASCII_FILE_TYPE;
+  @NotNull
+  private FTPClient createClient() throws SocketException {
+    final FTPClient client;
+    if (isNone(mySecureMode)) {
+      client = new FTPClient();
     } else {
-      return FTP.BINARY_FILE_TYPE;
+      if (isImplicit(mySecureMode)) {
+        client = new FTPSClient(true);
+      } else {
+        client = new FTPSClient(false);
+      }
+      ((FTPSClient) client).setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
     }
+
+    client.setBufferSize(FtpBuildProcessAdapter.STREAM_BUFFER_SIZE);
+    client.setSendBufferSize(FtpBuildProcessAdapter.SOCKET_BUFFER_SIZE);
+    return client;
   }
 
   private boolean isImplicit(String secureMode) {
@@ -251,54 +188,4 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     return StringUtil.isEmpty(secureMode) || "0".equals(secureMode);
   }
 
-  private void createPath(@NotNull final FTPClient client,
-                          @NotNull final String path) throws Exception {
-    final String root = client.printWorkingDirectory();
-    final String normalisedPath = path.trim().replaceAll("\\\\", "/");
-    final StringTokenizer pathTokenizer = new StringTokenizer(normalisedPath, "/");
-    if (path.startsWith("/")) {
-      client.changeWorkingDirectory("/"); // support absolute paths
-    }
-    boolean prevDirExisted = true;
-    while (pathTokenizer.hasMoreTokens()) {
-      checkIsInterrupted();
-      final String nextDir = pathTokenizer.nextToken();
-      if (prevDirExisted && dirExists(nextDir, client)) {
-        client.changeWorkingDirectory(nextDir);
-      } else {
-        Exception createException = null;
-        try {
-          client.makeDirectory(nextDir);
-          prevDirExisted = false;
-        } catch (IOException e) {
-          createException = e;
-        }
-        try {
-          client.changeWorkingDirectory(nextDir);
-        } catch (IOException f) {
-          String message = "Failed to change current dir to [" + nextDir + "]";
-          if (createException != null) {
-            message += "\n also failed to create this dir: [" + createException.getMessage() + "]";
-          }
-          throw new RunBuildException(message, f);
-        }
-      }
-    }
-
-    client.changeWorkingDirectory(root);
-  }
-
-  private boolean dirExists(@NotNull final String nextDir,
-                            @NotNull final FTPClient client) throws Exception {
-    final String[] strings = client.listNames();
-    if (strings == null) {
-      return false;
-    }
-    for (String string : strings) {
-      if (string.equals(nextDir)) {
-        return true;
-      }
-    }
-    return false;
-  }
 }
