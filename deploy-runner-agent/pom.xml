@@ -4,7 +4,7 @@
     <parent>
         <artifactId>deploy-runner</artifactId>
         <groupId>jetbrains.buildServer.deployer</groupId>
-        <version>0.6</version>
+        <version>0.7-SNAPSHOT</version>
     </parent>
     <artifactId>deploy-runner-agent</artifactId>
     <packaging>jar</packaging>
@@ -21,7 +21,7 @@
         <dependency>
             <groupId>jetbrains.buildServer.deployer</groupId>
             <artifactId>deploy-runner-common</artifactId>
-            <version>0.6</version>
+            <version>0.7-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.4-20150905.172252-90</version>
+            <version>3.4-SNAPSHOT</version>
         </dependency>
 
         <dependency>

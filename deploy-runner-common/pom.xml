@@ -4,7 +4,7 @@
     <parent>
         <artifactId>deploy-runner</artifactId>
         <groupId>jetbrains.buildServer.deployer</groupId>
-        <version>0.6</version>
+        <version>0.7-SNAPSHOT</version>
     </parent>
     <artifactId>deploy-runner-common</artifactId>
     <packaging>jar</packaging>
