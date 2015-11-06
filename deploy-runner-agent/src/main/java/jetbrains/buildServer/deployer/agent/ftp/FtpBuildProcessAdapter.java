@@ -291,6 +291,9 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private boolean dirExists(@NotNull final String nextDir,
                             @NotNull final FTPClient client) throws Exception {
     final String[] strings = client.listNames();
+    if (strings == null) {
+      return false;
+    }
     for (String string : strings) {
       if (string.equals(nextDir)) {
         return true;
