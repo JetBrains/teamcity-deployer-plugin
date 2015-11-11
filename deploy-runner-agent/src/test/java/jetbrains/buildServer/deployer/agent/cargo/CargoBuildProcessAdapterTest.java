@@ -1,6 +1,7 @@
 package jetbrains.buildServer.deployer.agent.cargo;
 
 import com.intellij.openapi.util.io.StreamUtil;
+import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
@@ -20,6 +21,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
@@ -97,96 +99,59 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
 
   @Test
   public void testSimpleDeploy() throws Exception {
-
-    final String fileName = "simple.war";
-    File sourceWar = getTestResource(fileName);
-
-    FileUtil.copy(sourceWar, new File(workingDir, "simple.war"));
-    final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, "simple.war");
-    DeployTestUtils.runProcess(process, 5000);
-    final InputStream stream = new URL("http://127.0.0.1:" + TEST_PORT + "/simple").openStream();
-    final String text = StreamUtil.readText(stream);
-    assertTrue(text.contains("Hello!  The time is now"));
+    deployTestResouceAsArtifact("simple.war", "simple.war");
+    assertUrlReturns(new URL("http://127.0.0.1:" + TEST_PORT + "/simple"), "Hello!  The time is now");
   }
 
   @Test
   public void testReDeploy() throws Exception {
-
     final URL url = new URL("http://127.0.0.1:" + TEST_PORT + "/simple");
 
-    FileUtil.copy(getTestResource("simple.war"), new File(workingDir, "simple.war"));
-    final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, "simple.war");
-    DeployTestUtils.runProcess(process, 5000);
+    deployTestResouceAsArtifact("simple.war", "simple.war");
+    assertUrlReturns(url, "Hello!  The time is now");
 
-    final InputStream stream = url.openStream();
-    final String text = StreamUtil.readText(stream);
-
-    assertThat(text).contains("Hello!  The time is now");
-
-    FileUtil.copy(getTestResource("simple2.war"), new File(workingDir, "simple.war"));
-    final BuildProcess process2 = getProcess("127.0.0.1:" + TEST_PORT, "simple.war");
-    DeployTestUtils.runProcess(process2, 5000);
-
-    final InputStream stream2 = url.openStream();
-    final String text2 = StreamUtil.readText(stream2);
-
-    assertThat(text2).contains("Hello v2!  The time is now");
+    deployTestResouceAsArtifact("simple2.war", "simple.war");
+    assertUrlReturns(url, "Hello v2!  The time is now");
   }
 
 
   @Test
   public void testDeployWithContext() throws Exception {
-
-    final String fileName = "simple-with-context.war";
-    File sourceWar = getTestResource(fileName);
-
-    FileUtil.copy(sourceWar, new File(workingDir, "simple-with-context.war"));
-    final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, "simple-with-context.war");
-    DeployTestUtils.runProcess(process, 5000);
-    final InputStream stream = new URL("http://127.0.0.1:" + TEST_PORT + "/somepath/myapp").openStream();
-    final String text = StreamUtil.readText(stream);
-    assertTrue(text.contains("Hello!  The time is now"));
+    deployTestResouceAsArtifact("simple-with-context.war", "simple-with-context.war");
+    assertUrlReturns(new URL("http://127.0.0.1:" + TEST_PORT + "/somepath/myapp"), "Hello!  The time is now");
   }
 
 
   @Test
   public void testDeployRootContext() throws Exception {
-
-    final String fileName = "simple.war";
-    File sourceWar = getTestResource(fileName);
-    FileUtil.copy(sourceWar, new File(workingDir, "ROOT.war"));
-    final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, "ROOT.war");
-    DeployTestUtils.runProcess(process, 5000);
-    final InputStream stream = new URL("http://127.0.0.1:" + TEST_PORT + "/").openStream();
-    final String text = StreamUtil.readText(stream);
-    assertTrue(text.contains("Hello!  The time is now"));
+    deployTestResouceAsArtifact("simple.war", "ROOT.war");
+    assertUrlReturns(new URL("http://127.0.0.1:" + TEST_PORT + "/"), "Hello!  The time is now");
   }
 
 
   @Test
   public void testReDeployRootContext() throws Exception {
-
     final URL url = new URL("http://127.0.0.1:" + TEST_PORT + "/");
 
-    FileUtil.copy(getTestResource("simple.war"), new File(workingDir, "ROOT.war"));
-    final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, "ROOT.war");
-    DeployTestUtils.runProcess(process, 5000);
+    deployTestResouceAsArtifact("simple.war", "ROOT.war");
+    assertUrlReturns(url, "Hello!  The time is now");
 
-    final InputStream stream = url.openStream();
-    final String text = StreamUtil.readText(stream);
-
-    assertThat(text).contains("Hello!  The time is now");
-
-    FileUtil.copy(getTestResource("simple2.war"), new File(workingDir, "ROOT.war"));
-    final BuildProcess process2 = getProcess("127.0.0.1:" + TEST_PORT, "ROOT.war");
-    DeployTestUtils.runProcess(process2, 5000);
-
-    final InputStream stream2 = url.openStream();
-    final String text2 = StreamUtil.readText(stream2);
-
-    assertThat(text2).contains("Hello v2!  The time is now");
+    deployTestResouceAsArtifact("simple2.war", "ROOT.war");
+    assertUrlReturns(url, "Hello v2!  The time is now");
   }
 
+  private void assertUrlReturns(URL url, String expected2) throws IOException {
+    final InputStream stream2 = url.openStream();
+    final String text2 = StreamUtil.readText(stream2);
+    assertThat(text2).contains(expected2);
+  }
+
+
+  private void deployTestResouceAsArtifact(String testResourceName, String artifactName) throws IOException, RunBuildException {
+    FileUtil.copy(getTestResource(testResourceName), new File(workingDir, artifactName));
+    final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, artifactName);
+    DeployTestUtils.runProcess(process, 5000);
+  }
 
   private BuildProcess getProcess(String target, String sourcePath) {
     String username = "tomcat";
