@@ -22,9 +22,9 @@ import static jetbrains.buildServer.util.FileUtil.getExtension;
  * Created by Nikita.Skvortsov
  * date: 06.11.2015.
  */
-abstract class InterruptableUpload implements Runnable {
+abstract class InterruptibleUploadProcess implements Runnable {
 
-  private static final Logger myInternalLog = Logger.getInstance(InterruptableUpload.class.getName());
+  private static final Logger myInternalLog = Logger.getInstance(InterruptibleUploadProcess.class.getName());
 
   private final FTPClient myClient;
   private final AtomicReference<Exception> myException;
@@ -46,12 +46,12 @@ abstract class InterruptableUpload implements Runnable {
   }
 
 
-  public InterruptableUpload(@NotNull final FTPClient client,
-                             @NotNull final AtomicReference<Exception> exception,
-                             @NotNull final BuildProgressLogger logger,
-                             @NotNull final List<ArtifactsCollection> artifacts,
-                             final boolean isAutoType,
-                             @NotNull final String path) {
+  public InterruptibleUploadProcess(@NotNull final FTPClient client,
+                                    @NotNull final AtomicReference<Exception> exception,
+                                    @NotNull final BuildProgressLogger logger,
+                                    @NotNull final List<ArtifactsCollection> artifacts,
+                                    final boolean isAutoType,
+                                    @NotNull final String path) {
     this.myClient = client;
     this.myException = exception;
     this.myLogger = logger;
@@ -153,9 +153,13 @@ abstract class InterruptableUpload implements Runnable {
   }
 
   private boolean dirExists(@NotNull final String nextDir) throws Exception {
+    // these directories always exist
+    if ("..".equals(nextDir) || ".".equals(nextDir)) {
+      return true;
+    }
     final String[] strings = myClient.listNames();
     if (strings == null) {
-      return false;
+      throw new RunBuildException("Failed to upload artifacts via FTP. Reply was:" + myClient.getReplyString());
     }
     for (String string : strings) {
       if (string.equals(nextDir)) {

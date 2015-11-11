@@ -95,7 +95,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
 
       final AtomicReference<Exception> innerException = new AtomicReference<Exception>();
-      final Runnable interruptableBody = new InterruptableUpload(client, innerException, myLogger, myArtifacts, isAutoType, path) {
+      final Runnable interruptableBody = new InterruptibleUploadProcess(client, innerException, myLogger, myArtifacts, isAutoType, path) {
         public boolean checkIsInterrupted() {
           return FtpBuildProcessAdapter.this.isInterrupted();
         }

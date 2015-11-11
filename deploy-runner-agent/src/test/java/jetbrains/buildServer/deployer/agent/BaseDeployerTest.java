@@ -31,7 +31,7 @@ public class BaseDeployerTest {
   @AfterMethod
   public void tearDown() throws Exception {
     myTempFiles.cleanup();
-    myLogger.onTestFinish(true);
+    myLogger.onTestFinish(false);
   }
 
   protected File getTestResource(String fileName) {

@@ -1,10 +1,12 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
+import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
+import jetbrains.buildServer.util.WaitFor;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.Authority;
@@ -27,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.Assert.*;
 
 /**
@@ -208,6 +211,23 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
     final BuildProcess process = getProcess("localhost:" + TEST_PORT);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
+  }
+
+  @Test
+  public void testNotAuthorized() throws Exception {
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+    final BuildProcess process = new FtpBuildProcessAdapter(myContext, "127.0.0.1:" + TEST_PORT, myUsername, "wrongpassword", myArtifactsCollections);
+
+    process.start();
+    new WaitFor(5000) {
+      @Override
+      protected boolean condition() {
+        return process.isFinished();
+      }
+    };
+    assertThat(process.isFinished()).describedAs("Failed to finish test in time").isTrue();
+    assertThat(process.waitFor()).isEqualTo(BuildFinishedStatus.FINISHED_FAILED);
+    assertEquals(myRemoteDir.listFiles().length, 0);
   }
 
 
