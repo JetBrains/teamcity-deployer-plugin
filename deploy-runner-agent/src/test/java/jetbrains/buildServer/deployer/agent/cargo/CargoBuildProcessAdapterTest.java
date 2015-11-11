@@ -99,7 +99,7 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
 
   @Test
   public void testSimpleDeploy() throws Exception {
-    deployTestResouceAsArtifact("simple.war", "simple.war");
+    deployTestResourceAsArtifact("simple.war", "simple.war");
     assertUrlReturns(new URL("http://127.0.0.1:" + TEST_PORT + "/simple"), "Hello!  The time is now");
   }
 
@@ -107,24 +107,24 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
   public void testReDeploy() throws Exception {
     final URL url = new URL("http://127.0.0.1:" + TEST_PORT + "/simple");
 
-    deployTestResouceAsArtifact("simple.war", "simple.war");
+    deployTestResourceAsArtifact("simple.war", "simple.war");
     assertUrlReturns(url, "Hello!  The time is now");
 
-    deployTestResouceAsArtifact("simple2.war", "simple.war");
+    deployTestResourceAsArtifact("simple2.war", "simple.war");
     assertUrlReturns(url, "Hello v2!  The time is now");
   }
 
 
   @Test
   public void testDeployWithContext() throws Exception {
-    deployTestResouceAsArtifact("simple-with-context.war", "simple-with-context.war");
+    deployTestResourceAsArtifact("simple-with-context.war", "simple-with-context.war");
     assertUrlReturns(new URL("http://127.0.0.1:" + TEST_PORT + "/somepath/myapp"), "Hello!  The time is now");
   }
 
 
   @Test
   public void testDeployRootContext() throws Exception {
-    deployTestResouceAsArtifact("simple.war", "ROOT.war");
+    deployTestResourceAsArtifact("simple.war", "ROOT.war");
     assertUrlReturns(new URL("http://127.0.0.1:" + TEST_PORT + "/"), "Hello!  The time is now");
   }
 
@@ -133,10 +133,10 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
   public void testReDeployRootContext() throws Exception {
     final URL url = new URL("http://127.0.0.1:" + TEST_PORT + "/");
 
-    deployTestResouceAsArtifact("simple.war", "ROOT.war");
+    deployTestResourceAsArtifact("simple.war", "ROOT.war");
     assertUrlReturns(url, "Hello!  The time is now");
 
-    deployTestResouceAsArtifact("simple2.war", "ROOT.war");
+    deployTestResourceAsArtifact("simple2.war", "ROOT.war");
     assertUrlReturns(url, "Hello v2!  The time is now");
   }
 
@@ -147,7 +147,7 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
   }
 
 
-  private void deployTestResouceAsArtifact(String testResourceName, String artifactName) throws IOException, RunBuildException {
+  private void deployTestResourceAsArtifact(String testResourceName, String artifactName) throws IOException, RunBuildException {
     FileUtil.copy(getTestResource(testResourceName), new File(workingDir, artifactName));
     final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, artifactName);
     DeployTestUtils.runProcess(process, 5000);
