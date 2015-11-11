@@ -149,6 +149,45 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
   }
 
 
+  @Test
+  public void testDeployRootContext() throws Exception {
+
+    final String fileName = "simple.war";
+    File sourceWar = getTestResource(fileName);
+    FileUtil.copy(sourceWar, new File(workingDir, "ROOT.war"));
+    final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, "ROOT.war");
+    DeployTestUtils.runProcess(process, 5000);
+    final InputStream stream = new URL("http://127.0.0.1:" + TEST_PORT + "/").openStream();
+    final String text = StreamUtil.readText(stream);
+    assertTrue(text.contains("Hello!  The time is now"));
+  }
+
+
+  @Test
+  public void testReDeployRootContext() throws Exception {
+
+    final URL url = new URL("http://127.0.0.1:" + TEST_PORT + "/");
+
+    FileUtil.copy(getTestResource("simple.war"), new File(workingDir, "ROOT.war"));
+    final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, "ROOT.war");
+    DeployTestUtils.runProcess(process, 5000);
+
+    final InputStream stream = url.openStream();
+    final String text = StreamUtil.readText(stream);
+
+    assertThat(text).contains("Hello!  The time is now");
+
+    FileUtil.copy(getTestResource("simple2.war"), new File(workingDir, "ROOT.war"));
+    final BuildProcess process2 = getProcess("127.0.0.1:" + TEST_PORT, "ROOT.war");
+    DeployTestUtils.runProcess(process2, 5000);
+
+    final InputStream stream2 = url.openStream();
+    final String text2 = StreamUtil.readText(stream2);
+
+    assertThat(text2).contains("Hello v2!  The time is now");
+  }
+
+
   private BuildProcess getProcess(String target, String sourcePath) {
     String username = "tomcat";
     String password = "tomcat";

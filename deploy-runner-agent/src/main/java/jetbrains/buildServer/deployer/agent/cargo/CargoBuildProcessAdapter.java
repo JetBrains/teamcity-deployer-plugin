@@ -11,6 +11,7 @@ import org.codehaus.cargo.container.configuration.Configuration;
 import org.codehaus.cargo.container.configuration.ConfigurationType;
 import org.codehaus.cargo.container.deployable.Deployable;
 import org.codehaus.cargo.container.deployable.DeployableType;
+import org.codehaus.cargo.container.deployable.WAR;
 import org.codehaus.cargo.container.deployer.Deployer;
 import org.codehaus.cargo.container.property.GeneralPropertySet;
 import org.codehaus.cargo.container.property.RemotePropertySet;
@@ -95,6 +96,9 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
           + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
           + "], container type [" + myContainerType + "]");
 
+      if (mySourcePath.endsWith("ROOT.war") && deployable instanceof WAR) {
+        ((WAR) deployable).setContext("/");
+      }
 
       final SimpleLogger simpleLogger = new SimpleLogger();
       simpleLogger.setLevel(LogLevel.DEBUG);
