@@ -20,10 +20,8 @@ import javax.net.ssl.SSLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static jetbrains.buildServer.util.FileUtil.getExtension;
 
 
 class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
@@ -79,7 +77,10 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         client.connect(host);
       }
 
-      client.login(myUsername, myPassword);
+      final boolean loginSuccessful = client.login(myUsername, myPassword);
+      if (!loginSuccessful) {
+        throw new RunBuildException("Failed to login. Reply was: " + client.getReplyString());
+      }
 
 
       boolean isAutoType = false;

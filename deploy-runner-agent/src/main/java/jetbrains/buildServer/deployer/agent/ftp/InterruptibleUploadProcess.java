@@ -148,7 +148,7 @@ abstract class InterruptibleUploadProcess implements Runnable {
 
   private void checkResult(boolean flag) throws Exception {
     if (!flag) {
-      throw new RunBuildException("Failed to upload artifacts via FTP. Reply was:" + myClient.getReplyString());
+      throw new RunBuildException("Failed to upload artifacts via FTP. Reply was: " + myClient.getReplyString());
     }
   }
 
@@ -159,7 +159,7 @@ abstract class InterruptibleUploadProcess implements Runnable {
     }
     final String[] strings = myClient.listNames();
     if (strings == null) {
-      throw new RunBuildException("Failed to upload artifacts via FTP. Reply was:" + myClient.getReplyString());
+      throw new RunBuildException("Failed to upload artifacts via FTP. Reply was: " + myClient.getReplyString());
     }
     for (String string : strings) {
       if (string.equals(nextDir)) {
