@@ -37,12 +37,14 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private final List<ArtifactsCollection> myArtifacts;
   private final String myTransferMode;
   private final String mySecureMode;
+  private final boolean myDebugEnabled;
   public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                 @NotNull final String target,
                                 @NotNull final String username,
                                 @NotNull final String password,
                                 @NotNull final List<ArtifactsCollection> artifactsCollections) {
     super(context.getBuild().getBuildLogger());
+    myDebugEnabled = Boolean.valueOf(context.getRunnerParameters().get(FTPRunnerConstants.DEBUG));
     myTarget = target.toLowerCase().startsWith(FTP_PROTOCOL) ? target : FTP_PROTOCOL + target;
     myUsername = username;
     myPassword = password;
@@ -75,6 +77,10 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         client.connect(host, port);
       } else {
         client.connect(host);
+      }
+
+      if (myDebugEnabled) {
+        client.addProtocolCommandListener(new BuildLogCommandListener(myLogger));
       }
 
       final boolean loginSuccessful = client.login(myUsername, myPassword);
