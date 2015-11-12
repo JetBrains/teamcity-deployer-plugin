@@ -14,4 +14,5 @@ public class FTPRunnerConstants {
   public static final String AUTH_METHOD_ANONYMOUS = "ANONYMOUS";
   public static final String PARAM_SSL_MODE = "jetbrains.buildServer.deployer.ftp.securityMode";
   public static final String DEBUG = "jetbrains.buildServer.deployer.ftp.debug";
+  public static final String PARAM_FTP_MODE = "jetbrains.buildServer.deployer.ftp.ftpMode";
 }

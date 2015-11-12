@@ -1,12 +1,12 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
-import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
 import jetbrains.buildServer.util.WaitFor;
+import org.apache.ftpserver.DataConnectionConfigurationFactory;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.Authority;
@@ -55,12 +55,16 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
   public void setUp() throws Exception {
     super.setUp();
 
+    myRunnerParameters.put(FTPRunnerConstants.PARAM_FTP_MODE, "PASSIVE");
     myArtifactsCollections = new ArrayList<ArtifactsCollection>();
     myRemoteDir = myTempFiles.createTempDir();
     final FtpServerFactory serverFactory = new FtpServerFactory();
 
     final ListenerFactory factory = new ListenerFactory();
     factory.setPort(TEST_PORT);
+    DataConnectionConfigurationFactory dataConnectionConfigurationFactory = new DataConnectionConfigurationFactory();
+    dataConnectionConfigurationFactory.setActiveEnabled(false);
+    factory.setDataConnectionConfiguration(dataConnectionConfigurationFactory.createDataConnectionConfiguration());
     final SslConfigurationFactory ssl = new SslConfigurationFactory();
     ssl.setKeystoreFile(getTestResource("ftpserver.jks"));
     ssl.setKeystorePassword("password");
@@ -125,6 +129,22 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
     final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
+  }
+
+  @Test
+  public void testTransferInActiveMode() throws Exception {
+    myRunnerParameters.put(FTPRunnerConstants.PARAM_FTP_MODE, "ACTIVE");
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+    final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT);
+    process.start();
+    new WaitFor(5000) {
+      @Override
+      protected boolean condition() {
+        return process.isFinished();
+      }
+    };
+    assertThat(process.isFinished()).describedAs("Failed to finish test in time").isTrue();
+    assertThat(process.waitFor()).isEqualTo(BuildFinishedStatus.FINISHED_FAILED);
   }
 
   @Test

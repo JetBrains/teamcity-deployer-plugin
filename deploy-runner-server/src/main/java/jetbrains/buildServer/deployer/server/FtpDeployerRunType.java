@@ -1,10 +1,11 @@
 package jetbrains.buildServer.deployer.server;
 
+import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
+import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
-import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -53,7 +54,9 @@ public class FtpDeployerRunType extends RunType {
 
   @Override
   public Map<String, String> getDefaultRunnerProperties() {
-    return new HashMap<String, String>();
+    final HashMap<String, String> defaults = new HashMap<String, String>();
+    defaults.put(FTPRunnerConstants.PARAM_FTP_MODE, "PASSIVE");
+    return defaults;
   }
 
   @NotNull
