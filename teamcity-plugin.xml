@@ -7,11 +7,9 @@
         <version>@Version@</version>
         <description>Set of Runners for basic deployment tasks</description>
         <download-url>http://confluence.jetbrains.com/display/TW/Deployer+plugin</download-url>
-        <email>n.s.skvortsov@gmail.com</email>
         <vendor>
-            <name>Nikita Skvortsov</name>
-            <url></url>
-            <logo></logo>
+            <name>JetBrains, s.r.o.</name>
+            <url>http://www.jetbrains.com</url>
         </vendor>
     </info>
     <deployment use-separate-classloader="true"/>
