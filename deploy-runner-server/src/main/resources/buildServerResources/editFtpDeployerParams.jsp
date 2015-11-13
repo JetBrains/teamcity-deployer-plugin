@@ -54,7 +54,7 @@
 <l:settingsGroup title="FTP modes">
     <tr>
         <th><label for="jetbrains.buildServer.deployer.ftp.ftpMode">FTP Mode:</label></th>
-        <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_FTP_MODE%>" onchange="sshSelectAuth()">
+        <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_FTP_MODE%>">
             <props:option value="PASSIVE">Passive</props:option>
             <props:option value="ACTIVE">Active</props:option>
         </props:selectProperty>
@@ -62,7 +62,7 @@
     </tr>
     <tr>
         <th><label for="jetbrains.buildServer.deployer.ftp.transferMethod">Transfer Mode:</label></th>
-        <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_TRANSFER_MODE%>" onchange="sshSelectAuth()">
+        <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_TRANSFER_MODE%>">
             <props:option value="AUTO">Auto Detect</props:option>
             <props:option value="BINARY">Binary</props:option>
             <props:option value="ASCII">ASCII</props:option>
