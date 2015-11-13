@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -124,21 +123,19 @@ abstract class InterruptibleUploadProcess implements Runnable {
       if (prevDirExisted && dirExists(nextDir)) {
         checkResult(myClient.changeWorkingDirectory(nextDir));
       } else {
-        Exception createException = null;
-        try {
-          checkResult(myClient.makeDirectory(nextDir));
+        String mkdirFailureMsg = null;
+
+        if (!myClient.makeDirectory(nextDir)) {
+          mkdirFailureMsg = myClient.getReplyString();
+        } else {
           prevDirExisted = false;
-        } catch (IOException e) {
-          createException = e;
         }
-        try {
-          checkResult(myClient.changeWorkingDirectory(nextDir));
-        } catch (IOException f) {
-          String message = "Failed to change current dir to [" + nextDir + "]";
-          if (createException != null) {
-            message += "\n also failed to create this dir: [" + createException.getMessage() + "]";
-          }
-          throw new RunBuildException(message, f);
+
+        if (!myClient.changeWorkingDirectory(nextDir)) {
+          String cwdFailureMsg = myClient.getReplyString();
+          String message = "Failed to change current dir to [" + nextDir + "]: " + cwdFailureMsg +
+              (mkdirFailureMsg != null ? "\n Also failed to create this dir: " + mkdirFailureMsg   : "");
+          throw new RunBuildException(message);
         }
       }
     }
