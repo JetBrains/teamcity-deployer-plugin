@@ -37,7 +37,6 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private final List<ArtifactsCollection> myArtifacts;
   private final String myTransferMode;
   private final String mySecureMode;
-  private final boolean myDebugEnabled;
   private final boolean myIsActive;
 
   public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
@@ -46,7 +45,6 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                                 @NotNull final String password,
                                 @NotNull final List<ArtifactsCollection> artifactsCollections) {
     super(context.getBuild().getBuildLogger());
-    myDebugEnabled = Boolean.valueOf(context.getRunnerParameters().get(FTPRunnerConstants.DEBUG));
     myIsActive = "ACTIVE".equals(context.getRunnerParameters().get(FTPRunnerConstants.PARAM_FTP_MODE));
     myTarget = target.toLowerCase().startsWith(FTP_PROTOCOL) ? target : FTP_PROTOCOL + target;
     myUsername = username;
@@ -82,9 +80,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         client.connect(host);
       }
 
-      if (myDebugEnabled) {
-        client.addProtocolCommandListener(new BuildLogCommandListener(myLogger));
-      }
+      client.addProtocolCommandListener(new BuildLogCommandListener(myLogger));
 
       if (myIsActive) {
         client.enterLocalActiveMode();

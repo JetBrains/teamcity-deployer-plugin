@@ -1,6 +1,7 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
 import jetbrains.buildServer.agent.BuildProgressLogger;
+import jetbrains.buildServer.messages.DefaultMessagesInfo;
 import org.apache.commons.net.ProtocolCommandEvent;
 import org.apache.commons.net.ProtocolCommandListener;
 import org.jetbrains.annotations.NotNull;
@@ -30,10 +31,14 @@ public class BuildLogCommandListener implements ProtocolCommandListener {
     } else {
       sb.append(cmd).append(" *******");
     }
-    myLogger.message(sb.toString());
+    logInternalMessage(sb.toString());
   }
 
   public void protocolReplyReceived(ProtocolCommandEvent event) {
-    myLogger.message("< " + event.getMessage());
+    logInternalMessage("< " + event.getMessage());
+  }
+
+  private void logInternalMessage(@NotNull final String msg) {
+    myLogger.logMessage(DefaultMessagesInfo.internalize(DefaultMessagesInfo.createTextMessage(msg)));
   }
 }

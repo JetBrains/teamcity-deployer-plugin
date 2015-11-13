@@ -84,15 +84,6 @@
     </tr>
 </l:settingsGroup>
 
-<l:settingsGroup title="Additional Settings">
-    <tr>
-        <th><label for="jetbrains.buildServer.deployer.ftp.debug">Debug</label></th>
-        <td>
-            <props:checkboxProperty name="<%=FTPRunnerConstants.DEBUG%>"/><label for="jetbrains.buildServer.deployer.ftp.debug">Enable debug output of FTP commands</label>
-            <span class="smallNote">This will print output of all FTP commands to the build log</span>
-        </td>
-    </tr>
-</l:settingsGroup>
 <script type="text/javascript">
     window.ftpSelectAuth = function () {
         var selector = $('<%=FTPRunnerConstants.PARAM_AUTH_METHOD%>');
