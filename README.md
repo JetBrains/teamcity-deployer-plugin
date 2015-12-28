@@ -24,6 +24,13 @@ New runners include:
  When configuring artifacts for upload, same patterns can be used as in "Artifacts Path" section of "General Settings"
  page. Including packaging artifacts to zip/tgz archives
 
+####Build
+
+You need two JDK-s to build the plugin - maven must be run under jdk8, but agent modules must be compiled using jdk6.
+You have to define path to the jdk6 using command line property:
+
+mvn package -Djava_16="C:\Program Files\Java\jdk1.6.0_45"
+
 ####License
 
 Apache, version 2.0
