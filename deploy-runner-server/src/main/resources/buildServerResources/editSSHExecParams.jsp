@@ -15,13 +15,13 @@
                                                                              id="error_jetbrains.buildServer.deployer.targetUrl"></span>
         </td>
     </tr>
-    <tr>
+    <tr class="advancedSetting">
         <th><label for="jetbrains.buildServer.sshexec.port">Port: </label></th>
         <td><props:textProperty name="<%=SSHRunnerConstants.PARAM_PORT%>" className="longField" maxlength="256"/>
             <span class="smallNote">Optional. Default value: 22</span>
         </td>
     </tr>
-    <tr>
+    <tr class="advancedSetting">
         <th><label for="jetbrains.buildServer.sshexec.pty">Use pty: </label></th>
         <td><props:textProperty name="<%=SSHRunnerConstants.PARAM_PTY%>" className="stringField" maxlength="256"/>
             <span class="smallNote">Optional. By default a pty will not be allocated</span>
