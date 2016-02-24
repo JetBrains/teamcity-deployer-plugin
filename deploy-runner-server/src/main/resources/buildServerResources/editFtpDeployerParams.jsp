@@ -15,7 +15,7 @@
                                                                              id="error_jetbrains.buildServer.deployer.targetUrl"></span>
         </td>
     </tr>
-    <tr>
+    <tr class="advancedSetting">
         <th><label for="jetbrains.buildServer.deployer.ftp.securityMode">Secure connection:</label></th>
         <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_SSL_MODE%>">
             <props:option value="0">None</props:option>
@@ -26,8 +26,8 @@
     </tr>
 </l:settingsGroup>
 
-<l:settingsGroup title="Deployment Credentials">
-    <tr>
+<l:settingsGroup title="Deployment Credentials" className="advancedSetting">
+    <tr class="advancedSetting">
         <th><label for="jetbrains.buildServer.deployer.ftp.authMethod">Authentication method:</label></th>
         <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_AUTH_METHOD%>" onchange="ftpSelectAuth()">
             <props:option value="ANONYMOUS">anonymous</props:option>
@@ -35,14 +35,14 @@
         </props:selectProperty>
         </td>
     </tr>
-    <tr id="user_row">
+    <tr id="user_row" class="advancedSetting">
         <th><label for="jetbrains.buildServer.deployer.username">Username:</label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>" className="longField"
                                 maxlength="256"/>
             <span class="smallNote">Enter username</span>
         </td>
     </tr>
-    <tr id="pwd_row">
+    <tr id="pwd_row" class="advancedSetting">
         <th><label for="secure:jetbrains.buildServer.deployer.password">Password:</label></th>
         <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>" className="longField"
                                     maxlength="256"/>
@@ -51,8 +51,8 @@
     </tr>
 </l:settingsGroup>
 
-<l:settingsGroup title="FTP modes">
-    <tr>
+<l:settingsGroup title="FTP modes" className="advancedSetting">
+    <tr class="advancedSetting">
         <th><label for="jetbrains.buildServer.deployer.ftp.ftpMode">FTP Mode:</label></th>
         <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_FTP_MODE%>">
             <props:option value="PASSIVE">Passive</props:option>
@@ -60,7 +60,7 @@
         </props:selectProperty>
         </td>
     </tr>
-    <tr>
+    <tr class="advancedSetting">
         <th><label for="jetbrains.buildServer.deployer.ftp.transferMethod">Transfer Mode:</label></th>
         <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_TRANSFER_MODE%>">
             <props:option value="AUTO">Auto Detect</props:option>
@@ -98,6 +98,6 @@
                 alert("Unknown authentication method " + selector.value);
         }
         BS.VisibilityHandlers.updateVisibility($('runnerParams'))
-    }
+    };
     ftpSelectAuth();
 </script>

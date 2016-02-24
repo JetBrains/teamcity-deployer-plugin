@@ -17,7 +17,7 @@
         </td>
     </tr>
 
-    <tr>
+    <tr class="advancedSetting">
         <th><label for="jetbrains.buildServer.deployer.ssh.transport">Transport protocol: </label></th>
         <td>
             <props:selectProperty name="<%=SSHRunnerConstants.PARAM_TRANSPORT%>">
@@ -28,7 +28,7 @@
             <span class="smallNote">Select SSH transfer protocol to use</span>
         </td>
     </tr>
-    <tr>
+    <tr class="advancedSetting">
         <th><label for="jetbrains.buildServer.sshexec.port">Port: </label></th>
         <td><props:textProperty name="<%=SSHRunnerConstants.PARAM_PORT%>" className="longField" maxlength="256"/>
             <span class="smallNote">Optional. Default value: 22</span>
