@@ -6,7 +6,6 @@ import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.util.StringUtil;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -20,6 +19,10 @@ public class DeployerPropertiesProcessor implements PropertiesProcessor {
     Collection<InvalidProperty> result = new HashSet<InvalidProperty>();
     if (StringUtil.isEmptyOrSpaces(properties.get(DeployerRunnerConstants.PARAM_TARGET_URL))) {
       result.add(new InvalidProperty(DeployerRunnerConstants.PARAM_TARGET_URL, "The target must be specified."));
+    }
+
+    if (StringUtil.isEmptyOrSpaces(properties.get(DeployerRunnerConstants.PARAM_SOURCE_PATH))) {
+      result.add(new InvalidProperty(DeployerRunnerConstants.PARAM_SOURCE_PATH, "Artifact to deploy must be specified"));
     }
     return result;
   }

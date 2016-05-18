@@ -33,7 +33,7 @@
 
 <l:settingsGroup title="SSH Commands">
     <tr>
-        <th><label for="jetbrains.buildServer.sshexec.command">Commands: </label></th>
+        <th><label for="jetbrains.buildServer.sshexec.command">Commands: <l:star/></label></th>
         <td>
             <props:multilineProperty name="<%=SSHRunnerConstants.PARAM_COMMAND%>" className="longField" rows="4"
                                      cols="30" expanded="true" linkTitle="Enter remote commands"/>

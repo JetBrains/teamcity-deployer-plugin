@@ -2,17 +2,15 @@ package jetbrains.buildServer.deployer.server;
 
 import com.intellij.openapi.util.text.StringUtil;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
+import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
+import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
-import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SSHExecRunType extends RunType {
 
@@ -42,7 +40,16 @@ public class SSHExecRunType extends RunType {
 
   @Override
   public PropertiesProcessor getRunnerPropertiesProcessor() {
-    return new SSHDeployerPropertiesProcessor();
+    return new SSHDeployerPropertiesProcessor() {
+      @Override
+      public Collection<InvalidProperty> process(Map<String, String> properties) {
+        final Collection<InvalidProperty> invalidProperties = super.process(properties);
+        if (jetbrains.buildServer.util.StringUtil.isEmptyOrSpaces(properties.get(SSHRunnerConstants.PARAM_COMMAND))) {
+          invalidProperties.add(new InvalidProperty(SSHRunnerConstants.PARAM_COMMAND, "Remote command must be specified"));
+        }
+        return invalidProperties;
+      }
+    };
   }
 
   @Override
