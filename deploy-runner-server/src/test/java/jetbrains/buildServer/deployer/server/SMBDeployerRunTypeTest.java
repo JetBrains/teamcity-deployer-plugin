@@ -58,12 +58,12 @@ public class SMBDeployerRunTypeTest extends DeployerRunTypeTest {
 
   private void assertIllegalTarget(String value) {
     final Collection<InvalidProperty> invalidProperties = getInvalidPropertiesForTargetUrl(value);
-    assertThat(invalidProperties).containsExactly(TARGET_URL);
+    assertThat(invalidProperties).contains(TARGET_URL);
   }
 
   private void assertLegalTarget(String value) {
     final Collection<InvalidProperty> invalidProperties = getInvalidPropertiesForTargetUrl(value);
-    assertThat(invalidProperties).isEmpty();
+    assertThat(invalidProperties).doesNotContain(TARGET_URL);
   }
 
   private Collection<InvalidProperty> getInvalidPropertiesForTargetUrl(String value) {
