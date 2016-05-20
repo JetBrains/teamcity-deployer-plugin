@@ -13,7 +13,9 @@ public class SSHRunnerConstants {
 
   public static final String PARAM_HOST = "jetbrains.buildServer.sshexec.host";
   public static final String PARAM_PORT = "jetbrains.buildServer.sshexec.port";
+  @Deprecated
   public static final String PARAM_USERNAME = "jetbrains.buildServer.sshexec.username";
+  @Deprecated
   public static final String PARAM_PASSWORD = "jetbrains.buildServer.sshexec.password";
   public static final String PARAM_KEYFILE = "jetbrains.buildServer.sshexec.keyFile";
   public static final String PARAM_AUTH_METHOD = "jetbrains.buildServer.sshexec.authMethod";
