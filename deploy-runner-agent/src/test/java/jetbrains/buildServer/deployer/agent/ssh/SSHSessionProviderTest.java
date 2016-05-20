@@ -69,10 +69,20 @@ public class SSHSessionProviderTest extends BaseSSHTest {
     assertSessionIsConnected();
   }
 
+  public void testUploadedKeys() throws Exception {
+    myRunnerParams.put(SSHRunnerConstants.PARAM_AUTH_METHOD, SSHRunnerConstants.AUTH_METHOD_UPLOADED_KEY);
+
+    myRunnerParams.put(SSHRunnerConstants.PARAM_UPLOADED_KEY_ID, "key_id_value");
+    myRunnerParams.put(DeployerRunnerConstants.PARAM_USERNAME, "username");
+    myRunnerParams.put(DeployerRunnerConstants.PARAM_PASSWORD, "passphrase");
+
+    assertSessionIsConnected();
+  }
+
   private void assertSessionIsConnected() throws JSchException {
     Session session = null;
     try {
-      final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder);
+      final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder, mySshKeyManager);
       session = provider.getSession();
       assertTrue(session.isConnected());
     } finally {

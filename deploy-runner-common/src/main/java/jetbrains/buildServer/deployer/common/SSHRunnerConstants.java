@@ -18,6 +18,7 @@ public class SSHRunnerConstants {
   @Deprecated
   public static final String PARAM_PASSWORD = "jetbrains.buildServer.sshexec.password";
   public static final String PARAM_KEYFILE = "jetbrains.buildServer.sshexec.keyFile";
+  public static final String PARAM_UPLOADED_KEY_ID = "jetbrains.buildServer.sshexec.key.id";
   public static final String PARAM_AUTH_METHOD = "jetbrains.buildServer.sshexec.authMethod";
   public static final String PARAM_COMMAND = "jetbrains.buildServer.sshexec.command";
   public static final String PARAM_PTY = "jetbrains.buildServer.sshexec.pty";
@@ -30,6 +31,7 @@ public class SSHRunnerConstants {
   public static final String AUTH_METHOD_CUSTOM_KEY = "CUSTOM_KEY";
   public static final String AUTH_METHOD_USERNAME_PWD = "PWD";
   public static final String AUTH_METHOD_SSH_AGENT = "SSH_AGENT";
+  public static final String AUTH_METHOD_UPLOADED_KEY = "UPLOADED_KEY";
 
   public String getTransportType() {
     return PARAM_TRANSPORT;

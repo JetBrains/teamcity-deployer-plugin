@@ -170,6 +170,13 @@
             <scope>test</scope>
         </dependency>
 
+      <dependency>
+        <groupId>com.github.fommil</groupId>
+        <artifactId>openssh</artifactId>
+        <version>1.0</version>
+        <scope>test</scope>
+      </dependency>
+
     </dependencies>
 
     <build>

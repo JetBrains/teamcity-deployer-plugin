@@ -1,11 +1,14 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.io.FileUtil;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import jetbrains.buildServer.agent.ssh.AgentRunningBuildSshKeyManager;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
+import jetbrains.buildServer.ssh.TeamCitySshKey;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
@@ -58,6 +61,8 @@ public class BaseSSHTest extends BaseDeployerTest {
   protected String oldUserDir = null;
   protected SshServer myServer;
 
+  protected AgentRunningBuildSshKeyManager mySshKeyManager;
+
   @BeforeMethod
   @Override
   public void setUp() throws Exception {
@@ -98,6 +103,9 @@ public class BaseSSHTest extends BaseDeployerTest {
     final BuildProgressLogger logger = new NullBuildProgressLogger();
     myWorkingDir = myTempFiles.createTempDir();
 
+    mySshKeyManager = mockeryCtx.mock(AgentRunningBuildSshKeyManager.class);
+    final TeamCitySshKey sshKey = new TeamCitySshKey("Name", FileUtil.loadFileBytes(myPrivateKey), false);
+
     mockeryCtx.checking(new Expectations() {{
       allowing(myContext).getWorkingDirectory();
       will(returnValue(myWorkingDir));
@@ -109,6 +117,8 @@ public class BaseSSHTest extends BaseDeployerTest {
       will(returnValue(logger));
       allowing(build).getCheckoutDirectory();
       will(returnValue(myWorkingDir));
+      allowing(mySshKeyManager).getKey("key_id_value");
+      will(returnValue(sshKey));
     }});
 
     // need to change user.dir, so that NativeFileSystemFactory works inside temp directory

@@ -7,9 +7,11 @@ import com.jcraft.jsch.agentproxy.ConnectorFactory;
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.InternalPropertiesHolder;
+import jetbrains.buildServer.agent.ssh.AgentRunningBuildSshKeyManager;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.parameters.ProcessingResult;
+import jetbrains.buildServer.ssh.TeamCitySshKey;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 import org.apache.log4j.Logger;
@@ -17,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 
 public class SSHSessionProvider {
@@ -25,6 +28,8 @@ public class SSHSessionProvider {
   public static final String TEAMCITY_DEPLOYER_SSH_DEFAULT_KEY = "teamcity.deployer.ssh.default.key";
 
   private final Logger myLog = Logger.getLogger(this.getClass());
+  @NotNull
+  private final AgentRunningBuildSshKeyManager mySshKeyManager;
 
   private Session mySession;
   private String myHost;
@@ -33,7 +38,10 @@ public class SSHSessionProvider {
   private final String myDefaultKeyPath = System.getProperty("user.home") + "/.ssh/id_rsa";
 
 
-  public SSHSessionProvider(@NotNull final BuildRunnerContext context, @NotNull final InternalPropertiesHolder holder) throws JSchException {
+  public SSHSessionProvider(@NotNull final BuildRunnerContext context,
+                            @NotNull final InternalPropertiesHolder holder,
+                            @NotNull final AgentRunningBuildSshKeyManager sshKeyManager) throws JSchException {
+    mySshKeyManager = sshKeyManager;
 
     final String target = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
     final String portStr = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_PORT);
@@ -87,6 +95,7 @@ public class SSHSessionProvider {
       final File keyFile = FileUtil.resolvePath(context.getBuild().getCheckoutDirectory(), keyFilePath);
       myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
       initSessionKeyFile(username, password, keyFile, jsch);
+
     } else if (SSHRunnerConstants.AUTH_METHOD_SSH_AGENT.equals(authMethod)) {
       final ProcessingResult result = context.getParametersResolver().resolve("%env.SSH_AUTH_SOCK%");
       String socketPath = null;
@@ -94,6 +103,11 @@ public class SSHSessionProvider {
         socketPath = result.getResult();
       }
       initSessionSshAgent(username, socketPath, jsch);
+    } else if (SSHRunnerConstants.AUTH_METHOD_UPLOADED_KEY.equals(authMethod)) {
+
+      final String keyId = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_UPLOADED_KEY_ID);
+      initSessionUploadedKey(username, password, keyId, jsch);
+
     } else {
       myLog.debug("Using provided username/password");
       initSessionUserPassword(username, password, jsch);
@@ -148,6 +162,21 @@ public class SSHSessionProvider {
       myLog.error("Unable to create connection to agent", e);
       return;
     }
+  }
+
+  private void initSessionUploadedKey(String username, String password, String keyId, JSch jsch) throws JSchException {
+    final TeamCitySshKey key = mySshKeyManager.getKey(keyId);
+    if (key == null) {
+      throw new JSchException("Failed to load ssh key id=[" + keyId + "]");
+    }
+
+    try {
+      jsch.addIdentity(key.getName(), key.getPrivateKey(), null, StringUtil.isNotEmpty(password) ? password.getBytes("UTF-8") : new byte[0]);
+    } catch (UnsupportedEncodingException e) {
+      myLog.error("Wrong encoding name", e);
+    }
+    mySession = jsch.getSession(username, myHost, myPort);
+    mySession.setConfig("PreferredAuthentications", "publickey");
   }
 
   public String getRemotePath() {

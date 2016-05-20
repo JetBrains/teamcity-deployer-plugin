@@ -8,6 +8,7 @@ import jetbrains.buildServer.agent.BuildProcess;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.InternalPropertiesHolder;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import jetbrains.buildServer.agent.ssh.AgentRunningBuildSshKeyManager;
 import jetbrains.buildServer.deployer.agent.base.BaseDeployerRunner;
 import jetbrains.buildServer.deployer.agent.ssh.scp.ScpProcessAdapter;
 import jetbrains.buildServer.deployer.agent.ssh.sftp.SftpBuildProcessAdapter;
@@ -25,11 +26,15 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
 
   @NotNull
   private final InternalPropertiesHolder myInternalProperties;
+  @NotNull
+  private final AgentRunningBuildSshKeyManager mySshKeyManager;
 
   public SSHDeployerRunner(@NotNull final ExtensionHolder extensionHolder,
-                           @NotNull final InternalPropertiesHolder holder) {
+                           @NotNull final InternalPropertiesHolder holder,
+                           @NotNull final AgentRunningBuildSshKeyManager sshKeyManager) {
     super(extensionHolder);
     myInternalProperties = holder;
+    mySshKeyManager = sshKeyManager;
   }
 
   @Override
@@ -41,7 +46,7 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
 
     final SSHSessionProvider provider;
     try {
-      provider = new SSHSessionProvider(context, myInternalProperties);
+      provider = new SSHSessionProvider(context, myInternalProperties, mySshKeyManager);
     } catch (JSchException e) {
       throw new RunBuildException(e);
     }
