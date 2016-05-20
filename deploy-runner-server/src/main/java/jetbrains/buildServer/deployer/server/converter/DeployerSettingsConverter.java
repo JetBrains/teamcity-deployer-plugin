@@ -51,6 +51,7 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
           Loggers.SERVER.debug("Setting default (username password) ssh authentication method for runner [" + runnerType + "-" + descriptor.getName() + "] in [" + buildType.getName() + "]");
           newRunnerParams.put(SSHRunnerConstants.PARAM_AUTH_METHOD, SSHRunnerConstants.AUTH_METHOD_USERNAME_PWD);
         }
+
         if (SSHRunnerConstants.SSH_EXEC_RUN_TYPE.equals(runnerType)) {
           final String oldUsername = newRunnerParams.get(SSHRunnerConstants.PARAM_USERNAME);
           final String oldPassword = newRunnerParams.get(SSHRunnerConstants.PARAM_PASSWORD);
@@ -86,6 +87,17 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
           }
         }
       }
+
+      if (DeployerRunnerConstants.SMB_RUN_TYPE.equals(runnerType)) {
+        final String domain = newRunnerParams.get(DeployerRunnerConstants.PARAM_DOMAIN);
+        if (StringUtil.isNotEmpty(domain)) {
+          persistBuildType = true;
+          newRunnerParams.remove(DeployerRunnerConstants.PARAM_DOMAIN);
+          final String username = newRunnerParams.get(DeployerRunnerConstants.PARAM_USERNAME);
+          newRunnerParams.put(DeployerRunnerConstants.PARAM_USERNAME, domain + "\\" + username);
+        }
+      }
+
       buildType.updateBuildRunner(descriptor.getId(), descriptor.getName(), runnerType, newRunnerParams);
     }
     if (persistBuildType) {

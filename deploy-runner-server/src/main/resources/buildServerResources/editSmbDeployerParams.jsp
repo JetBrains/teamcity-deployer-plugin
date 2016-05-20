@@ -28,7 +28,7 @@
         <th><label for="jetbrains.buildServer.deployer.username">Username:</label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>" className="longField"
                                 maxlength="256"/>
-            <span class="smallNote">Enter username</span>
+            <span class="smallNote">Enter username. "domain\username" format is supported</span>
         </td>
     </tr>
     <tr>
@@ -36,12 +36,6 @@
         <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>" className="longField"
                                     maxlength="256"/>
             <span class="smallNote">Enter password. Configuration parameters can be used</span>
-        </td>
-    </tr>
-    <tr>
-        <th><label for="jetbrains.buildServer.deployer.domain">Domain:</label></th>
-        <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_DOMAIN%>" className="longField" maxlength="256"/>
-            <span class="smallNote">Enter domain</span>
         </td>
     </tr>
 </l:settingsGroup>

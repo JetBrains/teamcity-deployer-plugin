@@ -7,7 +7,6 @@ import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.agent.plugins.beans.PluginDescriptor;
 import jetbrains.buildServer.deployer.agent.base.BaseDeployerRunner;
-import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SMBRunnerConstants;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.Converter;
@@ -54,15 +53,24 @@ public class SmbDeployerRunner extends BaseDeployerRunner {
       final ClassLoader jcifsCL = new URLClassLoader(urls, getClass().getClassLoader());
       final Class smbBuildProcessClass = jcifsCL.loadClass("jetbrains.buildServer.deployer.agent.smb.SMBBuildProcessAdapter");
 
-      final String domain = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_DOMAIN);
+      final String domain;
+      final String actualUsername;
+
+      if (username.indexOf('\\') > -1) {
+        domain = username.substring(0, username.indexOf('\\'));
+        actualUsername = username.substring(username.indexOf('\\') + 1);
+      } else {
+        domain = "";
+        actualUsername = username;
+      }
+
       final boolean dnsOnly = Boolean.valueOf(context.getRunnerParameters().get(SMBRunnerConstants.DNS_ONLY_NAME_RESOLUTION));
 
       final Constructor constructor = smbBuildProcessClass.getConstructor(BuildRunnerContext.class,
           String.class, String.class, String.class, String.class,
           List.class, boolean.class);
-      return (BuildProcess) constructor.newInstance(context, username, password, domain, target, artifactsCollections, dnsOnly);
+      return (BuildProcess) constructor.newInstance(context, actualUsername, password, domain, target, artifactsCollections, dnsOnly);
 
-      // return new SMBBuildProcessAdapter(context, username, password, domain, target, artifactsCollections, dnsOnly);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
