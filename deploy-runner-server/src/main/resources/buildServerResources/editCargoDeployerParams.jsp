@@ -15,7 +15,7 @@
         </td>
     </tr>
     <tr>
-        <th><label for="jetbrains.buildServer.deployer.container.type">Container Type: <l:star/></label></th>
+        <th><label for="jetbrains.buildServer.deployer.container.type">Container type: <l:star/></label></th>
         <td>
             <props:selectProperty name="<%=DeployerRunnerConstants.PARAM_CONTAINER_TYPE%>">
                 <props:option value="tomcat5x"><c:out value="Tomcat 5.x"/></props:option>

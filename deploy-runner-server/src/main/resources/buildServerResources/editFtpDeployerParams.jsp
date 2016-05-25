@@ -51,9 +51,9 @@
     </tr>
 </l:settingsGroup>
 
-<l:settingsGroup title="FTP modes" className="advancedSetting">
+<l:settingsGroup title="FTP Modes" className="advancedSetting">
     <tr class="advancedSetting">
-        <th><label for="jetbrains.buildServer.deployer.ftp.ftpMode">FTP Mode:</label></th>
+        <th><label for="jetbrains.buildServer.deployer.ftp.ftpMode">FTP mode:</label></th>
         <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_FTP_MODE%>">
             <props:option value="PASSIVE">Passive</props:option>
             <props:option value="ACTIVE">Active</props:option>
@@ -61,7 +61,7 @@
         </td>
     </tr>
     <tr class="advancedSetting">
-        <th><label for="jetbrains.buildServer.deployer.ftp.transferMethod">Transfer Mode:</label></th>
+        <th><label for="jetbrains.buildServer.deployer.ftp.transferMethod">Transfer mode:</label></th>
         <td><props:selectProperty name="<%=FTPRunnerConstants.PARAM_TRANSFER_MODE%>">
             <props:option value="AUTO">Auto Detect</props:option>
             <props:option value="BINARY">Binary</props:option>
