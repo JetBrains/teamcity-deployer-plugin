@@ -72,7 +72,7 @@ public class SSHSessionProviderTest extends BaseSSHTest {
   public void testUploadedKeys() throws Exception {
     myRunnerParams.put(SSHRunnerConstants.PARAM_AUTH_METHOD, SSHRunnerConstants.AUTH_METHOD_UPLOADED_KEY);
 
-    myRunnerParams.put(SSHRunnerConstants.PARAM_UPLOADED_KEY_ID, "key_id_value");
+    myRunnerParams.put("teamcitySshKey", "key_id_value");
     myRunnerParams.put(DeployerRunnerConstants.PARAM_USERNAME, "username");
     myRunnerParams.put(DeployerRunnerConstants.PARAM_PASSWORD, "passphrase");
 
