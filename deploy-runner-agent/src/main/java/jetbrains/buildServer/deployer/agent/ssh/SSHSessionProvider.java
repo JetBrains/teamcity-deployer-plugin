@@ -105,7 +105,7 @@ public class SSHSessionProvider {
       initSessionSshAgent(username, socketPath, jsch);
     } else if (SSHRunnerConstants.AUTH_METHOD_UPLOADED_KEY.equals(authMethod)) {
 
-      final String keyId = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_UPLOADED_KEY_ID);
+      final String keyId = context.getRunnerParameters().get("teamcitySshKey");
       initSessionUploadedKey(username, password, keyId, jsch);
 
     } else {
