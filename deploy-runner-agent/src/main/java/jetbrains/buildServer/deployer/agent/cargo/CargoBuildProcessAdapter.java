@@ -3,6 +3,7 @@ package jetbrains.buildServer.deployer.agent.cargo;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
+import jetbrains.buildServer.deployer.common.CargoRunnerConstants;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.util.StringUtil;
 import org.codehaus.cargo.container.Container;
@@ -40,6 +41,7 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
   private final BuildRunnerContext myContext;
   private final String mySourcePath;
   private final String myContainerType;
+  private boolean myUseHttps = false;
 
   public CargoBuildProcessAdapter(@NotNull String target,
                                   @NotNull String username,
@@ -54,6 +56,7 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
     myContext = context;
     mySourcePath = sourcePath;
     myContainerType = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_CONTAINER_TYPE);
+    myUseHttps = Boolean.valueOf(context.getRunnerParameters().get(CargoRunnerConstants.USE_HTTPS));
   }
 
   private String getHost(@NotNull String target) {
@@ -79,6 +82,11 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
       configuration.setProperty(RemotePropertySet.USERNAME, myUsername);
       configuration.setProperty(RemotePropertySet.PASSWORD, myPassword);
       configuration.setProperty(GeneralPropertySet.HOSTNAME, myHost);
+
+      if (myUseHttps) {
+        configuration.setProperty(GeneralPropertySet.PROTOCOL, "https");
+      }
+
       if (!StringUtil.isEmpty(myPort)) {
         configuration.setProperty(ServletPropertySet.PORT, myPort);
       }

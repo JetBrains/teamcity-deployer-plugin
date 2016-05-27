@@ -1,3 +1,4 @@
+<%@ page import="jetbrains.buildServer.deployer.common.CargoRunnerConstants" %>
 <%@ page import="jetbrains.buildServer.deployer.common.DeployerRunnerConstants" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
@@ -27,7 +28,12 @@
                 Default "Manager" web app must be deployed to target Tomcat. User must have role "manager-script".
             </span>
         </td>
-
+    </tr>
+    <tr>
+        <th><label for="jetbrains.buildServer.deployer.cargo.https">Secure connection:</label></th>
+        <td>
+            <props:checkboxProperty name="<%=CargoRunnerConstants.USE_HTTPS%>"/>Use HTTPS protocol
+        </td>
     </tr>
 </l:settingsGroup>
 
