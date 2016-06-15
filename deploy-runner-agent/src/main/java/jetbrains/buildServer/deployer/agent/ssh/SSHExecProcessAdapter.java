@@ -3,15 +3,16 @@ package jetbrains.buildServer.deployer.agent.ssh;
 import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.Session;
-
-import java.io.IOException;
-
+import jetbrains.buildServer.LineAwareByteArrayOutputStream;
 import jetbrains.buildServer.RunBuildException;
+import jetbrains.buildServer.StreamGobbler;
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 
 class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
@@ -61,30 +62,38 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
       }
       channel.setCommand(command);
 
-      final InputStream inputStream = channel.getInputStream();
-      final InputStream errorStream = channel.getErrStream();
-      final StringBuilder result = new StringBuilder();
-      byte[] buf = new byte[8192];
+      final LineAwareByteArrayOutputStream.LineListener lineListener = new LineAwareByteArrayOutputStream.LineListener() {
+        @Override
+        public void newLineDetected(@NotNull String line) {
+          myLogger.message(line);
+        }
+      };
+      final StreamGobbler outputGobbler = new StreamGobbler(channel.getInputStream(), null, "SSH session to [" + session.getHost() + "]",
+          new LineAwareByteArrayOutputStream(Charset.forName("UTF-8"), lineListener));
+      final StreamGobbler errGobbler = new StreamGobbler(channel.getErrStream(), null, "Unknown",
+          new LineAwareByteArrayOutputStream(Charset.forName("UTF-8"), lineListener));
 
+      outputGobbler.start();
+      errGobbler.start();
       channel.connect();
-      while (!isInterrupted()) {
-        boolean readFromInput = true;
-        boolean readFromError = true;
 
-        if (inputStream.available() > 0) {
-          readFromInput = readStream(inputStream, result, buf, 8192);
-        }
-        if (errorStream.available() > 0) {
-          readFromError = readStream(errorStream, result, buf, 8192);
-        }
+      while (!isInterrupted()
+          && channel.isConnected()
+          && !channel.isEOF()
+          && !channel.isClosed()) {
 
-        boolean nothingWasRead = !readFromInput && !readFromError;
-        if (nothingWasRead || channel.isClosed()) {
-          break;
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          checkIsInterrupted();
         }
       }
 
-      myLogger.message("Exec output:\n" + result.toString());
+      outputGobbler.notifyProcessExit();
+      errGobbler.notifyProcessExit();
+      outputGobbler.join();
+      outputGobbler.join();
+
       if (isInterrupted()) {
         myLogger.message("Interrupted.");
       }

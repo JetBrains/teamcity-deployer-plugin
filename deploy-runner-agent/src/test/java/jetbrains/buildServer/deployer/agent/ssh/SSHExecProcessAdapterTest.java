@@ -3,9 +3,6 @@ package jetbrains.buildServer.deployer.agent.ssh;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-
-import java.io.ByteArrayInputStream;
-
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -13,6 +10,8 @@ import org.jmock.lib.legacy.ClassImposteriser;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.io.ByteArrayInputStream;
 
 public class SSHExecProcessAdapterTest {
 
@@ -47,8 +46,14 @@ public class SSHExecProcessAdapterTest {
       oneOf(myChannel).getErrStream();
       will(returnValue(new ByteArrayInputStream("standard error\n".getBytes())));
 
+      oneOf(myChannel).isConnected();
+      will(returnValue(true));
+      oneOf(myChannel).isEOF();
+      will(returnValue(false));
+
       oneOf(myLogger).message("Executing commands:\n" + DEFAULT_COMMAND + "\non host []");
-      oneOf(myLogger).message("Exec output:\nstandard output\nstandard error\n");
+      oneOf(myLogger).message("standard output");
+      oneOf(myLogger).message("standard error");
       oneOf(myLogger).message("ssh exit-code: 0");
     }});
 
@@ -71,8 +76,13 @@ public class SSHExecProcessAdapterTest {
       oneOf(myChannel).getErrStream();
       will(returnValue(new ByteArrayInputStream("standard error\n".getBytes())));
 
+      oneOf(myChannel).isConnected();
+      will(returnValue(true));
+      oneOf(myChannel).isEOF();
+      will(returnValue(false));
+
       oneOf(myLogger).message("Executing commands:\n" + DEFAULT_COMMAND + "\non host []");
-      oneOf(myLogger).message("Exec output:\nstandard error\n");
+      oneOf(myLogger).message("standard error");
       oneOf(myLogger).message("ssh exit-code: 0");
     }});
 
