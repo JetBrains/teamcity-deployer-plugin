@@ -43,7 +43,7 @@ public class SSHExecRunType extends RunType {
     return new SSHDeployerPropertiesProcessor() {
       @Override
       public Collection<InvalidProperty> process(Map<String, String> properties) {
-        final Collection<InvalidProperty> invalidProperties = new HashSet<>();
+        final Collection<InvalidProperty> invalidProperties = new HashSet<InvalidProperty>();
         if (jetbrains.buildServer.util.StringUtil.isEmptyOrSpaces(properties.get(DeployerRunnerConstants.PARAM_USERNAME)) &&
             !SSHRunnerConstants.AUTH_METHOD_DEFAULT_KEY.equals(properties.get(SSHRunnerConstants.PARAM_AUTH_METHOD))) {
           invalidProperties.add(new InvalidProperty(DeployerRunnerConstants.PARAM_USERNAME, "Username must be specified."));

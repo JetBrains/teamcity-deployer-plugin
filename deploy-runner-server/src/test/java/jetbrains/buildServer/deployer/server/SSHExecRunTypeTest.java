@@ -39,7 +39,7 @@ public class SSHExecRunTypeTest extends DeployerRunTypeTest {
   }
 
   public void testValidParameters() throws Exception {
-    Map<String, String> parameters = new HashMap<>();
+    Map<String, String> parameters = new HashMap<String, String>();
     parameters.put(DeployerRunnerConstants.PARAM_TARGET_URL, "targethost");
     parameters.put(SSHRunnerConstants.PARAM_AUTH_METHOD, SSHRunnerConstants.AUTH_METHOD_USERNAME_PWD);
     parameters.put(DeployerRunnerConstants.PARAM_USERNAME, "user");
