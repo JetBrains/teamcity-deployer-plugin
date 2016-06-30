@@ -1,6 +1,5 @@
 package jetbrains.buildServer.deployer.agent.cargo;
 
-import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.common.CargoRunnerConstants;
@@ -74,48 +73,45 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   @Override
-  protected void runProcess() throws RunBuildException {
-    try {
-      final ConfigurationFactory configFactory = new DefaultConfigurationFactory();
-      final Configuration configuration = configFactory.createConfiguration(myContainerType, ContainerType.REMOTE, ConfigurationType.RUNTIME);
+  protected boolean runProcess() {
+    final ConfigurationFactory configFactory = new DefaultConfigurationFactory();
+    final Configuration configuration = configFactory.createConfiguration(myContainerType, ContainerType.REMOTE, ConfigurationType.RUNTIME);
 
-      configuration.setProperty(RemotePropertySet.USERNAME, myUsername);
-      configuration.setProperty(RemotePropertySet.PASSWORD, myPassword);
-      configuration.setProperty(GeneralPropertySet.HOSTNAME, myHost);
+    configuration.setProperty(RemotePropertySet.USERNAME, myUsername);
+    configuration.setProperty(RemotePropertySet.PASSWORD, myPassword);
+    configuration.setProperty(GeneralPropertySet.HOSTNAME, myHost);
 
-      if (myUseHttps) {
-        configuration.setProperty(GeneralPropertySet.PROTOCOL, "https");
-      }
-
-      if (!StringUtil.isEmpty(myPort)) {
-        configuration.setProperty(ServletPropertySet.PORT, myPort);
-      }
-
-
-      final DefaultContainerFactory containerFactory = new DefaultContainerFactory();
-      final Container container = containerFactory.createContainer(myContainerType, ContainerType.REMOTE, configuration);
-
-      final DefaultDeployerFactory deployerFactory = new DefaultDeployerFactory();
-      final Deployer deployer = deployerFactory.createDeployer(container);
-
-      final DefaultDeployableFactory deployableFactory = new DefaultDeployableFactory();
-      final Deployable deployable = deployableFactory.createDeployable(container.getId(), getLocation(mySourcePath), DeployableType.WAR);
-      myLogger.message("Deploying [" + mySourcePath + "] to ["
-          + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
-          + "], container type [" + myContainerType + "]");
-
-      if (mySourcePath.endsWith("ROOT.war") && deployable instanceof WAR) {
-        ((WAR) deployable).setContext("/");
-      }
-
-      final SimpleLogger simpleLogger = new SimpleLogger();
-      simpleLogger.setLevel(LogLevel.DEBUG);
-      deployer.setLogger(simpleLogger);
-      deployer.redeploy(deployable);
-    } catch (Exception e) {
-      throw new RunBuildException(e);
+    if (myUseHttps) {
+      configuration.setProperty(GeneralPropertySet.PROTOCOL, "https");
     }
+
+    if (!StringUtil.isEmpty(myPort)) {
+      configuration.setProperty(ServletPropertySet.PORT, myPort);
+    }
+
+
+    final DefaultContainerFactory containerFactory = new DefaultContainerFactory();
+    final Container container = containerFactory.createContainer(myContainerType, ContainerType.REMOTE, configuration);
+
+    final DefaultDeployerFactory deployerFactory = new DefaultDeployerFactory();
+    final Deployer deployer = deployerFactory.createDeployer(container);
+
+    final DefaultDeployableFactory deployableFactory = new DefaultDeployableFactory();
+    final Deployable deployable = deployableFactory.createDeployable(container.getId(), getLocation(mySourcePath), DeployableType.WAR);
+    myLogger.message("Deploying [" + mySourcePath + "] to ["
+        + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
+        + "], container type [" + myContainerType + "]");
+
+    if (mySourcePath.endsWith("ROOT.war") && deployable instanceof WAR) {
+      ((WAR) deployable).setContext("/");
+    }
+
+    final SimpleLogger simpleLogger = new SimpleLogger();
+    simpleLogger.setLevel(LogLevel.DEBUG);
+    deployer.setLogger(simpleLogger);
+    deployer.redeploy(deployable);
     myLogger.message("Deploy finished.");
+    return true;
   }
 
   private String getLocation(String mySourcePath) {

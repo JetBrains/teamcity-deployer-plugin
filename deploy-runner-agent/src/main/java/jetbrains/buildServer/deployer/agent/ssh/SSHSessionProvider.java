@@ -30,6 +30,8 @@ public class SSHSessionProvider {
   private final Logger myLog = Logger.getLogger(this.getClass());
   @NotNull
   private final AgentRunningBuildSshKeyManager mySshKeyManager;
+  private final BuildRunnerContext myContext;
+  private final InternalPropertiesHolder myHolder;
 
   private Session mySession;
   private String myHost;
@@ -40,7 +42,7 @@ public class SSHSessionProvider {
 
   public SSHSessionProvider(@NotNull final BuildRunnerContext context,
                             @NotNull final InternalPropertiesHolder holder,
-                            @NotNull final AgentRunningBuildSshKeyManager sshKeyManager) throws JSchException {
+                            @NotNull final AgentRunningBuildSshKeyManager sshKeyManager) {
     mySshKeyManager = sshKeyManager;
 
     final String target = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
@@ -65,6 +67,11 @@ public class SSHSessionProvider {
       myRemotePath = "";
     }
 
+    myContext = context;
+    myHolder = holder;
+  }
+
+  private Session createSession(@NotNull BuildRunnerContext context, @NotNull InternalPropertiesHolder holder) throws JSchException {
     final String username = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_USERNAME);
     final String password = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
     final String authMethod = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METHOD);
@@ -79,13 +86,13 @@ public class SSHSessionProvider {
       final File config = new File(configPath);
       if (config.exists()) {
         myLog.debug("Found config at [" + config.getAbsolutePath() + "], reading.");
-        initSessionSSHConfig(jsch, config);
+        return initSessionSSHConfig(jsch, config);
       } else {
         final String keyPath = holder.getInternalProperty(TEAMCITY_DEPLOYER_SSH_DEFAULT_KEY, myDefaultKeyPath);
         //noinspection ConstantConditions
         final File keyFile = new File(keyPath);
         myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
-        initSessionKeyFile(username, password, keyFile, jsch);
+        return initSessionKeyFile(username, password, keyFile, jsch);
       }
     } else if (SSHRunnerConstants.AUTH_METHOD_CUSTOM_KEY.equals(authMethod)) {
       String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
@@ -94,7 +101,7 @@ public class SSHSessionProvider {
       }
       final File keyFile = FileUtil.resolvePath(context.getBuild().getCheckoutDirectory(), keyFilePath);
       myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
-      initSessionKeyFile(username, password, keyFile, jsch);
+      return initSessionKeyFile(username, password, keyFile, jsch);
 
     } else if (SSHRunnerConstants.AUTH_METHOD_SSH_AGENT.equals(authMethod)) {
       final ProcessingResult result = context.getParametersResolver().resolve("%env.SSH_AUTH_SOCK%");
@@ -102,38 +109,39 @@ public class SSHSessionProvider {
       if (result.isFullyResolved()) {
         socketPath = result.getResult();
       }
-      initSessionSshAgent(username, socketPath, jsch);
+      return initSessionSshAgent(username, socketPath, jsch);
     } else if (SSHRunnerConstants.AUTH_METHOD_UPLOADED_KEY.equals(authMethod)) {
 
       final String keyId = context.getRunnerParameters().get("teamcitySshKey");
-      initSessionUploadedKey(username, password, keyId, jsch);
+      return initSessionUploadedKey(username, password, keyId, jsch);
 
     } else {
       myLog.debug("Using provided username/password");
-      initSessionUserPassword(username, password, jsch);
+      return initSessionUserPassword(username, password, jsch);
     }
-
-    mySession.connect();
   }
 
-  private void initSessionSSHConfig(JSch jsch, File config) throws JSchException {
+  private Session initSessionSSHConfig(JSch jsch, File config) throws JSchException {
+    final String configPath = config.getAbsolutePath();
     try {
-      final OpenSSHConfig sshConfig = OpenSSHConfig.parseFile(config.getCanonicalPath());
+      final OpenSSHConfig sshConfig = OpenSSHConfig.parseFile(configPath);
       jsch.setConfigRepository(sshConfig);
-      mySession = jsch.getSession(myHost);
-      mySession.setConfig("PreferredAuthentications", "publickey");
+      final Session session = jsch.getSession(myHost);
+      session.setConfig("PreferredAuthentications", "publickey");
+      return session;
     } catch (IOException e) {
-      throw new JSchException("Error parsing ssh config file", e);
+      throw new JSchException("Error parsing ssh config file [" + configPath + "]", e);
     }
   }
 
-  private void initSessionUserPassword(String username, String password, JSch jsch) throws JSchException {
-    mySession = jsch.getSession(username, myHost, myPort);
-    mySession.setPassword(password);
-    mySession.setConfig("PreferredAuthentications", "password");
+  private Session initSessionUserPassword(String username, String password, JSch jsch) throws JSchException {
+    final Session session = jsch.getSession(username, myHost, myPort);
+    session.setPassword(password);
+    session.setConfig("PreferredAuthentications", "password");
+    return session;
   }
 
-  private void initSessionKeyFile(String username, String password, File keyFile, JSch jsch) throws JSchException {
+  private Session initSessionKeyFile(String username, String password, File keyFile, JSch jsch) throws JSchException {
     try {
       if (StringUtil.isNotEmpty(password)) {
         myLog.debug("Adding password");
@@ -141,16 +149,17 @@ public class SSHSessionProvider {
       } else {
         jsch.addIdentity(keyFile.getCanonicalPath());
       }
-      mySession = jsch.getSession(username, myHost, myPort);
-      mySession.setConfig("PreferredAuthentications", "publickey");
+      final Session session = jsch.getSession(username, myHost, myPort);
+      session.setConfig("PreferredAuthentications", "publickey");
+      return session;
     } catch (IOException e) {
       throw new JSchException("Failed to use key file", e);
     }
   }
 
-  private void initSessionSshAgent(String username, String socketPath, JSch jsch) throws JSchException {
-    mySession = jsch.getSession(username, myHost, myPort);
-    mySession.setConfig("PreferredAuthentications", "publickey");
+  private Session initSessionSshAgent(String username, String socketPath, JSch jsch) throws JSchException {
+    final Session session = jsch.getSession(username, myHost, myPort);
+    session.setConfig("PreferredAuthentications", "publickey");
 
     try {
       ConnectorFactory cf = ConnectorFactory.getDefault();
@@ -158,13 +167,13 @@ public class SSHSessionProvider {
       Connector con = cf.createConnector();
       IdentityRepository irepo = new RemoteIdentityRepository(con);
       jsch.setIdentityRepository(irepo);
+      return session;
     } catch (AgentProxyException e) {
-      myLog.error("Unable to create connection to agent", e);
-      return;
+      throw new JSchException("Failed to connect to ssh agent.", e);
     }
   }
 
-  private void initSessionUploadedKey(String username, String password, String keyId, JSch jsch) throws JSchException {
+  private Session initSessionUploadedKey(String username, String password, String keyId, JSch jsch) throws JSchException {
     final TeamCitySshKey key = mySshKeyManager.getKey(keyId);
     if (key == null) {
       throw new JSchException("Failed to load ssh key id=[" + keyId + "]");
@@ -175,15 +184,20 @@ public class SSHSessionProvider {
     } catch (UnsupportedEncodingException e) {
       myLog.error("Wrong encoding name", e);
     }
-    mySession = jsch.getSession(username, myHost, myPort);
-    mySession.setConfig("PreferredAuthentications", "publickey");
+    final Session session = jsch.getSession(username, myHost, myPort);
+    session.setConfig("PreferredAuthentications", "publickey");
+    return session;
   }
 
   public String getRemotePath() {
     return myRemotePath;
   }
 
-  public Session getSession() {
+  public Session getSession() throws JSchException {
+    if (mySession == null) {
+      mySession = createSession(myContext, myHolder);
+      mySession.connect();
+    }
     return mySession;
   }
 

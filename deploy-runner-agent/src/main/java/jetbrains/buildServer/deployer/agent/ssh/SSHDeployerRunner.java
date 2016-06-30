@@ -1,6 +1,5 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
-import com.jcraft.jsch.JSchException;
 import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.AgentBuildRunnerInfo;
@@ -44,13 +43,7 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
                                             @NotNull final String target,
                                             @NotNull final List<ArtifactsCollection> artifactsCollections) throws RunBuildException {
 
-    final SSHSessionProvider provider;
-    try {
-      provider = new SSHSessionProvider(context, myInternalProperties, mySshKeyManager);
-    } catch (JSchException e) {
-      throw new RunBuildException(e);
-    }
-
+    final SSHSessionProvider provider = new SSHSessionProvider(context, myInternalProperties, mySshKeyManager);
     final String transport = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_TRANSPORT);
     if (SSHRunnerConstants.TRANSPORT_SCP.equals(transport)) {
       return new ScpProcessAdapter(context, artifactsCollections, provider);

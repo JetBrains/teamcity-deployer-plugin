@@ -3,9 +3,9 @@ package jetbrains.buildServer.deployer.agent.ssh.sftp;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
-import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
-  private static final Logger myInternalLog = Logger.getInstance(SftpBuildProcessAdapter.class.getName());
+  private static final Logger LOG = Logger.getInstance(SftpBuildProcessAdapter.class.getName());
   private final List<ArtifactsCollection> myArtifacts;
   private SSHSessionProvider mySessionProvider;
 
@@ -33,7 +33,7 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   @Override
-  public void runProcess() throws RunBuildException {
+  public boolean runProcess() {
     final String escapedRemotePath;
     Session session = null;
 
@@ -41,7 +41,7 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
       escapedRemotePath = mySessionProvider.getRemotePath();
       session = mySessionProvider.getSession();
 
-      if (isInterrupted()) return;
+      if (isInterrupted()) return false;
 
       ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
       channel.connect();
@@ -61,20 +61,26 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
           final String value = fileStringEntry.getValue();
           final String destinationPath = "".equals(value) ? "." : value;
           createRemotePath(channel, destinationPath);
-          myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationPath + "] under [" + baseDir + "]");
+          LOG.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationPath + "] under [" + baseDir + "]");
           channel.put(source.getAbsolutePath(), destinationPath);
-          myInternalLog.debug("done transferring [" + source.getAbsolutePath() + "]");
+          LOG.debug("done transferring [" + source.getAbsolutePath() + "]");
           count++;
         }
         myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
       }
       channel.disconnect();
-
+      return true;
     } catch (UploadInterruptedException e) {
       myLogger.warning("SFTP upload interrupted.");
-    } catch (Exception e) {
-      myInternalLog.debug(e.getMessage(), e);
-      throw new RunBuildException(e);
+      return false;
+    } catch (JSchException e) {
+      myLogger.error(e.getMessage());
+      LOG.warnAndDebugDetails(e.getMessage(), e);
+      return false;
+    } catch (SftpException e) {
+      myLogger.error(e.getMessage());
+      LOG.warnAndDebugDetails(e.getMessage(), e);
+      return false;
     } finally {
       if (session != null) {
         session.disconnect();

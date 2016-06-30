@@ -4,7 +4,6 @@ import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProcessAdapter;
 import jetbrains.buildServer.agent.BuildProgressLogger;
-import jetbrains.buildServer.log.Loggers;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class SyncBuildProcessAdapter extends BuildProcessAdapter {
@@ -55,17 +54,17 @@ public abstract class SyncBuildProcessAdapter extends BuildProcessAdapter {
   @Override
   public void start() throws RunBuildException {
     try {
-      runProcess();
-    } catch (RunBuildException e) {
-      myLogger.buildFailureDescription(e.getMessage());
-      Loggers.AGENT.error(e);
-      hasFailed = true;
-    } finally {
+      hasFailed = !runProcess();
       hasFinished = true;
+    } catch (UploadInterruptedException e) {
+      hasFinished = false;
     }
   }
 
-  protected abstract void runProcess() throws RunBuildException;
+  /**
+   * @return true is process finished successfully
+   */
+  protected abstract boolean runProcess();
 
   protected void checkIsInterrupted() throws UploadInterruptedException {
     if (isInterrupted()) throw new UploadInterruptedException();
