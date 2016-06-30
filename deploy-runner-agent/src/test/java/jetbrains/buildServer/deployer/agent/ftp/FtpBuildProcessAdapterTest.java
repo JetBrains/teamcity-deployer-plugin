@@ -62,9 +62,11 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 
     final ListenerFactory factory = new ListenerFactory();
     factory.setPort(TEST_PORT);
+
     DataConnectionConfigurationFactory dataConnectionConfigurationFactory = new DataConnectionConfigurationFactory();
     dataConnectionConfigurationFactory.setActiveEnabled(false);
     factory.setDataConnectionConfiguration(dataConnectionConfigurationFactory.createDataConnectionConfiguration());
+
     final SslConfigurationFactory ssl = new SslConfigurationFactory();
     ssl.setKeystoreFile(getTestResource("ftpserver.jks"));
     ssl.setKeystorePassword("password");

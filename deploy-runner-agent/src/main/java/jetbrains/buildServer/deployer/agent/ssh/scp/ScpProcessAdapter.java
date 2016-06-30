@@ -4,11 +4,9 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
-import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
@@ -25,6 +23,7 @@ import java.util.Map;
 
 public class ScpProcessAdapter extends SyncBuildProcessAdapter {
 
+  private static final Logger LOG = Logger.getInstance(ScpProcessAdapter.class.getName());
   private final List<ArtifactsCollection> myArtifacts;
   private static final Logger myInternalLog = Logger.getInstance(ScpProcessAdapter.class.getName());
 
@@ -41,7 +40,7 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   @Override
-  public void runProcess() throws RunBuildException {
+  public boolean runProcess() {
     String escapedRemotePath;
     Session session = null;
 
@@ -50,8 +49,7 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       escapedRemotePath = mySessionProvider.getRemotePath();
       session = mySessionProvider.getSession();
 
-
-      if (isInterrupted()) return;
+      if (isInterrupted()) return false;
 
       myLogger.message("Starting upload via SCP to " + mySessionProvider.getSessionString());
 
@@ -87,10 +85,15 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       upload(session, ".", relativeDestinations);
       upload(session, "/", absDestinations);
 
-    } catch (UploadInterruptedException e) {
-      myLogger.warning("SCP upload interrupted.");
-    } catch (Exception e) {
-      throw new RunBuildException(e);
+      return true;
+    } catch (JSchException e) {
+      myLogger.error(e.getMessage());
+      LOG.warnAndDebugDetails(e.getMessage(), e);
+      return false;
+    } catch (IOException e) {
+      myLogger.error(e.getMessage());
+      LOG.warnAndDebugDetails(e.getMessage(), e);
+      return false;
     } finally {
       if (session != null) {
         session.disconnect();

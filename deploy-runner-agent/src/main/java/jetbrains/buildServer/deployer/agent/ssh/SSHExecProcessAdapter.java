@@ -1,10 +1,11 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import jetbrains.buildServer.LineAwareByteArrayOutputStream;
-import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.StreamGobbler;
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
@@ -17,6 +18,7 @@ import java.nio.charset.Charset;
 
 class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
+  private static final Logger LOG = Logger.getInstance(SSHExecProcessAdapter.class.getName());
   private final String myCommands;
   private final SSHSessionProvider myProvider;
   private final String myPty;
@@ -34,16 +36,17 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
 
   @Override
-  public void runProcess() throws RunBuildException {
+  public boolean runProcess() {
 
-    final Session session = myProvider.getSession();
-
+    Session session = null;
     try {
+      session = myProvider.getSession();
       executeCommand(session, myPty, myCommands);
-    } catch (RunBuildException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new RunBuildException(e);
+      return true;
+    } catch (JSchException e) {
+      myLogger.error(e.getMessage());
+      LOG.warnAndDebugDetails(e.getMessage(), e);
+      return false;
     } finally {
       if (session != null) {
         session.disconnect();
@@ -51,7 +54,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
     }
   }
 
-  private void executeCommand(Session session, String pty, String command) throws Exception {
+  private void executeCommand(Session session, String pty, String command) throws JSchException {
     ChannelExec channel = null;
     myLogger.message("Executing commands:\n" + command + "\non host [" + session.getHost() + "]");
     try {
@@ -91,20 +94,27 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
       outputGobbler.notifyProcessExit();
       errGobbler.notifyProcessExit();
-      outputGobbler.join();
-      outputGobbler.join();
+      try {
+        outputGobbler.join();
+        outputGobbler.join();
+      } catch (InterruptedException e) {
+        LOG.warnAndDebugDetails(e.getMessage(), e);
+      }
 
       if (isInterrupted()) {
         myLogger.message("Interrupted.");
       }
-
+    } catch (IOException e) {
+      myLogger.error(e.getMessage());
+      LOG.warnAndDebugDetails(e.getMessage(), e);
     } finally {
       if (channel != null) {
         channel.disconnect();
         int exitCode = channel.getExitStatus();
-        myLogger.message("ssh exit-code: " + exitCode);
         if (exitCode > 0) {
-          throw new RunBuildException("Non-zero exit code from ssh exec: [" + exitCode + "]");
+          myLogger.error("ssh exit-code: " + exitCode);
+        } else {
+          myLogger.message("ssh exit-code: " + exitCode);
         }
       }
     }

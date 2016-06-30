@@ -1,7 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
 import com.intellij.openapi.diagnostic.Logger;
-import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.util.StringUtil;
@@ -11,9 +10,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static jetbrains.buildServer.util.FileUtil.getExtension;
 
@@ -23,14 +23,15 @@ import static jetbrains.buildServer.util.FileUtil.getExtension;
  */
 abstract class InterruptibleUploadProcess implements Runnable {
 
-  private static final Logger myInternalLog = Logger.getInstance(InterruptibleUploadProcess.class.getName());
+  private static final Logger LOG = Logger.getInstance(InterruptibleUploadProcess.class.getName());
 
   private final FTPClient myClient;
-  private final AtomicReference<Exception> myException;
   private BuildProgressLogger myLogger;
   private List<ArtifactsCollection> myArtifacts;
   private boolean myIsAutoType;
   private String myPath;
+  @NotNull
+  private final AtomicBoolean myIsFinishedSuccessfully;
 
   private final static Set<String> ourKnownAsciiExts = new HashSet<String>();
 
@@ -46,23 +47,21 @@ abstract class InterruptibleUploadProcess implements Runnable {
 
 
   public InterruptibleUploadProcess(@NotNull final FTPClient client,
-                                    @NotNull final AtomicReference<Exception> exception,
                                     @NotNull final BuildProgressLogger logger,
                                     @NotNull final List<ArtifactsCollection> artifacts,
                                     final boolean isAutoType,
-                                    @NotNull final String path) {
+                                    @NotNull final String path,
+                                    @NotNull AtomicBoolean isFinishedSuccessfully) {
     this.myClient = client;
-    this.myException = exception;
     this.myLogger = logger;
     this.myArtifacts = artifacts;
     this.myIsAutoType = isAutoType;
     this.myPath = path;
+    myIsFinishedSuccessfully = isFinishedSuccessfully;
   }
 
   public void run() {
     try {
-
-
       if (!StringUtil.isEmpty(myPath)) {
         createPath(myPath);
         checkResult(myClient.changeWorkingDirectory(myPath));
@@ -80,7 +79,7 @@ abstract class InterruptibleUploadProcess implements Runnable {
             createPath(destinationDir);
             checkResult(myClient.changeWorkingDirectory(destinationDir));
           }
-          myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationDir + "] under [" + remoteRoot + "]");
+          LOG.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationDir + "] under [" + remoteRoot + "]");
           checkIsInterrupted();
           InputStream inputStream = null;
           try {
@@ -96,20 +95,22 @@ abstract class InterruptibleUploadProcess implements Runnable {
           }
           checkResult(myClient.changeWorkingDirectory(remoteRoot));
           checkIsInterrupted();
-          myInternalLog.debug("done transferring [" + source.getAbsolutePath() + "]");
+          LOG.debug("done transferring [" + source.getAbsolutePath() + "]");
           count++;
         }
         myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
       }
-    } catch (Exception t) {
-      final String message = "Exception while uploading files: " + t.getMessage();
-      myLogger.error(message);
-      myInternalLog.debug(message, t);
-      myException.set(t);
+      myIsFinishedSuccessfully.set(true);
+    } catch (FailureDetectedException t) {
+      myLogger.error(t.getMessage());
+      LOG.debug(t.getMessage(), t);
+    } catch (IOException t) {
+      myLogger.error(t.getMessage());
+      LOG.debug(t.getMessage(), t);
     }
   }
 
-  private void createPath(@NotNull final String path) throws Exception {
+  private void createPath(@NotNull final String path) throws IOException, FailureDetectedException {
     final String root = myClient.printWorkingDirectory();
     final String normalisedPath = path.trim().replaceAll("\\\\", "/");
     final StringTokenizer pathTokenizer = new StringTokenizer(normalisedPath, "/");
@@ -135,7 +136,7 @@ abstract class InterruptibleUploadProcess implements Runnable {
           String cwdFailureMsg = myClient.getReplyString();
           String message = "Failed to change current dir to [" + nextDir + "]: " + cwdFailureMsg +
               (mkdirFailureMsg != null ? "\n Also failed to create this dir: " + mkdirFailureMsg   : "");
-          throw new RunBuildException(message);
+          throw new FailureDetectedException(message);
         }
       }
     }
@@ -143,20 +144,20 @@ abstract class InterruptibleUploadProcess implements Runnable {
     checkResult(myClient.changeWorkingDirectory(root));
   }
 
-  private void checkResult(boolean flag) throws Exception {
+  private void checkResult(boolean flag) throws FailureDetectedException {
     if (!flag) {
-      throw new RunBuildException("Failed to upload artifacts via FTP. Reply was: " + myClient.getReplyString());
+      throw new FailureDetectedException("Failed to upload artifacts via FTP. Reply was: " + myClient.getReplyString());
     }
   }
 
-  private boolean dirExists(@NotNull final String nextDir) throws Exception {
+  private boolean dirExists(@NotNull final String nextDir) throws IOException, FailureDetectedException {
     // these directories always exist
     if ("..".equals(nextDir) || ".".equals(nextDir)) {
       return true;
     }
     final String[] strings = myClient.listNames();
     if (strings == null) {
-      throw new RunBuildException("Failed to upload artifacts via FTP. Reply was: " + myClient.getReplyString());
+      throw new FailureDetectedException("Failed to upload artifacts via FTP. Reply was: " + myClient.getReplyString());
     }
     for (String string : strings) {
       if (string.equals(nextDir)) {
@@ -176,4 +177,10 @@ abstract class InterruptibleUploadProcess implements Runnable {
   }
 
   abstract boolean checkIsInterrupted();
+
+  private class FailureDetectedException extends Exception {
+    FailureDetectedException(@NotNull final String message) {
+      super(message);
+    }
+  }
 }

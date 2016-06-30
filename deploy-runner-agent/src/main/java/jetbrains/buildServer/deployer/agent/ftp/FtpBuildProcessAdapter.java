@@ -1,13 +1,11 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
 import com.intellij.openapi.diagnostic.Logger;
-import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
-import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.util.WaitFor;
 import org.apache.commons.net.ftp.FTP;
@@ -17,17 +15,18 @@ import org.apache.commons.net.util.TrustManagerUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.net.ssl.SSLException;
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private static final String FTP_PROTOCOL = "ftp://";
 
-  private static final Logger myInternalLog = Logger.getInstance(FtpBuildProcessAdapter.class.getName());
+  private static final Logger LOG = Logger.getInstance(FtpBuildProcessAdapter.class.getName());
   public static final int STREAM_BUFFER_SIZE = 5 * 1024 * 1024; // 5 Mb
   public static final int SOCKET_BUFFER_SIZE = 1024 * 1024; // 1 Mb
 
@@ -55,7 +54,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   @Override
-  public void runProcess() throws RunBuildException {
+  public boolean runProcess() {
 
     FTPClient clientToDisconnect = null;
     try {
@@ -90,7 +89,8 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
       final boolean loginSuccessful = client.login(myUsername, myPassword);
       if (!loginSuccessful) {
-        throw new RunBuildException("Failed to login. Reply was: " + client.getReplyString());
+        myLogger.error("Failed to login. Reply was: " + client.getReplyString());
+        return false;
       }
 
 
@@ -104,15 +104,13 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       }
 
       client.setControlKeepAliveTimeout(60); // seconds
-
-
-      final AtomicReference<Exception> innerException = new AtomicReference<Exception>();
-      final Runnable interruptableBody = new InterruptibleUploadProcess(client, innerException, myLogger, myArtifacts, isAutoType, path) {
+      AtomicBoolean processResult = new AtomicBoolean(false);
+      final Runnable interruptibleBody = new InterruptibleUploadProcess(client, myLogger, myArtifacts, isAutoType, path, processResult) {
         public boolean checkIsInterrupted() {
           return FtpBuildProcessAdapter.this.isInterrupted();
         }
       };
-      final Thread uploadThread = new Thread(interruptableBody);
+      final Thread uploadThread = new Thread(interruptibleBody);
 
       myLogger.message("Starting upload via " + (isNone(mySecureMode) ? "FTP" :
           (isImplicit(mySecureMode) ? "FTPS" : "FTPES")) + " to " + myTarget);
@@ -138,37 +136,37 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       };
 
       if (uploadThread.getState() != Thread.State.TERMINATED) {
-        myInternalLog.warn("Ftp upload thread did not reach termination state after wait operation, trying to join");
-        uploadThread.join();
-        myInternalLog.warn("thread joined.");
+        LOG.warn("Ftp upload thread did not reach termination state after wait operation, trying to join");
+        try {
+          uploadThread.join();
+        } catch (InterruptedException e) {
+          LOG.warnAndDebugDetails("Interrupted while waiting for FTP upload thread to join.", e);
+        }
+        LOG.warn("thread joined.");
       }
 
-      final Exception exception = innerException.get();
-      if (exception != null) {
-        throw exception;
-      }
-
+      return processResult.get();
     } catch (UploadInterruptedException e) {
       myLogger.warning("Ftp upload interrupted.");
+      return false;
     } catch (SSLException e) {
       if (e.getMessage().contains("unable to find valid certification path to requested target")) {
-        myLogger.warning("Failed to setup SSL connection. Looks like target's certificate is not trusted.\n" +
+        myLogger.error("Failed to setup SSL connection. Looks like target's certificate is not trusted.\n" +
             "See Oracle's documentation on how to import the certificate as a Trusted Certificate.");
       }
-      throw new RunBuildException(e);
-    } catch (Exception e) {
-      if (e instanceof RunBuildException) {
-        throw (RunBuildException) e;
-      } else {
-        throw new RunBuildException(e);
-      }
+      LOG.warnAndDebugDetails(e.getMessage(), e);
+      return false;
+    } catch (IOException e) {
+      myLogger.error(e.getMessage());
+      LOG.warnAndDebugDetails(e.getMessage(), e);
+      return false;
     } finally {
       try {
         if (clientToDisconnect != null && clientToDisconnect.isConnected()) {
           clientToDisconnect.disconnect();
         }
       } catch (Exception e) {
-        Loggers.AGENT.error(e.getMessage(), e);
+        LOG.error(e.getMessage(), e);
       }
     }
   }
