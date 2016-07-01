@@ -44,7 +44,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
       executeCommand(session, myPty, myCommands);
       return true;
     } catch (JSchException e) {
-      myLogger.error(e.getMessage());
+      myLogger.error(e.getClass().getSimpleName() + ": " + e.getMessage());
       LOG.warnAndDebugDetails(e.getMessage(), e);
       return false;
     } finally {
@@ -105,7 +105,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
         myLogger.message("Interrupted.");
       }
     } catch (IOException e) {
-      myLogger.error(e.getMessage());
+      myLogger.error(e.getClass().getSimpleName() + ": " + e.getMessage());
       LOG.warnAndDebugDetails(e.getMessage(), e);
     } finally {
       if (channel != null) {
