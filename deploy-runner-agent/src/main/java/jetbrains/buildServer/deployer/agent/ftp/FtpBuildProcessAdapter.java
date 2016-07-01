@@ -158,7 +158,6 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       return false;
     } catch (IOException e) {
       myLogger.error(e.getClass().getSimpleName() + ": " + e.getMessage());
-      myLogger.error(e.getClass().getSimpleName() + ": " + e.getMessage());
       LOG.warnAndDebugDetails(e.getMessage(), e);
       return false;
     } finally {
