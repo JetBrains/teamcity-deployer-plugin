@@ -74,11 +74,11 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
       myLogger.warning("SFTP upload interrupted.");
       return false;
     } catch (JSchException e) {
-      myLogger.error(e.getClass().getSimpleName() + ": " + e.getMessage());
+      myLogger.error(e.toString());
       LOG.warnAndDebugDetails(e.getMessage(), e);
       return false;
     } catch (SftpException e) {
-      myLogger.error(e.getClass().getSimpleName() + ": " + e.getMessage());
+      myLogger.error(e.toString());
       LOG.warnAndDebugDetails(e.getMessage(), e);
       return false;
     } finally {
