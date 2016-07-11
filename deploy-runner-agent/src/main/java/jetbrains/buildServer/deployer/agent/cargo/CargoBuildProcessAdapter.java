@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.cargo;
 
+import com.intellij.openapi.diagnostic.Logger;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.common.CargoRunnerConstants;
@@ -21,6 +22,7 @@ import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
 import org.codehaus.cargo.generic.deployable.DefaultDeployableFactory;
 import org.codehaus.cargo.generic.deployer.DefaultDeployerFactory;
+import org.codehaus.cargo.util.CargoException;
 import org.codehaus.cargo.util.log.LogLevel;
 import org.codehaus.cargo.util.log.SimpleLogger;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +34,8 @@ import java.io.File;
  * date: 25.06.2014.
  */
 public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
+
+  private static final Logger LOG = Logger.getInstance(CargoBuildProcessAdapter.class.getName());
 
   private final String myHost;
   private final String myPort;
@@ -74,44 +78,64 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
 
   @Override
   protected boolean runProcess() {
-    final ConfigurationFactory configFactory = new DefaultConfigurationFactory();
-    final Configuration configuration = configFactory.createConfiguration(myContainerType, ContainerType.REMOTE, ConfigurationType.RUNTIME);
+    try {
+      final ConfigurationFactory configFactory = new DefaultConfigurationFactory();
+      final Configuration configuration = configFactory.createConfiguration(myContainerType, ContainerType.REMOTE, ConfigurationType.RUNTIME);
 
-    configuration.setProperty(RemotePropertySet.USERNAME, myUsername);
-    configuration.setProperty(RemotePropertySet.PASSWORD, myPassword);
-    configuration.setProperty(GeneralPropertySet.HOSTNAME, myHost);
+      configuration.setProperty(RemotePropertySet.USERNAME, myUsername);
+      configuration.setProperty(RemotePropertySet.PASSWORD, myPassword);
+      configuration.setProperty(GeneralPropertySet.HOSTNAME, myHost);
 
-    if (myUseHttps) {
-      configuration.setProperty(GeneralPropertySet.PROTOCOL, "https");
+      if (myUseHttps) {
+        configuration.setProperty(GeneralPropertySet.PROTOCOL, "https");
+      }
+
+      if (!StringUtil.isEmpty(myPort)) {
+        configuration.setProperty(ServletPropertySet.PORT, myPort);
+      }
+
+
+      final DefaultContainerFactory containerFactory = new DefaultContainerFactory();
+      final Container container = containerFactory.createContainer(myContainerType, ContainerType.REMOTE, configuration);
+
+      final DefaultDeployerFactory deployerFactory = new DefaultDeployerFactory();
+      final Deployer deployer = deployerFactory.createDeployer(container);
+
+      final DefaultDeployableFactory deployableFactory = new DefaultDeployableFactory();
+      final Deployable deployable = deployableFactory.createDeployable(container.getId(), getLocation(mySourcePath), DeployableType.WAR);
+      myLogger.message("Deploying [" + mySourcePath + "] to ["
+          + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
+          + "], container type [" + myContainerType + "]");
+
+      if (mySourcePath.endsWith("ROOT.war") && deployable instanceof WAR) {
+        ((WAR) deployable).setContext("/");
+      }
+
+      final SimpleLogger simpleLogger = new SimpleLogger();
+      simpleLogger.setLevel(LogLevel.DEBUG);
+      deployer.setLogger(simpleLogger);
+      deployer.redeploy(deployable);
+      myLogger.message("Deploy finished.");
+    } catch (CargoException e) {
+      final String message = extractMessage(e);
+      myLogger.error(message);
+      LOG.warnAndDebugDetails(e.getMessage(), e);
+      return false;
     }
-
-    if (!StringUtil.isEmpty(myPort)) {
-      configuration.setProperty(ServletPropertySet.PORT, myPort);
-    }
-
-
-    final DefaultContainerFactory containerFactory = new DefaultContainerFactory();
-    final Container container = containerFactory.createContainer(myContainerType, ContainerType.REMOTE, configuration);
-
-    final DefaultDeployerFactory deployerFactory = new DefaultDeployerFactory();
-    final Deployer deployer = deployerFactory.createDeployer(container);
-
-    final DefaultDeployableFactory deployableFactory = new DefaultDeployableFactory();
-    final Deployable deployable = deployableFactory.createDeployable(container.getId(), getLocation(mySourcePath), DeployableType.WAR);
-    myLogger.message("Deploying [" + mySourcePath + "] to ["
-        + configuration.getPropertyValue(GeneralPropertySet.HOSTNAME) + ":" + configuration.getPropertyValue(ServletPropertySet.PORT)
-        + "], container type [" + myContainerType + "]");
-
-    if (mySourcePath.endsWith("ROOT.war") && deployable instanceof WAR) {
-      ((WAR) deployable).setContext("/");
-    }
-
-    final SimpleLogger simpleLogger = new SimpleLogger();
-    simpleLogger.setLevel(LogLevel.DEBUG);
-    deployer.setLogger(simpleLogger);
-    deployer.redeploy(deployable);
-    myLogger.message("Deploy finished.");
     return true;
+  }
+
+  @NotNull
+  private String extractMessage(@NotNull Exception e) {
+    StringBuilder sb = new StringBuilder(e.toString());
+    Throwable cause = e;
+    while (cause != cause.getCause() && cause.getCause() != null) {
+      cause = cause.getCause();
+    }
+    if (cause != e) {
+      sb.append("\n, root cause is ").append(cause.toString());
+    }
+    return sb.toString();
   }
 
   private String getLocation(String mySourcePath) {
