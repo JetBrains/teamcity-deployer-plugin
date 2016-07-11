@@ -13,4 +13,7 @@
         </vendor>
     </info>
     <deployment use-separate-classloader="true"/>
+  <dependencies>
+    <plugin name="ssh-manager"/>
+  </dependencies>
 </teamcity-plugin>
