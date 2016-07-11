@@ -30,7 +30,7 @@ public class SSHDeployerRunType extends RunType {
 
   @Override
   public String getDisplayName() {
-    return "SSH Deployer";
+    return "SSH Upload";
   }
 
   @Override

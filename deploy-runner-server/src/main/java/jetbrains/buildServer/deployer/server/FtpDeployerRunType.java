@@ -29,7 +29,7 @@ public class FtpDeployerRunType extends RunType {
 
   @Override
   public String getDisplayName() {
-    return "FTP Deployer";
+    return "FTP Upload";
   }
 
   @Override

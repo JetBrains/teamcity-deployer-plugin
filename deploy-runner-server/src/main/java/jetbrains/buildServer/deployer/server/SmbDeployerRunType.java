@@ -35,13 +35,13 @@ public class SmbDeployerRunType extends RunType {
   @NotNull
   @Override
   public String getDisplayName() {
-    return "SMB Deployer";
+    return "SMB Upload";
   }
 
   @NotNull
   @Override
   public String getDescription() {
-    return "Runner able to deploy build artifacts via SMB (Windows share)";
+    return "Runner able to upload build artifacts via SMB (Windows share)";
   }
 
   @Override
