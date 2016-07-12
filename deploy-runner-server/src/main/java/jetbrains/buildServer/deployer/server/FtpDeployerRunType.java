@@ -34,7 +34,7 @@ public class FtpDeployerRunType extends RunType {
 
   @Override
   public String getDescription() {
-    return "Runner able to deploy build artifacts via FTP";
+    return "Deploys files/directories via FTP";
   }
 
   @Override

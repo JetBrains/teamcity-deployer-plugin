@@ -56,10 +56,10 @@
 
 <l:settingsGroup title="Web Application Settings">
     <tr>
-        <th><label for="jetbrains.buildServer.deployer.sourcePath">Path to war archive: <l:star/></label></th>
+        <th><label for="jetbrains.buildServer.deployer.sourcePath">Path to WAR archive: <l:star/></label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_SOURCE_PATH%>" className="longField"
                                 maxlength="256"/>
-            <span class="smallNote">Path to war archive to deploy</span><span
+            <span class="smallNote">Path to WAR archive to deploy</span><span
                     class="error" id="error_jetbrains.buildServer.deployer.sourcePath"></span>
         </td>
     </tr>

@@ -35,7 +35,7 @@ public class SSHDeployerRunType extends RunType {
 
   @Override
   public String getDescription() {
-    return "Runner able to deploy build artifacts via SSH";
+    return "Deploys files/directories via SSH";
   }
 
   @Override

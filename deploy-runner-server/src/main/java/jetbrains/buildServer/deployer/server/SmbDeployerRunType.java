@@ -41,7 +41,7 @@ public class SmbDeployerRunType extends RunType {
   @NotNull
   @Override
   public String getDescription() {
-    return "Runner able to upload build artifacts via SMB (Windows share)";
+    return "Deploys files/directories via SMB (Windows share)";
   }
 
   @Override
