@@ -14,11 +14,13 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
   private static final Logger LOG = Logger.getInstance(SSHExecProcessAdapter.class.getName());
+  private static final long CONNECTION_SILENCE_THRESHOLD_MS = 10 * 1000;
   private final String myCommands;
   private final SSHSessionProvider myProvider;
   private final String myPty;
@@ -64,17 +66,19 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
         channel.setPtyType(pty);
       }
       channel.setCommand(command);
+      final AtomicLong lastOutputTimeStamp = new AtomicLong(System.currentTimeMillis());
 
       final LineAwareByteArrayOutputStream.LineListener lineListener = new LineAwareByteArrayOutputStream.LineListener() {
         @Override
         public void newLineDetected(@NotNull String line) {
           myLogger.message(line);
+          lastOutputTimeStamp.set(System.currentTimeMillis());
         }
       };
-      final StreamGobbler outputGobbler = new StreamGobbler(channel.getInputStream(), null, "SSH session to [" + session.getHost() + "]",
-          new LineAwareByteArrayOutputStream(Charset.forName("UTF-8"), lineListener));
-      final StreamGobbler errGobbler = new StreamGobbler(channel.getErrStream(), null, "Unknown",
-          new LineAwareByteArrayOutputStream(Charset.forName("UTF-8"), lineListener));
+      final LineAwareByteArrayOutputStream outputStream = new LineAwareByteArrayOutputStream(Charset.forName("UTF-8"), lineListener);
+      final StreamGobbler outputGobbler = new StreamGobbler(channel.getInputStream(), null, "SSH session to [" + session.getHost() + "]", outputStream);
+      final LineAwareByteArrayOutputStream errStream = new LineAwareByteArrayOutputStream(Charset.forName("UTF-8"), lineListener);
+      final StreamGobbler errGobbler = new StreamGobbler(channel.getErrStream(), null, "Unknown", errStream);
 
       outputGobbler.start();
       errGobbler.start();
@@ -87,6 +91,13 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
         try {
           Thread.sleep(500);
+          // sometimes no newline chars are present, but still some output may be pending
+          final boolean hasSomePendingOutput = outputGobbler.getLastActivityTimestamp() > lastOutputTimeStamp.get();
+          final boolean waitingForTooLong = System.currentTimeMillis() - outputGobbler.getLastActivityTimestamp() > CONNECTION_SILENCE_THRESHOLD_MS;
+          if (waitingForTooLong && hasSomePendingOutput) {
+            // force dump of current pending output
+            outputStream.write("\n".getBytes(Charset.forName("UTF-8")));
+          }
         } catch (InterruptedException e) {
           checkIsInterrupted();
         }
