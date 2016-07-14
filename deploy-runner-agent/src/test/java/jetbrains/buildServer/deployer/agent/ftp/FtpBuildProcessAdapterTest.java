@@ -24,10 +24,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.Assert.*;
@@ -49,11 +46,14 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
   private List<ArtifactsCollection> myArtifactsCollections;
   private BuildRunnerContext myContext;
   private final Map<String, String> myRunnerParameters = new HashMap<String, String>();
+  private List<String> myResultingLog;
 
   @BeforeMethod
   @Override
   public void setUp() throws Exception {
     super.setUp();
+
+    myResultingLog = new LinkedList<String>();
 
     myRunnerParameters.put(FTPRunnerConstants.PARAM_FTP_MODE, "PASSIVE");
     myArtifactsCollections = new ArrayList<ArtifactsCollection>();
@@ -103,7 +103,12 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
     Mockery mockeryCtx = new Mockery();
     myContext = mockeryCtx.mock(BuildRunnerContext.class);
     final AgentRunningBuild build = mockeryCtx.mock(AgentRunningBuild.class);
-    final BuildProgressLogger logger = new NullBuildProgressLogger();
+    final BuildProgressLogger logger = new NullBuildProgressLogger() {
+      @Override
+      public void message(String message) {
+        myResultingLog.add(message);
+      }
+    };
     final File workingDir = myTempFiles.createTempDir();
 
     mockeryCtx.checking(new Expectations() {{
@@ -127,10 +132,33 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 
   @Test
   public void testSimpleTransfer() throws Exception {
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles,
+        "dest1",
+        "dest2",
+        "dest3",
+        "dest4",
+        "dest5",
+        "dest6",
+        "dest7",
+        "dest8",
+        "dest9",
+        "dest10",
+        "dest11",
+        "dest12",
+        "dest13",
+        "dest14",
+        "dest15",
+        "dest16",
+        "dest17",
+        "dest18",
+        "dest19",
+        "dest20",
+        "dest21"));
     final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
+
+    assertThat(myResultingLog).contains("< and continued >");
   }
 
   @Test

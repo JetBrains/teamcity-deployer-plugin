@@ -24,6 +24,7 @@ import static jetbrains.buildServer.util.FileUtil.getExtension;
 abstract class InterruptibleUploadProcess implements Runnable {
 
   private static final Logger LOG = Logger.getInstance(InterruptibleUploadProcess.class.getName());
+  private static final int BY_FILE_LOGGING_THRESHOLD = 20;
 
   private final FTPClient myClient;
   private BuildProgressLogger myLogger;
@@ -97,6 +98,11 @@ abstract class InterruptibleUploadProcess implements Runnable {
           checkIsInterrupted();
           LOG.debug("done transferring [" + source.getAbsolutePath() + "]");
           count++;
+          if (count < BY_FILE_LOGGING_THRESHOLD) {
+            myLogger.message("Uploaded [" + source.getPath() + "] (" + StringUtil.formatFileSize(source) + ")");
+          } else if (count == BY_FILE_LOGGING_THRESHOLD) {
+            myLogger.message("< and continued >");
+          }
         }
         myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
       }
