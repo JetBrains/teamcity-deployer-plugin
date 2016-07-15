@@ -16,7 +16,7 @@
         </td>
     </tr>
     <tr>
-        <th><label for="jetbrains.buildServer.deployer.container.type">Container type: <l:star/></label></th>
+        <th><label for="jetbrains.buildServer.deployer.container.type">Container type:</label></th>
         <td>
             <props:selectProperty name="<%=DeployerRunnerConstants.PARAM_CONTAINER_TYPE%>">
                 <props:option value="tomcat5x"><c:out value="Tomcat 5.x"/></props:option>
@@ -39,17 +39,19 @@
 
 <l:settingsGroup title="Deployment Credentials">
     <tr>
-        <th><label for="jetbrains.buildServer.deployer.username">Username:</label></th>
+        <th><label for="jetbrains.buildServer.deployer.username">Username:<l:star/></label></th>
         <td><props:textProperty name="<%=DeployerRunnerConstants.PARAM_USERNAME%>" className="longField"
                                 maxlength="256"/>
             <span class="smallNote">Enter username. The user must have "manager-script" role assigned</span>
+            <span class="error" id="error_jetbrains.buildServer.deployer.username"></span>
         </td>
     </tr>
     <tr>
-        <th><label for="secure:jetbrains.buildServer.deployer.password">Password:</label></th>
+        <th><label for="secure:jetbrains.buildServer.deployer.password">Password:<l:star/></label></th>
         <td><props:passwordProperty name="<%=DeployerRunnerConstants.PARAM_PASSWORD%>" className="longField"
                                     maxlength="256"/>
             <span class="smallNote">Enter password. Configuration parameters can be used</span>
+            <span class="error" id="error_secure:jetbrains.buildServer.deployer.password"></span>
         </td>
     </tr>
 </l:settingsGroup>

@@ -1,7 +1,6 @@
 package jetbrains.buildServer.deployer.server.cargo;
 
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
-import jetbrains.buildServer.deployer.server.DeployerPropertiesProcessor;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.RunType;
 import jetbrains.buildServer.serverSide.RunTypeRegistry;
@@ -39,7 +38,7 @@ public class CargoDeployerRunType extends RunType {
 
   @Override
   public PropertiesProcessor getRunnerPropertiesProcessor() {
-    return new DeployerPropertiesProcessor();
+    return new CargoPropertiesProcessor();
   }
 
   @Override
