@@ -19,10 +19,10 @@
         <th><label for="jetbrains.buildServer.deployer.container.type">Container type:</label></th>
         <td>
             <props:selectProperty name="<%=DeployerRunnerConstants.PARAM_CONTAINER_TYPE%>">
-                <props:option value="tomcat5x"><c:out value="Tomcat 5.x"/></props:option>
-                <props:option value="tomcat6x"><c:out value="Tomcat 6.x"/></props:option>
-                <props:option value="tomcat7x"><c:out value="Tomcat 7.x"/></props:option>
                 <props:option value="tomcat8x"><c:out value="Tomcat 8.x"/></props:option>
+                <props:option value="tomcat7x"><c:out value="Tomcat 7.x"/></props:option>
+                <props:option value="tomcat6x"><c:out value="Tomcat 6.x"/></props:option>
+                <props:option value="tomcat5x"><c:out value="Tomcat 5.x"/></props:option>
             </props:selectProperty>
             <span class="smallNote">
                 Default "Manager" web app must be deployed to target Tomcat. User must have role "manager-script".
