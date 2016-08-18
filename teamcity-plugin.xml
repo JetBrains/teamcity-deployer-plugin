@@ -6,7 +6,6 @@
         <display-name>Artifact Deployer</display-name>
         <version>@Version@</version>
         <description>Set of Runners for basic deployment tasks</description>
-        <download-url>http://confluence.jetbrains.com/display/TW/Deployer+plugin</download-url>
         <vendor>
             <name>JetBrains, s.r.o.</name>
             <url>http://www.jetbrains.com</url>
