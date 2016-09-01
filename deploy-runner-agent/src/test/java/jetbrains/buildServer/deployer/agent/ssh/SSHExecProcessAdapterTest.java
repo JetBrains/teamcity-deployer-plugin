@@ -54,7 +54,7 @@ public class SSHExecProcessAdapterTest {
       oneOf(myLogger).message("Executing commands:\n" + DEFAULT_COMMAND + "\non host []");
       oneOf(myLogger).message("standard output");
       oneOf(myLogger).message("standard error");
-      oneOf(myLogger).message("ssh exit-code: 0");
+      oneOf(myLogger).message("SSH exit-code [0]");
     }});
 
     myAdapter.runProcess();
@@ -83,7 +83,7 @@ public class SSHExecProcessAdapterTest {
 
       oneOf(myLogger).message("Executing commands:\n" + DEFAULT_COMMAND + "\non host []");
       oneOf(myLogger).message("standard error");
-      oneOf(myLogger).message("ssh exit-code: 0");
+      oneOf(myLogger).message("SSH exit-code [0]");
     }});
 
     myAdapter.runProcess();

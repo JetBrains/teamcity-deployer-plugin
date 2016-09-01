@@ -133,10 +133,10 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
             logExitCodeBuildProblem(exitCode);
             result = BuildFinishedStatus.FINISHED_WITH_PROBLEMS;
           } else {
-            myLogger.error("SSH exit-code" + exitCode);
+            myLogger.error("SSH exit-code [" + exitCode + "]");
           }
         } else {
-          myLogger.message("SSH exit-code" + exitCode);
+          myLogger.message("SSH exit-code [" + exitCode + "]");
         }
       }
     }
