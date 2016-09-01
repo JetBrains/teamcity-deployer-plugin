@@ -123,7 +123,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
         channel.disconnect();
         int exitCode = channel.getExitStatus();
         if (exitCode > 0) {
-          myLogger.error("ssh exit-code: " + exitCode);
+          myLogger.buildFailureDescription("ssh exit-code: " + exitCode);
         } else {
           myLogger.message("ssh exit-code: " + exitCode);
         }
