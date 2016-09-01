@@ -1,6 +1,7 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
 import com.intellij.openapi.diagnostic.Logger;
+import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.util.StringUtil;
@@ -13,7 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static jetbrains.buildServer.util.FileUtil.getExtension;
 
@@ -32,7 +33,7 @@ abstract class InterruptibleUploadProcess implements Runnable {
   private boolean myIsAutoType;
   private String myPath;
   @NotNull
-  private final AtomicBoolean myIsFinishedSuccessfully;
+  private final AtomicReference<BuildFinishedStatus> myFinishStatus;
 
   private final static Set<String> ourKnownAsciiExts = new HashSet<String>();
 
@@ -52,13 +53,13 @@ abstract class InterruptibleUploadProcess implements Runnable {
                                     @NotNull final List<ArtifactsCollection> artifacts,
                                     final boolean isAutoType,
                                     @NotNull final String path,
-                                    @NotNull AtomicBoolean isFinishedSuccessfully) {
+                                    @NotNull AtomicReference<BuildFinishedStatus> isFinishedSuccessfully) {
     this.myClient = client;
     this.myLogger = logger;
     this.myArtifacts = artifacts;
     this.myIsAutoType = isAutoType;
     this.myPath = path;
-    myIsFinishedSuccessfully = isFinishedSuccessfully;
+    myFinishStatus = isFinishedSuccessfully;
   }
 
   public void run() {
@@ -106,13 +107,15 @@ abstract class InterruptibleUploadProcess implements Runnable {
         }
         myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
       }
-      myIsFinishedSuccessfully.set(true);
+      myFinishStatus.set(BuildFinishedStatus.FINISHED_SUCCESS);
     } catch (FailureDetectedException t) {
       myLogger.error(t.getMessage());
       LOG.debug(t.getMessage(), t);
+      myFinishStatus.set(BuildFinishedStatus.FINISHED_FAILED);
     } catch (IOException t) {
       myLogger.error(t.getMessage());
       LOG.debug(t.getMessage(), t);
+      myFinishStatus.set(BuildFinishedStatus.FINISHED_FAILED);
     }
   }
 

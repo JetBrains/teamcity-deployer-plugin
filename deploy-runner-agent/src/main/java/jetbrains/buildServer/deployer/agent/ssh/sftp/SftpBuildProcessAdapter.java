@@ -6,6 +6,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
+import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
@@ -33,7 +34,7 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   @Override
-  public boolean runProcess() {
+  public BuildFinishedStatus runProcess() {
     final String escapedRemotePath;
     Session session = null;
 
@@ -41,7 +42,7 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
       escapedRemotePath = mySessionProvider.getRemotePath();
       session = mySessionProvider.getSession();
 
-      if (isInterrupted()) return false;
+      if (isInterrupted()) return BuildFinishedStatus.FINISHED_FAILED;
 
       ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
       channel.connect();
@@ -69,18 +70,18 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
         myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
       }
       channel.disconnect();
-      return true;
+      return BuildFinishedStatus.FINISHED_SUCCESS;
     } catch (UploadInterruptedException e) {
       myLogger.warning("SFTP upload interrupted.");
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     } catch (JSchException e) {
       myLogger.error(e.toString());
       LOG.warnAndDebugDetails(e.getMessage(), e);
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     } catch (SftpException e) {
       myLogger.error(e.toString());
       LOG.warnAndDebugDetails(e.getMessage(), e);
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       if (session != null) {
         session.disconnect();

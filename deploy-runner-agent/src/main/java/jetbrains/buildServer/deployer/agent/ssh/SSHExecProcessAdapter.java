@@ -5,14 +5,17 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import jetbrains.buildServer.BuildProblemData;
+import jetbrains.buildServer.BuildProblemTypes;
 import jetbrains.buildServer.LineAwareByteArrayOutputStream;
 import jetbrains.buildServer.StreamGobbler;
+import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
+import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -24,31 +27,32 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
   private final String myCommands;
   private final SSHSessionProvider myProvider;
   private final String myPty;
+  private final boolean myFailOnExitCode;
 
 
   public SSHExecProcessAdapter(@NotNull final SSHSessionProvider provider,
                                @NotNull final String commands,
                                final String pty,
-                               @NotNull final BuildProgressLogger buildLogger) {
+                               @NotNull final BuildProgressLogger buildLogger,
+                               final boolean failOnExitCode) {
     super(buildLogger);
     myProvider = provider;
     myCommands = commands;
     myPty = pty;
+    myFailOnExitCode = failOnExitCode;
   }
 
 
   @Override
-  public boolean runProcess() {
-
+  public BuildFinishedStatus runProcess() {
     Session session = null;
     try {
       session = myProvider.getSession();
-      executeCommand(session, myPty, myCommands);
-      return true;
+      return executeCommand(session, myPty, myCommands);
     } catch (JSchException e) {
       myLogger.error(e.toString());
       LOG.warnAndDebugDetails(e.getMessage(), e);
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       if (session != null) {
         session.disconnect();
@@ -56,8 +60,9 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
     }
   }
 
-  private void executeCommand(Session session, String pty, String command) throws JSchException {
+  private BuildFinishedStatus executeCommand(Session session, String pty, String command) throws JSchException {
     ChannelExec channel = null;
+    BuildFinishedStatus result = BuildFinishedStatus.FINISHED_SUCCESS;
     myLogger.message("Executing commands:\n" + command + "\non host [" + session.getHost() + "]");
     try {
       channel = (ChannelExec) session.openChannel("exec");
@@ -118,26 +123,27 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
     } catch (IOException e) {
       myLogger.error(e.toString());
       LOG.warnAndDebugDetails(e.getMessage(), e);
+      result = BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       if (channel != null) {
         channel.disconnect();
         int exitCode = channel.getExitStatus();
         if (exitCode > 0) {
-          myLogger.buildFailureDescription("ssh exit-code: " + exitCode);
+          if (myFailOnExitCode) {
+            logExitCodeBuildProblem(exitCode);
+            result = BuildFinishedStatus.FINISHED_WITH_PROBLEMS;
+          } else {
+            myLogger.error("SSH exit-code" + exitCode);
+          }
         } else {
-          myLogger.message("ssh exit-code: " + exitCode);
+          myLogger.message("SSH exit-code" + exitCode);
         }
       }
     }
-
+    return result;
   }
 
-  private boolean readStream(InputStream inputStream, StringBuilder appendTo, byte[] buffer, final int BUFFER_LENGTH) throws IOException {
-    int i = inputStream.read(buffer, 0, BUFFER_LENGTH);
-    if (i < 0) {
-      return false;
-    }
-    appendTo.append(new String(buffer, 0, i));
-    return true;
+  private void logExitCodeBuildProblem(int exitCode) {
+    myLogger.logBuildProblem(BuildProblemData.createBuildProblem(SSHRunnerConstants.SSH_EXEC_RUN_TYPE + ":" + exitCode, BuildProblemTypes.TC_EXIT_CODE_TYPE, "SSH exit-code " + exitCode));
   }
 }

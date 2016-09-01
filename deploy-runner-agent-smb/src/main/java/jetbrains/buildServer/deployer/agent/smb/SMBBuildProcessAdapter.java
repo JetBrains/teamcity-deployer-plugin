@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
+import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
@@ -55,7 +56,7 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   @Override
-  public boolean runProcess() {
+  public BuildFinishedStatus runProcess() {
 
     String targetWithProtocol;
     if (myTarget.startsWith("\\\\")) {
@@ -89,14 +90,14 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
         final int numOfUploadedFiles = upload(artifactsCollection.getFilePathMap(), destinationDir);
         myLogger.message("Uploaded [" + numOfUploadedFiles + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
       }
-      return true;
+      return BuildFinishedStatus.FINISHED_SUCCESS;
     } catch (UploadInterruptedException e) {
       myLogger.warning("SMB upload interrupted.");
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException e) {
       myLogger.error(e.toString());
       LOG.warnAndDebugDetails(e.getMessage(), e);
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     }
   }
 

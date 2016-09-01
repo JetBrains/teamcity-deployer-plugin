@@ -116,6 +116,6 @@ public class SSHExecProcessAdapterTest {
   }
 
   private SSHExecProcessAdapter newAdapter(BuildProgressLogger logger) {
-    return new SSHExecProcessAdapter(mySessionProvider, DEFAULT_COMMAND, null, logger);
+    return new SSHExecProcessAdapter(mySessionProvider, DEFAULT_COMMAND, null, logger, true);
   }
 }

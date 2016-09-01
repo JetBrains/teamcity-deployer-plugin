@@ -9,14 +9,14 @@ import org.jetbrains.annotations.NotNull;
 public abstract class SyncBuildProcessAdapter extends BuildProcessAdapter {
   protected final BuildProgressLogger myLogger;
   private volatile boolean hasFinished;
-  private volatile boolean hasFailed;
+  private volatile BuildFinishedStatus statusCode;
   private volatile boolean isInterrupted;
 
 
   public SyncBuildProcessAdapter(@NotNull final BuildProgressLogger logger) {
     myLogger = logger;
     hasFinished = false;
-    hasFailed = false;
+    statusCode = null;
   }
 
 
@@ -45,16 +45,13 @@ public abstract class SyncBuildProcessAdapter extends BuildProcessAdapter {
         throw new RunBuildException(e);
       }
     }
-    return hasFinished ?
-        hasFailed ? BuildFinishedStatus.FINISHED_FAILED :
-            BuildFinishedStatus.FINISHED_SUCCESS :
-        BuildFinishedStatus.INTERRUPTED;
+    return hasFinished ? statusCode : BuildFinishedStatus.INTERRUPTED;
   }
 
   @Override
   public void start() throws RunBuildException {
     try {
-      hasFailed = !runProcess();
+      statusCode = runProcess();
       hasFinished = true;
     } catch (UploadInterruptedException e) {
       hasFinished = false;
@@ -64,7 +61,7 @@ public abstract class SyncBuildProcessAdapter extends BuildProcessAdapter {
   /**
    * @return true is process finished successfully
    */
-  protected abstract boolean runProcess();
+  protected abstract BuildFinishedStatus runProcess();
 
   protected void checkIsInterrupted() throws UploadInterruptedException {
     if (isInterrupted()) throw new UploadInterruptedException();

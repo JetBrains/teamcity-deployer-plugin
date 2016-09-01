@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
@@ -40,7 +41,7 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   @Override
-  public boolean runProcess() {
+  public BuildFinishedStatus runProcess() {
     String escapedRemotePath;
     Session session = null;
 
@@ -49,7 +50,7 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       escapedRemotePath = mySessionProvider.getRemotePath();
       session = mySessionProvider.getSession();
 
-      if (isInterrupted()) return false;
+      if (isInterrupted()) return BuildFinishedStatus.FINISHED_FAILED;
 
       myLogger.message("Starting upload via SCP to " + mySessionProvider.getSessionString());
 
@@ -85,15 +86,15 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       upload(session, ".", relativeDestinations);
       upload(session, "/", absDestinations);
 
-      return true;
+      return BuildFinishedStatus.FINISHED_SUCCESS;
     } catch (JSchException e) {
       myLogger.error(e.toString());
       LOG.warnAndDebugDetails(e.getMessage(), e);
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException e) {
       myLogger.error(e.toString());
       LOG.warnAndDebugDetails(e.getMessage(), e);
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       if (session != null) {
         session.disconnect();

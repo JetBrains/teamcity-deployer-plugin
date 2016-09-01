@@ -1,6 +1,7 @@
 package jetbrains.buildServer.deployer.agent.ftp;
 
 import com.intellij.openapi.diagnostic.Logger;
+import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
@@ -20,7 +21,7 @@ import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
@@ -54,7 +55,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   @Override
-  public boolean runProcess() {
+  public BuildFinishedStatus runProcess() {
 
     FTPClient clientToDisconnect = null;
     try {
@@ -90,7 +91,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       final boolean loginSuccessful = client.login(myUsername, myPassword);
       if (!loginSuccessful) {
         myLogger.error("Failed to login. Reply was: " + client.getReplyString());
-        return false;
+        return BuildFinishedStatus.FINISHED_FAILED;
       }
 
 
@@ -104,7 +105,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       }
 
       client.setControlKeepAliveTimeout(60); // seconds
-      AtomicBoolean processResult = new AtomicBoolean(false);
+      AtomicReference<BuildFinishedStatus> processResult = new AtomicReference<BuildFinishedStatus>(BuildFinishedStatus.FINISHED_SUCCESS);
       final Runnable interruptibleBody = new InterruptibleUploadProcess(client, myLogger, myArtifacts, isAutoType, path, processResult) {
         public boolean checkIsInterrupted() {
           return FtpBuildProcessAdapter.this.isInterrupted();
@@ -148,18 +149,18 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       return processResult.get();
     } catch (UploadInterruptedException e) {
       myLogger.warning("Ftp upload interrupted.");
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     } catch (SSLException e) {
       if (e.getMessage().contains("unable to find valid certification path to requested target")) {
         myLogger.error("Failed to setup SSL connection. Looks like target's certificate is not trusted.\n" +
             "See Oracle's documentation on how to import the certificate as a Trusted Certificate.");
       }
       LOG.warnAndDebugDetails(e.getMessage(), e);
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException e) {
       myLogger.error(e.toString());
       LOG.warnAndDebugDetails(e.getMessage(), e);
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       try {
         if (clientToDisconnect != null && clientToDisconnect.isConnected()) {

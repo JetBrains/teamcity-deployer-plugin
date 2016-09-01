@@ -70,12 +70,14 @@
             <version>0.0.9</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant</artifactId>
-            <version>1.8.2</version>
-            <scope>compile</scope>
-        </dependency>
+      <!--
+            <dependency>
+                  <groupId>org.apache.ant</groupId>
+                  <artifactId>ant</artifactId>
+                  <version>1.8.2</version>
+                  <scope>compile</scope>
+              </dependency>
+              -->
 
         <dependency>
             <groupId>log4j</groupId>
@@ -83,36 +85,37 @@
             <version>1.2.12</version>
             <scope>compile</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat-catalina-ant</artifactId>
-            <version>7.0.0</version>
-            <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-coyote</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-servlet-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-juli</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-catalina</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+      <!--
+              <dependency>
+                  <groupId>org.apache.tomcat</groupId>
+                  <artifactId>tomcat-catalina-ant</artifactId>
+                  <version>7.0.0</version>
+                  <scope>compile</scope>
+                  <exclusions>
+                      <exclusion>
+                          <groupId>org.apache.tomcat</groupId>
+                          <artifactId>tomcat-coyote</artifactId>
+                      </exclusion>
+                      <exclusion>
+                          <groupId>org.apache.tomcat</groupId>
+                          <artifactId>tomcat-servlet-api</artifactId>
+                      </exclusion>
+                      <exclusion>
+                          <groupId>org.apache.tomcat</groupId>
+                          <artifactId>tomcat-juli</artifactId>
+                      </exclusion>
+                      <exclusion>
+                          <groupId>org.apache.tomcat</groupId>
+                          <artifactId>tomcat-catalina</artifactId>
+                      </exclusion>
+                  </exclusions>
+              </dependency>
+              -->
 
         <dependency>
             <groupId>org.codehaus.cargo</groupId>
             <artifactId>cargo-core-uberjar</artifactId>
-            <version>1.4.8</version>
+          <version>1.5.0</version>
             <exclusions>
                 <exclusion>
                     <artifactId>xercesImpl</artifactId>

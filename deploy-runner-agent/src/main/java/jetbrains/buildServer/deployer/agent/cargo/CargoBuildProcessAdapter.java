@@ -1,6 +1,7 @@
 package jetbrains.buildServer.deployer.agent.cargo;
 
 import com.intellij.openapi.diagnostic.Logger;
+import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.common.CargoRunnerConstants;
@@ -77,7 +78,7 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   @Override
-  protected boolean runProcess() {
+  protected BuildFinishedStatus runProcess() {
     try {
       final ConfigurationFactory configFactory = new DefaultConfigurationFactory();
       final Configuration configuration = configFactory.createConfiguration(myContainerType, ContainerType.REMOTE, ConfigurationType.RUNTIME);
@@ -120,9 +121,9 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
       final String message = extractMessage(e);
       myLogger.error(message);
       LOG.warnAndDebugDetails(e.getMessage(), e);
-      return false;
+      return BuildFinishedStatus.FINISHED_FAILED;
     }
-    return true;
+    return BuildFinishedStatus.FINISHED_SUCCESS;
   }
 
   @NotNull
