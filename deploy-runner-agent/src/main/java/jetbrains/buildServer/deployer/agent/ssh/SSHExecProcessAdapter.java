@@ -24,6 +24,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
   private static final Logger LOG = Logger.getInstance(SSHExecProcessAdapter.class.getName());
   private static final long CONNECTION_SILENCE_THRESHOLD_MS = 10 * 1000;
+  private static final int CONNECTION_OPEN_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes
   private final String myCommands;
   private final SSHSessionProvider myProvider;
   private final String myPty;
@@ -87,7 +88,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
       outputGobbler.start();
       errGobbler.start();
-      channel.connect();
+      channel.connect(CONNECTION_OPEN_TIMEOUT_MS);
 
       while (!isInterrupted()
           && channel.isConnected()
