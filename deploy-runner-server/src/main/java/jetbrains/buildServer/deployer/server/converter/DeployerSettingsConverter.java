@@ -32,12 +32,13 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
   public void buildTypeRegistered(SBuildType buildType) {
     boolean persistBuildType = false;
     for (SBuildRunnerDescriptor descriptor : buildType.getBuildRunners()) {
+      boolean runnerUpdated = false;
       final String runnerType = descriptor.getType();
       final Map<String, String> newRunnerParams = new HashMap<String, String>(descriptor.getParameters());
 
       final String plainPassword = newRunnerParams.get(DeployerRunnerConstants.PARAM_PLAIN_PASSWORD);
       if (plainPassword != null) {
-        persistBuildType = true;
+        runnerUpdated = true;
         Loggers.SERVER.debug("Scrambling password for runner [" + runnerType + "-" + descriptor.getName() + "] in [" + buildType.getName() + "]");
         newRunnerParams.remove(DeployerRunnerConstants.PARAM_PLAIN_PASSWORD);
         newRunnerParams.put(DeployerRunnerConstants.PARAM_PASSWORD, plainPassword);
@@ -47,7 +48,7 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
           SSHRunnerConstants.SSH_EXEC_RUN_TYPE.equals(runnerType)) {
         final String sshAuthMethod = newRunnerParams.get(SSHRunnerConstants.PARAM_AUTH_METHOD);
         if (StringUtil.isEmpty(sshAuthMethod)) {
-          persistBuildType = true;
+          runnerUpdated = true;
           Loggers.SERVER.debug("Setting default (username password) ssh authentication method for runner [" + runnerType + "-" + descriptor.getName() + "] in [" + buildType.getName() + "]");
           newRunnerParams.put(SSHRunnerConstants.PARAM_AUTH_METHOD, SSHRunnerConstants.AUTH_METHOD_USERNAME_PWD);
         }
@@ -57,17 +58,17 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
           final String oldPassword = newRunnerParams.get(SSHRunnerConstants.PARAM_PASSWORD);
           final String oldHost = newRunnerParams.get(SSHRunnerConstants.PARAM_HOST);
           if (StringUtil.isNotEmpty(oldUsername)) {
-            persistBuildType = true;
+            runnerUpdated = true;
             newRunnerParams.remove(SSHRunnerConstants.PARAM_USERNAME);
             newRunnerParams.put(DeployerRunnerConstants.PARAM_USERNAME, oldUsername);
           }
           if (StringUtil.isNotEmpty(oldPassword)) {
-            persistBuildType = true;
+            runnerUpdated = true;
             newRunnerParams.remove(SSHRunnerConstants.PARAM_PASSWORD);
             newRunnerParams.put(DeployerRunnerConstants.PARAM_PASSWORD, oldPassword);
           }
           if (StringUtil.isNotEmpty(oldHost)) {
-            persistBuildType = true;
+            runnerUpdated = true;
             newRunnerParams.remove(SSHRunnerConstants.PARAM_HOST);
             newRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, oldHost);
           }
@@ -77,7 +78,7 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
       if (DeployerRunnerConstants.FTP_RUN_TYPE.equals(runnerType)) {
         final String ftpAuthMethod = newRunnerParams.get(FTPRunnerConstants.PARAM_AUTH_METHOD);
         if (StringUtil.isEmpty(ftpAuthMethod)) {
-          persistBuildType = true;
+          runnerUpdated = true;
           Loggers.SERVER.debug("Setting ftp auth authentication method for runner [" + runnerType + "-" + descriptor.getName() + "] in [" + buildType.getName() + "]");
           final String username = newRunnerParams.get(DeployerRunnerConstants.PARAM_USERNAME);
           if (StringUtil.isEmpty(username)) {
@@ -91,14 +92,17 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
       if (DeployerRunnerConstants.SMB_RUN_TYPE.equals(runnerType)) {
         final String domain = newRunnerParams.get(DeployerRunnerConstants.PARAM_DOMAIN);
         if (StringUtil.isNotEmpty(domain)) {
-          persistBuildType = true;
+          runnerUpdated = true;
           newRunnerParams.remove(DeployerRunnerConstants.PARAM_DOMAIN);
           final String username = newRunnerParams.get(DeployerRunnerConstants.PARAM_USERNAME);
           newRunnerParams.put(DeployerRunnerConstants.PARAM_USERNAME, domain + "\\" + username);
         }
       }
 
-      buildType.updateBuildRunner(descriptor.getId(), descriptor.getName(), runnerType, newRunnerParams);
+      if (runnerUpdated) {
+        persistBuildType = true;
+        buildType.updateBuildRunner(descriptor.getId(), descriptor.getName(), runnerType, newRunnerParams);
+      }
     }
     if (persistBuildType) {
       buildType.persist();
