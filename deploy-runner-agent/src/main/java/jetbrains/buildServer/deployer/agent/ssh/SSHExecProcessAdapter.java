@@ -3,6 +3,7 @@ package jetbrains.buildServer.deployer.agent.ssh;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import jetbrains.buildServer.BuildProblemData;
@@ -46,6 +47,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
   @Override
   public BuildFinishedStatus runProcess() {
+    JSch.setLogger(new JSchBuildLogger(myLogger));
     Session session = null;
     try {
       session = myProvider.getSession();
