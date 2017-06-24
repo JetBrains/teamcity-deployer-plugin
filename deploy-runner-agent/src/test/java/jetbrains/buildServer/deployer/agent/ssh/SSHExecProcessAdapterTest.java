@@ -4,6 +4,7 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import jetbrains.buildServer.agent.BuildProgressLogger;
+import jetbrains.buildServer.messages.BuildMessage1;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -113,6 +114,7 @@ public class SSHExecProcessAdapterTest {
         will(returnValue(true));
         allowing(myChannel).disconnect();
         allowing(myChannel).getExitStatus();
+        allowing(myLogger).logMessage(with(any(BuildMessage1.class)));
       } catch (JSchException e) {
         Assert.fail("Unexpected exception in jmock expectations list.", e);
       }
