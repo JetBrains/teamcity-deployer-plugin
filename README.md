@@ -1,3 +1,5 @@
+[![official project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+
 ### TeamCity plugin to upload artifacts to external locations
 ----------------------------
 [![Build Status](https://teamcity.jetbrains.com/app/rest/builds/buildType:(id:bt402)/statusIcon)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=bt402)
