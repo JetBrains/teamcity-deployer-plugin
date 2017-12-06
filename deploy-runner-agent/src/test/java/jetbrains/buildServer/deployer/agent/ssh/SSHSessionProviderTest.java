@@ -39,7 +39,7 @@ public class SSHSessionProviderTest extends BaseSSHTest {
   public void testDefaultConfig() throws Exception {
     myRunnerParams.put(SSHRunnerConstants.PARAM_AUTH_METHOD, SSHRunnerConstants.AUTH_METHOD_DEFAULT_KEY);
     final File tempConfig = myTempFiles.createTempFile("Host *\n" +
-        "    Port " + String.valueOf(PORT_NUM) + "\n" +
+        "    Port " + String.valueOf(testPort) + "\n" +
         "    IdentityFile " + myPassphraselessKey.getCanonicalPath());
     myInternalProperties.put(SSHSessionProvider.TEAMCITY_DEPLOYER_SSH_CONFIG_PATH, tempConfig.getCanonicalPath());
     assertSessionIsConnected();
@@ -50,7 +50,7 @@ public class SSHSessionProviderTest extends BaseSSHTest {
     final File tempConfig = myTempFiles.createTempFile(
         "Host foo\n" +
             "    Hostname 127.0.0.1\n" +
-            "    Port " + String.valueOf(PORT_NUM) + "\n" +
+            "    Port " + String.valueOf(testPort) + "\n" +
             "    IdentityFile " + myPassphraselessKey.getCanonicalPath() + "\n" +
             "Host *\n" +
             "    Port " + String.valueOf(22) + "\n" +

@@ -1,6 +1,7 @@
 package jetbrains.buildServer.deployer.agent.cargo;
 
 import com.intellij.openapi.util.io.StreamUtil;
+import jetbrains.buildServer.NetworkUtil;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
@@ -13,6 +14,7 @@ import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.installer.ZipURLInstaller;
 import org.codehaus.cargo.container.property.ServletPropertySet;
 import org.codehaus.cargo.container.tomcat.Tomcat7xStandaloneLocalConfiguration;
+import org.codehaus.cargo.container.tomcat.TomcatPropertySet;
 import org.codehaus.cargo.generic.DefaultContainerFactory;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -35,7 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
 
-  private static final int TEST_PORT = 55369;
+  private int testPort;
 
   private BuildRunnerContext myContext;
   private final Map<String, String> myRunnerParameters = new HashMap<String, String>();
@@ -59,7 +61,9 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
     installer.install();
 
     LocalConfiguration configuration = new Tomcat7xStandaloneLocalConfiguration(cfgDir.getAbsolutePath());
-    configuration.setProperty(ServletPropertySet.PORT, String.valueOf(TEST_PORT));
+    testPort = NetworkUtil.getFreePort(DEPLOYER_DEFAULT_PORT);
+    configuration.setProperty(ServletPropertySet.PORT, String.valueOf(testPort));
+    configuration.setProperty(TomcatPropertySet.AJP_PORT, String.valueOf(NetworkUtil.getFreePort(8009)));
     configuration.setProperty(ServletPropertySet.USERS, "tomcat:tomcat:manager-script");
 
     myTomcat = (InstalledLocalContainer) new DefaultContainerFactory().createContainer(
@@ -99,12 +103,12 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
   @Test
   public void testSimpleDeploy() throws Exception {
     deployTestResourceAsArtifact("simple.war", "simple.war");
-    assertUrlReturns(new URL("http://127.0.0.1:" + TEST_PORT + "/simple"), "Hello!  The time is now");
+    assertUrlReturns(new URL("http://127.0.0.1:" + testPort + "/simple"), "Hello!  The time is now");
   }
 
   @Test
   public void testReDeploy() throws Exception {
-    final URL url = new URL("http://127.0.0.1:" + TEST_PORT + "/simple");
+    final URL url = new URL("http://127.0.0.1:" + testPort + "/simple");
 
     deployTestResourceAsArtifact("simple.war", "simple.war");
     assertUrlReturns(url, "Hello!  The time is now");
@@ -117,20 +121,20 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
   @Test
   public void testDeployWithContext() throws Exception {
     deployTestResourceAsArtifact("simple-with-context.war", "simple-with-context.war");
-    assertUrlReturns(new URL("http://127.0.0.1:" + TEST_PORT + "/somepath/myapp"), "Hello!  The time is now");
+    assertUrlReturns(new URL("http://127.0.0.1:" + testPort + "/somepath/myapp"), "Hello!  The time is now");
   }
 
 
   @Test
   public void testDeployRootContext() throws Exception {
     deployTestResourceAsArtifact("simple.war", "ROOT.war");
-    assertUrlReturns(new URL("http://127.0.0.1:" + TEST_PORT + "/"), "Hello!  The time is now");
+    assertUrlReturns(new URL("http://127.0.0.1:" + testPort + "/"), "Hello!  The time is now");
   }
 
 
   @Test
   public void testReDeployRootContext() throws Exception {
-    final URL url = new URL("http://127.0.0.1:" + TEST_PORT + "/");
+    final URL url = new URL("http://127.0.0.1:" + testPort + "/");
 
     deployTestResourceAsArtifact("simple.war", "ROOT.war");
     assertUrlReturns(url, "Hello!  The time is now");
@@ -148,7 +152,7 @@ public class CargoBuildProcessAdapterTest extends BaseDeployerTest {
 
   private void deployTestResourceAsArtifact(String testResourceName, String artifactName) throws IOException, RunBuildException {
     FileUtil.copy(getTestResource(testResourceName), new File(workingDir, artifactName));
-    final BuildProcess process = getProcess("127.0.0.1:" + TEST_PORT, artifactName);
+    final BuildProcess process = getProcess("127.0.0.1:" + testPort, artifactName);
     DeployTestUtils.runProcess(process, 5000);
   }
 

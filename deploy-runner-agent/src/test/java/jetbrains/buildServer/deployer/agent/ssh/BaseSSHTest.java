@@ -2,6 +2,7 @@ package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
+import jetbrains.buildServer.NetworkUtil;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.agent.ssh.AgentRunningBuildSshKeyManager;
@@ -37,7 +38,7 @@ import java.util.*;
  */
 public class BaseSSHTest extends BaseDeployerTest {
 
-  protected static final int PORT_NUM = 15655;
+  protected static final int SSH_DEFAULT_PORT = 15655;
   protected static final String HOST_ADDR = "127.0.0.1";
   protected final Map<String, String> myRunnerParams = new HashMap<String, String>();
   protected final Map<String, String> myInternalProperties = new HashMap<String, String>();
@@ -60,6 +61,7 @@ public class BaseSSHTest extends BaseDeployerTest {
   protected File myRemoteDir = null;
   protected String oldUserDir = null;
   protected SshServer myServer;
+  protected int testPort;
 
   protected AgentRunningBuildSshKeyManager mySshKeyManager;
 
@@ -71,7 +73,8 @@ public class BaseSSHTest extends BaseDeployerTest {
     myRemoteDir = myTempFiles.createTempDir();
 
     myServer = SshServer.setUpDefaultServer();
-    myServer.setPort(BaseSSHTest.PORT_NUM);
+    testPort = NetworkUtil.getFreePort(SSH_DEFAULT_PORT);
+    myServer.setPort(testPort);
     myServer.setCommandFactory(new ScpCommandFactory());
     myServer.setShellFactory(new ProcessShellFactory(new String[]{SystemInfo.isWindows ? "cmd" : "sh"}));
     myServer.setPasswordAuthenticator(new PasswordAuthenticator() {
@@ -133,7 +136,7 @@ public class BaseSSHTest extends BaseDeployerTest {
     myRunnerParams.put(DeployerRunnerConstants.PARAM_PASSWORD, myPassword);
 
     myRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, HOST_ADDR);
-    myRunnerParams.put(SSHRunnerConstants.PARAM_PORT, String.valueOf(PORT_NUM));
+    myRunnerParams.put(SSHRunnerConstants.PARAM_PORT, String.valueOf(testPort));
   }
 
   @AfterMethod
