@@ -1,6 +1,7 @@
 package jetbrains.buildServer.deployer.agent.cargo;
 
 import com.intellij.openapi.util.io.StreamUtil;
+import jetbrains.buildServer.NetworkUtil;
 import jetbrains.buildServer.RunBuildException;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
@@ -38,13 +39,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
 
-  private static final int TEST_PORT = 55369;
-
+  private int testPort;
   private BuildRunnerContext myContext;
   private final Map<String, String> myRunnerParameters = new HashMap<String, String>();
   private InstalledLocalContainer myTomcat;
   private File workingDir;
-
 
   @BeforeMethod
   @Override
@@ -61,9 +60,11 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
     installer.install();
 
     LocalConfiguration configuration = new Tomcat7xStandaloneLocalConfiguration(cfgDir.getAbsolutePath());
-    configuration.setProperty(ServletPropertySet.PORT, String.valueOf(TEST_PORT));
+    testPort = NetworkUtil.getFreePort(DEPLOYER_DEFAULT_PORT);
+    configuration.setProperty(ServletPropertySet.PORT, String.valueOf(testPort));
     configuration.setProperty(ServletPropertySet.USERS, "tomcat:tomcat:manager-script");
 
+    configuration.setProperty(TomcatPropertySet.AJP_PORT, String.valueOf(NetworkUtil.getFreePort(8009)));
     configuration.setProperty(TomcatPropertySet.CONNECTOR_KEY_STORE_FILE, getTestResource("ftpserver.jks").getAbsolutePath());
     configuration.setProperty(TomcatPropertySet.CONNECTOR_KEY_STORE_PASSWORD, "password");
     configuration.setProperty(TomcatPropertySet.CONNECTOR_KEY_ALIAS, "localhost");
@@ -108,7 +109,7 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
   @Test
   public void testSimpleDeploy() throws Exception {
     deployTestResourceAsArtifact("simple.war", "simple.war");
-    assertUrlReturns(new URL("https://localhost:" + TEST_PORT + "/simple"), "Hello!  The time is now");
+    assertUrlReturns(new URL("https://localhost:" + testPort + "/simple"), "Hello!  The time is now");
   }
 
   private void assertUrlReturns(URL url, String expected2) throws IOException {
@@ -120,7 +121,7 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
 
   private void deployTestResourceAsArtifact(String testResourceName, String artifactName) throws IOException, RunBuildException {
     FileUtil.copy(getTestResource(testResourceName), new File(workingDir, artifactName));
-    final BuildProcess process = getProcess("localhost:" + TEST_PORT, artifactName);
+    final BuildProcess process = getProcess("localhost:" + testPort, artifactName);
     DeployTestUtils.runProcess(process, 5000);
   }
 
