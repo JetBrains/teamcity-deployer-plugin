@@ -16,12 +16,12 @@ public class BaseDeployerTest {
 
   protected static final int DEPLOYER_DEFAULT_PORT = 55369;
 
-  protected TestLogger myLogger = new TestLogger();
+  private TestLogger myLogger = new TestLogger();
   protected TempFiles myTempFiles = new TempFiles();
 
 
   @BeforeClass
-  public void setUpClass() throws Exception {
+  public void setUpClass() {
     myLogger.onSuiteStart();
   }
 

@@ -18,6 +18,7 @@ import org.apache.ftpserver.usermanager.ClearTextPasswordEncryptor;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.ftpserver.usermanager.impl.BaseUser;
 import org.apache.ftpserver.usermanager.impl.WritePermission;
+import org.aspectj.util.FileUtil;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
@@ -277,7 +278,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
     };
     assertThat(process.isFinished()).describedAs("Failed to finish test in time").isTrue();
     assertThat(process.waitFor()).isEqualTo(BuildFinishedStatus.FINISHED_FAILED);
-    assertEquals(myRemoteDir.listFiles().length, 0);
+    assertEquals(FileUtil.listFiles(myRemoteDir).length, 0);
   }
 
 

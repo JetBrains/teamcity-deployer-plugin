@@ -15,7 +15,7 @@ public class ScpProcessAdapterTest extends BaseSSHTransferTest {
   }
 
   @Override
-  protected ScpProcessAdapter getProcess(String targetBasePath) throws Exception {
+  protected ScpProcessAdapter getProcess(String targetBasePath) {
     myRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, targetBasePath);
 
     final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder, mySshKeyManager);

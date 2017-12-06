@@ -38,12 +38,12 @@ import java.util.*;
  */
 public class BaseSSHTest extends BaseDeployerTest {
 
-  protected static final int SSH_DEFAULT_PORT = 15655;
-  protected static final String HOST_ADDR = "127.0.0.1";
-  protected final Map<String, String> myRunnerParams = new HashMap<String, String>();
-  protected final Map<String, String> myInternalProperties = new HashMap<String, String>();
+  private static final int SSH_DEFAULT_PORT = 15655;
+  static final String HOST_ADDR = "127.0.0.1";
+  final Map<String, String> myRunnerParams = new HashMap<String, String>();
+  final Map<String, String> myInternalProperties = new HashMap<String, String>();
 
-  protected final InternalPropertiesHolder myInternalPropertiesHolder = new InternalPropertiesHolder() {
+  final InternalPropertiesHolder myInternalPropertiesHolder = new InternalPropertiesHolder() {
     @Nullable
     @Override
     public String getInternalProperty(@NotNull String s, String s2) {
@@ -51,19 +51,19 @@ public class BaseSSHTest extends BaseDeployerTest {
     }
   };
 
-  protected File myWorkingDir;
-  protected String myUsername = "testuser";
-  protected String myPassword = "testpassword";
-  protected List<ArtifactsCollection> myArtifactsCollections;
-  protected BuildRunnerContext myContext;
-  protected File myPassphraselessKey;
-  protected File myPrivateKey;
-  protected File myRemoteDir = null;
-  protected String oldUserDir = null;
-  protected SshServer myServer;
-  protected int testPort;
+  File myWorkingDir;
+  private String myUsername = "testuser";
+  private String myPassword = "testpassword";
+  List<ArtifactsCollection> myArtifactsCollections;
+  BuildRunnerContext myContext;
+  File myPassphraselessKey;
+  File myPrivateKey;
+  File myRemoteDir = null;
+  private String oldUserDir = null;
+  private SshServer myServer;
+  int testPort;
 
-  protected AgentRunningBuildSshKeyManager mySshKeyManager;
+  AgentRunningBuildSshKeyManager mySshKeyManager;
 
   @BeforeMethod
   @Override

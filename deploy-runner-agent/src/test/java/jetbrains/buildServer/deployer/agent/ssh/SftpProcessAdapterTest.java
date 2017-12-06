@@ -16,7 +16,7 @@ public class SftpProcessAdapterTest extends BaseSSHTransferTest {
   }
 
   @Override
-  protected BuildProcess getProcess(String targetBasePath) throws Exception {
+  protected BuildProcess getProcess(String targetBasePath) {
     myRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, targetBasePath);
 
     final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder, mySshKeyManager);
