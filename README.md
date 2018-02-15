@@ -2,7 +2,7 @@
 
 ### TeamCity plugin to upload artifacts to external locations
 ----------------------------
-[![Build Status](https://teamcity.jetbrains.com/app/rest/builds/buildType:(id:bt402)/statusIcon)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=bt402)
+[![Build Status](https://teamcity.jetbrains.com/app/rest/builds/buildType:(id:bt402)/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=bt402)
 
 This plugin adds basic deployment functions
 to TeamCity continuous integration server
