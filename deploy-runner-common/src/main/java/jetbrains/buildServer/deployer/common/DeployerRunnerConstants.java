@@ -7,6 +7,7 @@ package jetbrains.buildServer.deployer.common;
 public class DeployerRunnerConstants {
   public static final String SSH_RUN_TYPE = "ssh-deploy-runner";
   public static final String SMB_RUN_TYPE = "smb-deploy-runner";
+  public static final String SMB2_RUN_TYPE = "smb2-deploy-runner";
   public static final String FTP_RUN_TYPE = "ftp-deploy-runner";
   public static final String TOMCAT_RUN_TYPE = "tomcat-deploy-runner";
   public static final String CARGO_RUN_TYPE = "cargo-deploy-runner";
