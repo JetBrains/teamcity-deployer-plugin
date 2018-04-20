@@ -139,7 +139,7 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
     }
 
     while (!toCreate.empty()) {
-      existingPrefix = existingPrefix + "\\" + toCreate.pop();
+      existingPrefix = (existingPrefix.length() > 0 ? existingPrefix + "\\" : "") + toCreate.pop();
       diskShare.mkdir(existingPrefix);
     }
   }
