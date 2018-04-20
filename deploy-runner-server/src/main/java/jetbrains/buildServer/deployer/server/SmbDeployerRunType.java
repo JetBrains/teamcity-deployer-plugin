@@ -41,7 +41,7 @@ public class SmbDeployerRunType extends RunType {
   @NotNull
   @Override
   public String getDescription() {
-    return "Deploys files/directories via SMB v1 (old windows share protocol)";
+    return "Deploys files/directories via SMB (windows share)";
   }
 
   @Override

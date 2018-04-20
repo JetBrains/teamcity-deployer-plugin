@@ -6,7 +6,6 @@
        default-autowire="constructor">
     <bean id="scpDeployerRunType" class="jetbrains.buildServer.deployer.server.SSHDeployerRunType"/>
     <bean id="smbDeployerRunType" class="jetbrains.buildServer.deployer.server.SmbDeployerRunType"/>
-    <bean id="smb2DeployerRunType" class="jetbrains.buildServer.deployer.server.Smb2DeployerRunType"/>
     <bean id="ftpDeployerRunType" class="jetbrains.buildServer.deployer.server.FtpDeployerRunType"/>
     <bean id="cargoDeployerRunType" class="jetbrains.buildServer.deployer.server.cargo.CargoDeployerRunType"/>
     <bean id="sshExecRunType" class="jetbrains.buildServer.deployer.server.SSHExecRunType"/>

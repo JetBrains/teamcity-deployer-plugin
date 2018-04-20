@@ -7,7 +7,6 @@
     <bean id="sshDeployerRunner" class="jetbrains.buildServer.deployer.agent.ssh.SSHDeployerRunner"/>
     <bean id="sshExecRunner" class="jetbrains.buildServer.deployer.agent.ssh.SSHExecRunner"/>
     <bean id="smbDeployerRunner" class="jetbrains.buildServer.deployer.agent.smb.SmbDeployerRunner"/>
-    <bean id="smb2DeployerRunner" class="jetbrains.buildServer.deployer.agent.smb2.Smb2DeployerRunner"/>
     <bean id="ftpDeployerRunner" class="jetbrains.buildServer.deployer.agent.ftp.FtpDeployerRunner"/>
     <bean id="cargoDeployerRunner" class="jetbrains.buildServer.deployer.agent.cargo.CargoDeployerRunner"/>
 </beans>
