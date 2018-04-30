@@ -89,11 +89,11 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       return BuildFinishedStatus.FINISHED_SUCCESS;
     } catch (JSchException e) {
       myLogger.error(e.toString());
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing SCP command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException e) {
       myLogger.error(e.toString());
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing SCP command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       if (session != null) {

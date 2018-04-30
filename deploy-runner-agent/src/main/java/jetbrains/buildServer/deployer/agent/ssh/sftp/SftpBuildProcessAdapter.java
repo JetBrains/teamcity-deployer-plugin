@@ -76,11 +76,11 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (JSchException e) {
       myLogger.error(e.toString());
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing SFTP command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (SftpException e) {
       myLogger.error(e.toString());
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing SFTP command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       if (session != null) {

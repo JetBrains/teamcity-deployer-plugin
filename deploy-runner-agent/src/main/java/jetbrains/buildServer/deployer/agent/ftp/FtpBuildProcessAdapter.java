@@ -155,11 +155,11 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         myLogger.error("Failed to setup SSL connection. Looks like target's certificate is not trusted.\n" +
             "See Oracle's documentation on how to import the certificate as a Trusted Certificate.");
       }
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("SSL error executing FTP command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException e) {
       myLogger.error(e.toString());
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing FTP command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       try {

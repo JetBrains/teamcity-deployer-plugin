@@ -96,7 +96,7 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException e) {
       myLogger.error(e.toString());
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing SMB command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     }
   }

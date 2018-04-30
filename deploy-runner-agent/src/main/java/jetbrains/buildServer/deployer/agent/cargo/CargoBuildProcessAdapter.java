@@ -120,7 +120,7 @@ public class CargoBuildProcessAdapter extends SyncBuildProcessAdapter {
     } catch (CargoException e) {
       final String message = extractMessage(e);
       myLogger.error(message);
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing Cargo command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     }
     return BuildFinishedStatus.FINISHED_SUCCESS;

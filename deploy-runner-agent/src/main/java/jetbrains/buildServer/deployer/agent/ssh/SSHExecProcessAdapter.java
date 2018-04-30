@@ -54,7 +54,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
       return executeCommand(session, myPty, myCommands);
     } catch (JSchException e) {
       myLogger.error(e.toString());
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing SSH command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       if (session != null) {
@@ -117,7 +117,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
         outputGobbler.join();
         outputGobbler.join();
       } catch (InterruptedException e) {
-        LOG.warnAndDebugDetails(e.getMessage(), e);
+        LOG.warnAndDebugDetails("SSH command interrupted", e);
       }
 
       if (isInterrupted()) {
@@ -125,7 +125,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
       }
     } catch (IOException e) {
       myLogger.error(e.toString());
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing SSH command", e);
       result = BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       if (channel != null) {
