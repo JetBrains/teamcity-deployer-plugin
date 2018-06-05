@@ -1,7 +1,9 @@
 package jetbrains.buildServer.deployer.agent.smb;
 
 import com.hierynomus.msdtyp.AccessMask;
+import com.hierynomus.mssmb.SMB1NotSupportedException;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
+import com.hierynomus.protocol.transport.TransportException;
 import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.SmbConfig;
 import com.hierynomus.smbj.auth.AuthenticationContext;
@@ -65,36 +67,35 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
 
   @Override
   public BuildFinishedStatus runProcess() {
+    String target;
+    if (myTarget.startsWith("\\\\")) {
+      target = myTarget.substring(2);
+    } else {
+      target = myTarget;
+    }
 
-    SmbConfig config = SmbConfig
-            .builder()
-            .withMultiProtocolNegotiate(true)
-            .withSigningRequired(true).build();
+    target = target.replaceAll("/", "\\");
 
-    SMBClient client = new SMBClient(config);
+    final String settingsString = "Trying to connect with following parameters:\n" +
+            "username=[" + myUsername + "]\n" +
+            "domain=[" + (myDomain == null ? "" : myDomain) + "]\n" +
+            "target=[" + target + "]";
+
+    Loggers.AGENT.debug(settingsString);
+    myLogger.message("Starting upload via SMB to " + myTarget);
+
+    final List<String> components = StringUtil.split(target, "\\");
+    final String host = components.remove(0);
+    final String shareName = components.remove(0);
+    final String pathInShare = StringUtil.join(components, "\\");
+
     try {
+      SmbConfig config = SmbConfig
+              .builder()
+              .withMultiProtocolNegotiate(true)
+              .withSigningRequired(true).build();
 
-      String target;
-      if (myTarget.startsWith("\\\\")) {
-        target = myTarget.substring(2);
-      } else {
-        target = myTarget;
-      }
-
-      target = target.replaceAll("/", "\\");
-
-      final String settingsString = "Trying to connect with following parameters:\n" +
-              "username=[" + myUsername + "]\n" +
-              "domain=[" + (myDomain == null ? "" : myDomain) + "]\n" +
-              "target=[" + target + "]";
-
-      Loggers.AGENT.debug(settingsString);
-      myLogger.message("Starting upload via SMB to " + myTarget);
-
-      final List<String> components = StringUtil.split(target, "\\");
-      final String host = components.remove(0);
-      final String shareName = components.remove(0);
-      final String pathInShare = StringUtil.join(components, "\\");
+      SMBClient client = new SMBClient(config);
 
       Connection connection = client.connect(host);
       Session session = connection.authenticate(new AuthenticationContext(myUsername, myPassword.toCharArray(), myDomain));
@@ -113,6 +114,14 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
       }
 
       return BuildFinishedStatus.FINISHED_SUCCESS;
+    } catch (TransportException e) {
+      if (hasCauseOfType(SMB1NotSupportedException.class, e)) {
+        myLogger.error("The remote host [" + host + "] does not support SMBv2 or support was explicitly disabled. Please, check the remote host configuration");
+      } else {
+        myLogger.error(e.toString());
+      }
+      LOG.warnAndDebugDetails(e.getMessage(), e);
+      return BuildFinishedStatus.FINISHED_FAILED;
     } catch (UploadInterruptedException e) {
       myLogger.warning("SMB upload interrupted.");
       return BuildFinishedStatus.FINISHED_FAILED;
@@ -121,6 +130,21 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
       LOG.warnAndDebugDetails(e.getMessage(), e);
       return BuildFinishedStatus.FINISHED_FAILED;
     }
+  }
+
+  private boolean hasCauseOfType(@NotNull Class<? extends Throwable> exceptionClass, @NotNull Throwable e) {
+    Throwable current = e;
+    if (exceptionClass.isAssignableFrom(e.getClass())) {
+      return true;
+    }
+
+    while (current != null && current.getCause() != current) {
+      if (exceptionClass.isAssignableFrom(current.getClass())) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
   }
 
   private void maybeCreate(@NotNull final DiskShare diskShare, @NotNull final String pathInShare) {
