@@ -22,4 +22,6 @@ public class DeployerRunnerConstants {
   public static final String PARAM_SOURCE_PATH = "jetbrains.buildServer.deployer.sourcePath";
   public static final String PARAM_CONTAINER_CONTEXT_PATH = "jetbrains.buildServer.deployer.container.contextPath";
   public static final String PARAM_CONTAINER_TYPE = "jetbrains.buildServer.deployer.container.type";
+
+  public static final String BUILD_PROBLEM_TYPE = "jetbrains.buildServer.deployer";
 }

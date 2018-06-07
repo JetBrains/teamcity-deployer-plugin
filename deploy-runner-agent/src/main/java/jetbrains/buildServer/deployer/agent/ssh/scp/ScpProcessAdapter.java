@@ -22,6 +22,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.logBuildProblem;
+
 public class ScpProcessAdapter extends SyncBuildProcessAdapter {
 
   private static final Logger LOG = Logger.getInstance(ScpProcessAdapter.class.getName());
@@ -88,11 +90,11 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
 
       return BuildFinishedStatus.FINISHED_SUCCESS;
     } catch (JSchException e) {
-      myLogger.error(e.toString());
+      logBuildProblem(myLogger, e.getMessage());
       LOG.warnAndDebugDetails("Error executing SCP command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException e) {
-      myLogger.error(e.toString());
+      logBuildProblem(myLogger, e.getMessage());
       LOG.warnAndDebugDetails("Error executing SCP command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } finally {

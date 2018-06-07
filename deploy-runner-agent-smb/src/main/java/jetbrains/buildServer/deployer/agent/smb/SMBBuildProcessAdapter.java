@@ -7,6 +7,7 @@ import jcifs.smb.SmbFile;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import jetbrains.buildServer.deployer.agent.DeployerAgentUtils;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.log.Loggers;
@@ -95,7 +96,7 @@ public class SMBBuildProcessAdapter extends SyncBuildProcessAdapter {
       myLogger.warning("SMB upload interrupted.");
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException e) {
-      myLogger.error(e.toString());
+      DeployerAgentUtils.logBuildProblem(myLogger, e.getMessage());
       LOG.warnAndDebugDetails("Error executing SMB command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     }

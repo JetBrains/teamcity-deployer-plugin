@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import static com.hierynomus.mssmb2.SMB2CreateDisposition.FILE_OVERWRITE_IF;
+import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.logBuildProblem;
 
 
 @SuppressWarnings("unused") // used via reflection
@@ -109,24 +110,28 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
         }
 
       } else {
-        myLogger.error("Shared resource [" + shareName + "] is not a folder, can not upload files.");
+        logBuildProblem(myLogger, "Shared resource [" + shareName + "] is not a folder, can not upload files.");
         return BuildFinishedStatus.FINISHED_FAILED;
       }
 
       return BuildFinishedStatus.FINISHED_SUCCESS;
     } catch (TransportException e) {
+
+      final String message;
       if (hasCauseOfType(SMB1NotSupportedException.class, e)) {
-        myLogger.error("The remote host [" + host + "] does not support SMBv2 or support was explicitly disabled. Please, check the remote host configuration");
+        message = "The remote host [" + host + "] does not support SMBv2 or support was explicitly disabled. Please, check the remote host configuration";
       } else {
-        myLogger.error(e.toString());
+        message = e.getMessage();
       }
+      logBuildProblem(myLogger, message);
+
       LOG.warnAndDebugDetails(e.getMessage(), e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (UploadInterruptedException e) {
       myLogger.warning("SMB upload interrupted.");
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException | SMBRuntimeException e) {
-      myLogger.error(e.toString());
+      logBuildProblem(myLogger, e.getMessage());
       LOG.warnAndDebugDetails(e.getMessage(), e);
       return BuildFinishedStatus.FINISHED_FAILED;
     }
