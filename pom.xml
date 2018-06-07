@@ -7,6 +7,7 @@
     <packaging>pom</packaging>
     <properties>
       <teamcity-version>9.1.6</teamcity-version>
+        <teamcityDir>../teamcity</teamcityDir>
     </properties>
     <repositories>
         <repository>
@@ -57,7 +58,7 @@
                     <artifactId>teamcity-sdk-maven-plugin</artifactId>
                     <version>0.2</version>
                     <configuration>
-                        <teamcityDir>C:/work/tc-servers/TeamCity-2017.1.2</teamcityDir> <!-- optional -->
+                        <teamcityDir>${teamcityDir}</teamcityDir> <!-- optional -->
                     </configuration>
                 </plugin>
             </plugins>
