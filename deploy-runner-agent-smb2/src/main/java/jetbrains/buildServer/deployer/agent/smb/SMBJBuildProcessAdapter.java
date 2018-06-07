@@ -194,7 +194,7 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
 
       maybeCreate(share, targetPath);
 
-      final String targetName = targetPath + "\\" + source.getName();
+      final String targetName = (targetPath.length() > 0 ? targetPath + "\\" : "") + source.getName();
       final com.hierynomus.smbj.share.File targetFile = share.openFile(targetName,
               EnumSet.of(AccessMask.GENERIC_WRITE),
               null,
