@@ -125,14 +125,14 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
       }
       logBuildProblem(myLogger, message);
 
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing SMB command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (UploadInterruptedException e) {
       myLogger.warning("SMB upload interrupted.");
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException | SMBRuntimeException e) {
       logBuildProblem(myLogger, e.getMessage());
-      LOG.warnAndDebugDetails(e.getMessage(), e);
+      LOG.warnAndDebugDetails("Error executing SMB command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     }
   }
