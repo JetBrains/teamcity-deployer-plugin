@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.logBuildProblem;
+
 
 class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
@@ -53,7 +55,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
       session = myProvider.getSession();
       return executeCommand(session, myPty, myCommands);
     } catch (JSchException e) {
-      myLogger.error(e.toString());
+      logBuildProblem(myLogger, e.getMessage());
       LOG.warnAndDebugDetails("Error executing SSH command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } finally {
@@ -125,7 +127,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
       }
     } catch (IOException e) {
       myLogger.error(e.toString());
-      LOG.warnAndDebugDetails("Error executing SSH command", e);
+      LOG.warnAndDebugDetails(e.getMessage(), e);
       result = BuildFinishedStatus.FINISHED_FAILED;
     } finally {
       if (channel != null) {
@@ -136,7 +138,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
             logExitCodeBuildProblem(exitCode);
             result = BuildFinishedStatus.FINISHED_WITH_PROBLEMS;
           } else {
-            myLogger.error("SSH exit-code [" + exitCode + "]");
+            logBuildProblem(myLogger, "SSH exit-code [" + exitCode + "]");
           }
         } else {
           myLogger.message("SSH exit-code [" + exitCode + "]");

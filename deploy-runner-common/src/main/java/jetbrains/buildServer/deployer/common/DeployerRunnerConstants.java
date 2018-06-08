@@ -7,6 +7,7 @@ package jetbrains.buildServer.deployer.common;
 public class DeployerRunnerConstants {
   public static final String SSH_RUN_TYPE = "ssh-deploy-runner";
   public static final String SMB_RUN_TYPE = "smb-deploy-runner";
+  public static final String SMB2_RUN_TYPE = "smb2-deploy-runner";
   public static final String FTP_RUN_TYPE = "ftp-deploy-runner";
   public static final String TOMCAT_RUN_TYPE = "tomcat-deploy-runner";
   public static final String CARGO_RUN_TYPE = "cargo-deploy-runner";
@@ -21,4 +22,6 @@ public class DeployerRunnerConstants {
   public static final String PARAM_SOURCE_PATH = "jetbrains.buildServer.deployer.sourcePath";
   public static final String PARAM_CONTAINER_CONTEXT_PATH = "jetbrains.buildServer.deployer.container.contextPath";
   public static final String PARAM_CONTAINER_TYPE = "jetbrains.buildServer.deployer.container.type";
+
+  public static final String BUILD_PROBLEM_TYPE = "jetbrains.buildServer.deployer";
 }

@@ -31,6 +31,7 @@
                         </includes>
                         <excludes>
                             <exclude>jcifs:jcifs</exclude>
+                            <exclude>com.hierynomus:smbj</exclude>
                         </excludes>
                     </dependencySet>
                 </dependencySets>
@@ -48,6 +49,23 @@
                     <dependencySet>
                         <includes>
                             <include>jcifs:jcifs</include>
+                        </includes>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
+        <moduleSet>
+            <useAllReactorProjects>true</useAllReactorProjects>
+            <includes>
+                <include>jetbrains.buildServer.deployer:deploy-runner-agent-smb2</include>
+            </includes>
+            <binaries>
+                <outputDirectory>smb2Lib</outputDirectory>
+                <unpack>false</unpack>
+                <dependencySets>
+                    <dependencySet>
+                        <includes>
+                            <include>com.hierynomus:smbj</include>
                         </includes>
                     </dependencySet>
                 </dependencySets>

@@ -23,6 +23,8 @@ import java.net.URLDecoder;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.logBuildProblem;
+
 
 class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private static final String FTP_PROTOCOL = "ftp://";
@@ -90,10 +92,9 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
       final boolean loginSuccessful = client.login(myUsername, myPassword);
       if (!loginSuccessful) {
-        myLogger.error("Failed to login. Reply was: " + client.getReplyString());
+        logBuildProblem(myLogger, "Failed to login. Reply was: " + client.getReplyString());
         return BuildFinishedStatus.FINISHED_FAILED;
       }
-
 
       boolean isAutoType = false;
       if (FTPRunnerConstants.TRANSFER_MODE_BINARY.equals(myTransferMode)) {
@@ -152,13 +153,13 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (SSLException e) {
       if (e.getMessage().contains("unable to find valid certification path to requested target")) {
-        myLogger.error("Failed to setup SSL connection. Looks like target's certificate is not trusted.\n" +
+        logBuildProblem(myLogger,"Failed to setup SSL connection. Looks like target's certificate is not trusted.\n" +
             "See Oracle's documentation on how to import the certificate as a Trusted Certificate.");
       }
       LOG.warnAndDebugDetails("SSL error executing FTP command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } catch (IOException e) {
-      myLogger.error(e.toString());
+      logBuildProblem(myLogger, e.getMessage());
       LOG.warnAndDebugDetails("Error executing FTP command", e);
       return BuildFinishedStatus.FINISHED_FAILED;
     } finally {

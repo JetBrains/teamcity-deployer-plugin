@@ -7,6 +7,7 @@
     <packaging>pom</packaging>
     <properties>
       <teamcity-version>9.1.6</teamcity-version>
+        <teamcityDir>../teamcity</teamcityDir>
     </properties>
     <repositories>
         <repository>
@@ -57,7 +58,7 @@
                     <artifactId>teamcity-sdk-maven-plugin</artifactId>
                     <version>0.2</version>
                     <configuration>
-                        <teamcityDir>../TC_Servers/TeamCity_8.1</teamcityDir> <!-- optional -->
+                        <teamcityDir>${teamcityDir}</teamcityDir> <!-- optional -->
                     </configuration>
                 </plugin>
             </plugins>
@@ -66,6 +67,7 @@
     <modules>
         <module>deploy-runner-server</module>
         <module>deploy-runner-agent-smb</module>
+        <module>deploy-runner-agent-smb2</module>
         <module>deploy-runner-agent</module>
         <module>deploy-runner-common</module>
         <module>build</module>

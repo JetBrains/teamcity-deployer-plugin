@@ -13,9 +13,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.logBuildProblem;
 import static jetbrains.buildServer.util.FileUtil.getExtension;
 
 /**
@@ -109,11 +115,11 @@ abstract class InterruptibleUploadProcess implements Runnable {
       }
       myFinishStatus.set(BuildFinishedStatus.FINISHED_SUCCESS);
     } catch (FailureDetectedException t) {
-      myLogger.error(t.getMessage());
+      logBuildProblem(myLogger, t.getMessage());
       LOG.debug(t.getMessage(), t);
       myFinishStatus.set(BuildFinishedStatus.FINISHED_FAILED);
     } catch (IOException t) {
-      myLogger.error(t.getMessage());
+      logBuildProblem(myLogger, t.getMessage());
       LOG.debug(t.getMessage(), t);
       myFinishStatus.set(BuildFinishedStatus.FINISHED_FAILED);
     }
