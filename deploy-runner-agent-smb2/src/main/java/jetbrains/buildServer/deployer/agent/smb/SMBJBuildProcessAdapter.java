@@ -75,7 +75,7 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
       target = myTarget;
     }
 
-    target = target.replaceAll("/", "\\");
+    target = target.replaceAll("/", "\\\\");
 
     final String settingsString = "Trying to connect with following parameters:\n" +
             "username=[" + myUsername + "]\n" +
