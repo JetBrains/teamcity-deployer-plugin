@@ -4,10 +4,7 @@ import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.BuildServerAdapter;
-import jetbrains.buildServer.serverSide.SBuildRunnerDescriptor;
-import jetbrains.buildServer.serverSide.SBuildServer;
-import jetbrains.buildServer.serverSide.SBuildType;
+import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,12 +21,15 @@ public class DeployerSettingsConverter extends BuildServerAdapter {
 
   public DeployerSettingsConverter(@NotNull SBuildServer server) {
     myServer = server;
-    myServer.addListener(this);
+
+    if (TeamCityProperties.getBoolean("teamcity.deployer.passwordParametersConverter.enabled")) {
+      myServer.addListener(this);
+    }
   }
 
 
   @Override
-  public void buildTypeRegistered(SBuildType buildType) {
+  public void buildTypeRegistered(@NotNull SBuildType buildType) {
     boolean persistBuildType = false;
     for (SBuildRunnerDescriptor descriptor : buildType.getBuildRunners()) {
       boolean runnerUpdated = false;
