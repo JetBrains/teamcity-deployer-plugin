@@ -15,6 +15,7 @@ public class DeployerRunnerConstants {
 
   public static final String PARAM_USERNAME = "jetbrains.buildServer.deployer.username";
   public static final String PARAM_PASSWORD = "secure:jetbrains.buildServer.deployer.password";
+  @Deprecated
   public static final String PARAM_PLAIN_PASSWORD = "jetbrains.buildServer.deployer.password";
   @Deprecated
   public static final String PARAM_DOMAIN = "jetbrains.buildServer.deployer.domain";

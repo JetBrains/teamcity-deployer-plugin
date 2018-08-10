@@ -11,6 +11,7 @@ public class SSHRunnerConstants {
 
   public static final String SSH_EXEC_RUN_TYPE = "ssh-exec-runner";
 
+  @Deprecated
   public static final String PARAM_HOST = "jetbrains.buildServer.sshexec.host";
   public static final String PARAM_PORT = "jetbrains.buildServer.sshexec.port";
   @Deprecated
