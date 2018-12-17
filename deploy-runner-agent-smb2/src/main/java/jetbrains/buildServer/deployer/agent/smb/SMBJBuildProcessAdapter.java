@@ -83,7 +83,7 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
             "target=[" + target + "]";
 
     Loggers.AGENT.debug(settingsString);
-    myLogger.message("Starting upload via SMB to " + myTarget);
+    myLogger.message("Starting upload via SMBj to " + myTarget);
 
     final List<String> components = StringUtil.split(target, "\\");
     final String host = components.remove(0);
