@@ -117,7 +117,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
       errGobbler.notifyProcessExit();
       try {
         outputGobbler.join();
-        outputGobbler.join();
+        errGobbler.join();
       } catch (InterruptedException e) {
         LOG.warnAndDebugDetails("SSH command interrupted", e);
       }
