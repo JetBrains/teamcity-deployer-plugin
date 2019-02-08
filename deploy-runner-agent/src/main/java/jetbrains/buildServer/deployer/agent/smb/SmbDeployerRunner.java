@@ -9,8 +9,10 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.agent.plugins.beans.PluginDescriptor;
 import jetbrains.buildServer.deployer.agent.base.BaseDeployerRunner;
 import jetbrains.buildServer.deployer.common.SMBRunnerConstants;
+import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.Converter;
+import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -50,14 +52,31 @@ public class SmbDeployerRunner extends BaseDeployerRunner {
         actualUsername = username;
       }
 
-      final boolean java7 = SystemInfo.isJavaVersionAtLeast("1.7.0");
+      if (shouldEnforceSMBv1(context)) {
+        context.getBuild().getBuildLogger().warning("Enforced deprecated SMB v1 usage");
+        return getSmbV1Process(context, actualUsername, password, domain, target, artifactsCollections);
+      }
 
-      return java7 ? getSmbV2Process(context, actualUsername, password, domain, target,artifactsCollections)
-              : getSmbV1Process(context, actualUsername, password, domain, target, artifactsCollections);
+      if (SystemInfo.isJavaVersionAtLeast("1.7.0")) {
+          context.getBuild().getBuildLogger().message("With SMB2//SMB3 usage");
+          return getSmbV2Process(context, actualUsername, password, domain, target,artifactsCollections);
+      } else {
+        context.getBuild().getBuildLogger().warning("Falling back to deprecated SMB v1. Update jvm to 1.7+ to use SMB v2");
+        return getSmbV1Process(context, actualUsername, password, domain, target, artifactsCollections);
+      }
 
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private boolean shouldEnforceSMBv1(@NotNull final BuildRunnerContext context) {
+    boolean shouldEnforceOnBuild = StringUtil.isTrue(context.getRunnerParameters().get(SMBRunnerConstants.SHOULD_ENFORCE_SMB1));
+    if (shouldEnforceOnBuild) {
+      return true;
+    }
+
+    return TeamCityProperties.getBoolean(SMBRunnerConstants.SHOULD_ENFORCE_SMB1);
   }
 
   private BuildProcess getSmbV2Process(@NotNull final BuildRunnerContext context,
@@ -79,8 +98,6 @@ public class SmbDeployerRunner extends BaseDeployerRunner {
                                        @NotNull final String domain,
                                        @NotNull final String target,
                                        @NotNull final List<ArtifactsCollection> artifactsCollections) throws Exception {
-    context.getBuild().getBuildLogger().warning("Falling back to deprecated SMB v1. Update jvm to 1.7+ to use SMB v2");
-
     final ClassLoader processClassloader = loadClassesFrom("smbLib");
     final Class smbBuildProcessClass = processClassloader.loadClass("jetbrains.buildServer.deployer.agent.smb.SMBBuildProcessAdapter");
 

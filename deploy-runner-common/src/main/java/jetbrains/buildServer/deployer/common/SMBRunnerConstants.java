@@ -6,4 +6,5 @@ package jetbrains.buildServer.deployer.common;
  */
 public class SMBRunnerConstants {
   public static final String DNS_ONLY_NAME_RESOLUTION = "jetbrains.buildServer.deployer.smb.dns_only";
+  public static final String SHOULD_ENFORCE_SMB1 = "teamcity.deployer.smb.enforceSMBv1";
 }
