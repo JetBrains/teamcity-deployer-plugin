@@ -58,7 +58,7 @@ public class SmbDeployerRunner extends BaseDeployerRunner {
       }
 
       if (SystemInfo.isJavaVersionAtLeast("1.7.0")) {
-          context.getBuild().getBuildLogger().message("With SMB2//SMB3 usage");
+          context.getBuild().getBuildLogger().message("Using SMB v2/v3 protocol");
           return getSmbV2Process(context, actualUsername, password, domain, target,artifactsCollections);
       } else {
         context.getBuild().getBuildLogger().warning("Falling back to deprecated SMB v1. Update jvm to 1.7+ to use SMB v2");
