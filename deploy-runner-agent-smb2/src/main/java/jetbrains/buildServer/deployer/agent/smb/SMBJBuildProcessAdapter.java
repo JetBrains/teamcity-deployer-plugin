@@ -90,7 +90,7 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
 
     final List<String> components = StringUtil.split(target, "\\");
     final String host = components.remove(0);
-    final String shareName = components.remove(0);
+    final String shareName = components.size() > 0 ? components.remove(0) : "";
     final String pathInShare = StringUtil.join(components, "\\");
 
     try {
