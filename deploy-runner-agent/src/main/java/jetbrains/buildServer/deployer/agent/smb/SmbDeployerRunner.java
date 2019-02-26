@@ -71,7 +71,8 @@ public class SmbDeployerRunner extends BaseDeployerRunner {
   }
 
   private boolean shouldEnforceSMBv1(@NotNull final BuildRunnerContext context) {
-    boolean shouldEnforceOnBuild = StringUtil.isTrue(context.getRunnerParameters().get(SMBRunnerConstants.SHOULD_ENFORCE_SMB1));
+    boolean shouldEnforceOnBuild =
+            StringUtil.isTrue(context.getBuild().getSharedConfigParameters().get(SMBRunnerConstants.SHOULD_ENFORCE_SMB1));
     if (shouldEnforceOnBuild) {
       return true;
     }
