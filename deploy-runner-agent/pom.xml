@@ -190,10 +190,11 @@
                 <version>3.3</version>
                 <configuration>
                     <fork>true</fork>
-                    <executable>${java_16}/bin/javac</executable>
                     <source>1.6</source>
                     <target>1.6</target>
-                    <compilerVersion>1.6</compilerVersion>
+                    <testSource>1.8</testSource>
+                    <testTarget>1.8</testTarget>
+                    <compilerVersion>1.8</compilerVersion>
                 </configuration>
             </plugin>
         </plugins>
