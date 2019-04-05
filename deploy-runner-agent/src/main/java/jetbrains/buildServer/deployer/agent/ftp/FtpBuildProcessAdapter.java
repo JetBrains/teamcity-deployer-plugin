@@ -32,6 +32,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private static final Logger LOG = Logger.getInstance(FtpBuildProcessAdapter.class.getName());
   public static final int STREAM_BUFFER_SIZE = 5 * 1024 * 1024; // 5 Mb
   public static final int SOCKET_BUFFER_SIZE = 1024 * 1024; // 1 Mb
+  private static final int DEFAULT_FTP_CLIENT_TIMEOUT = 30 * 1000 * 60; // 30 Min
 
   private final String myTarget;
   private final String myUsername;
@@ -40,6 +41,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private final String myTransferMode;
   private final String mySecureMode;
   private final boolean myIsActive;
+  private int myFtpClientTimeout;
 
   public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                 @NotNull final String target,
@@ -54,6 +56,17 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     myArtifacts = artifactsCollections;
     myTransferMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_TRANSFER_MODE);
     mySecureMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_SSL_MODE);
+    myFtpClientTimeout = getClientTimeout(context);
+  }
+
+  private int getClientTimeout(BuildRunnerContext context) {
+    String timeout = context.getBuild().getSharedConfigParameters().get(FTPRunnerConstants.PARAM_FTP_CLIENT_TIMEOUT);
+    try {
+      int timeoutAsInteger = Integer.valueOf(timeout);
+      return timeoutAsInteger > 0 ? timeoutAsInteger : DEFAULT_FTP_CLIENT_TIMEOUT;
+    } catch (NumberFormatException err) {
+      return DEFAULT_FTP_CLIENT_TIMEOUT;
+    }
   }
 
   @Override
@@ -189,6 +202,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
     client.setBufferSize(FtpBuildProcessAdapter.STREAM_BUFFER_SIZE);
     client.setSendBufferSize(FtpBuildProcessAdapter.SOCKET_BUFFER_SIZE);
+    client.setDefaultTimeout(myFtpClientTimeout);
     return client;
   }
 
