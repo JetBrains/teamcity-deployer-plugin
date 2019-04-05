@@ -46,6 +46,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
   private List<ArtifactsCollection> myArtifactsCollections;
   private BuildRunnerContext myContext;
   private final Map<String, String> myRunnerParameters = new HashMap<String, String>();
+  private final Map<String, String> mySharedConfigParameters = new HashMap<String, String>();
   private List<String> myResultingLog;
 
   @BeforeMethod
@@ -121,6 +122,8 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
       will(returnValue(myRunnerParameters));
       allowing(build).getBuildLogger();
       will(returnValue(logger));
+      allowing(build).getSharedConfigParameters();
+      will(returnValue(mySharedConfigParameters));
     }});
   }
 
@@ -280,7 +283,6 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
     assertThat(process.waitFor()).isEqualTo(BuildFinishedStatus.FINISHED_FAILED);
     assertEquals(FileUtil.listFiles(myRemoteDir).length, 0);
   }
-
 
   private BuildProcess getProcess(String target) {
     return new FtpBuildProcessAdapter(myContext, target, myUsername, myPassword, myArtifactsCollections);
