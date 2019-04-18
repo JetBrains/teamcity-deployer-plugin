@@ -1,12 +1,12 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
 class SSHProcessAdapterOptions {
-  private boolean myEnableSshAgentForwarding;
   private boolean myFailBuildOnExitCode;
+  private boolean myEnableSshAgentForwarding;
 
-  SSHProcessAdapterOptions(boolean myEnableSshAgentForwarding, boolean myFailBuildOnExitCode) {
-    this.myEnableSshAgentForwarding = myEnableSshAgentForwarding;
+  SSHProcessAdapterOptions(boolean myFailBuildOnExitCode, boolean myEnableSshAgentForwarding) {
     this.myFailBuildOnExitCode = myFailBuildOnExitCode;
+    this.myEnableSshAgentForwarding = myEnableSshAgentForwarding;
   }
 
   boolean shouldFailBuildOnExitCode() {
