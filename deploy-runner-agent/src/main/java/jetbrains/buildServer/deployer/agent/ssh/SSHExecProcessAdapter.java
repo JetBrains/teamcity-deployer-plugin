@@ -31,19 +31,19 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
   private final String myCommands;
   private final SSHSessionProvider myProvider;
   private final String myPty;
-  private final boolean myFailOnExitCode;
+  private final SSHProcessAdapterOptions myOptions;
 
 
   public SSHExecProcessAdapter(@NotNull final SSHSessionProvider provider,
                                @NotNull final String commands,
-                               final String pty,
+                               @NotNull final String pty,
                                @NotNull final BuildProgressLogger buildLogger,
-                               final boolean failOnExitCode) {
+                               @NotNull final SSHProcessAdapterOptions options) {
     super(buildLogger);
     myProvider = provider;
     myCommands = commands;
     myPty = pty;
-    myFailOnExitCode = failOnExitCode;
+    myOptions = options;
   }
 
 
@@ -75,6 +75,8 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
         channel.setPty(true);
         channel.setPtyType(pty);
       }
+
+      channel.setAgentForwarding(myOptions.enableSshAgentForwarding());
       channel.setCommand(command);
       final AtomicLong lastOutputTimeStamp = new AtomicLong(System.currentTimeMillis());
 
@@ -134,7 +136,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
         channel.disconnect();
         int exitCode = channel.getExitStatus();
         if (exitCode > 0) {
-          if (myFailOnExitCode) {
+          if (myOptions.shouldFailBuildOnExitCode()) {
             logExitCodeBuildProblem(exitCode);
             result = BuildFinishedStatus.FINISHED_WITH_PROBLEMS;
           } else {

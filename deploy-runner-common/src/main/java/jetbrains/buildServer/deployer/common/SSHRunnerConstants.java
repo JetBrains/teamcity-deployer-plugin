@@ -34,6 +34,8 @@ public class SSHRunnerConstants {
   public static final String AUTH_METHOD_SSH_AGENT = "SSH_AGENT";
   public static final String AUTH_METHOD_UPLOADED_KEY = "UPLOADED_KEY";
 
+  public static final String ENABLE_SSH_AGENT_FORWARDING = "teamcity.deployer.ssh.enableAgentForwarding";
+
   public String getTransportType() {
     return PARAM_TRANSPORT;
   }
