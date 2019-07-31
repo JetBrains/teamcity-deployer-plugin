@@ -113,6 +113,9 @@ public class SSHSessionProvider {
     } else if (SSHRunnerConstants.AUTH_METHOD_UPLOADED_KEY.equals(authMethod)) {
 
       final String keyId = context.getRunnerParameters().get("teamcitySshKey");
+      if (StringUtil.isEmptyOrSpaces(keyId)) {
+        throw new JSchException("SSH key is not specified");
+      }
       return initSessionUploadedKey(username, password, keyId, jsch);
 
     } else {
