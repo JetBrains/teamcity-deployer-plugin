@@ -70,7 +70,7 @@ public class BaseSSHTest extends BaseDeployerTest {
   public void setUp() throws Exception {
     super.setUp();
 
-    myRemoteDir = myTempFiles.createTempDir();
+    myRemoteDir = createTempDir();
 
     myServer = SshServer.setUpDefaultServer();
     testPort = NetworkUtil.getFreePort(SSH_DEFAULT_PORT);
@@ -104,7 +104,7 @@ public class BaseSSHTest extends BaseDeployerTest {
     myContext = mockeryCtx.mock(BuildRunnerContext.class);
     final AgentRunningBuild build = mockeryCtx.mock(AgentRunningBuild.class);
     final BuildProgressLogger logger = new NullBuildProgressLogger();
-    myWorkingDir = myTempFiles.createTempDir();
+    myWorkingDir = createTempDir();
 
     mySshKeyManager = mockeryCtx.mock(AgentRunningBuildSshKeyManager.class);
     final TeamCitySshKey sshKey = new TeamCitySshKey("Name", FileUtil.loadFileBytes(myPrivateKey), false);

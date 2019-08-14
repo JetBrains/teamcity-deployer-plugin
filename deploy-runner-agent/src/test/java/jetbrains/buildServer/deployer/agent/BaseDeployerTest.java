@@ -1,40 +1,19 @@
 package jetbrains.buildServer.deployer.agent;
 
+import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.TempFiles;
 import jetbrains.buildServer.TestLogger;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
+import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by Nikita.Skvortsov
  * date: 08.07.2014.
  */
-public class BaseDeployerTest {
-
+public class BaseDeployerTest extends BaseTestCase {
   protected static final int DEPLOYER_DEFAULT_PORT = 55369;
-
-  private TestLogger myLogger = new TestLogger();
-  protected TempFiles myTempFiles = new TempFiles();
-
-
-  @BeforeClass
-  public void setUpClass() {
-    myLogger.onSuiteStart();
-  }
-
-  @BeforeMethod
-  public void setUp() throws Exception {
-    myLogger.onTestStart();
-  }
-
-  @AfterMethod
-  public void tearDown() throws Exception {
-    myTempFiles.cleanup();
-    myLogger.onTestFinish(false);
-  }
 
   protected File getTestResource(String fileName) {
     final String pathInBuildAgentModule = "src/test/resources/" + fileName;
@@ -43,5 +22,14 @@ public class BaseDeployerTest {
       file = new File("deploy-runner-agent/" + pathInBuildAgentModule);
     }
     return file;
+  }
+
+  protected DeployTestUtils.TempFilesFactory createTempFilesFactory() {
+    return new DeployTestUtils.TempFilesFactory() {
+      @Override
+      public File createTempFile(int size) throws IOException {
+        return BaseDeployerTest.this.createTempFile(size);
+      }
+    };
   }
 }

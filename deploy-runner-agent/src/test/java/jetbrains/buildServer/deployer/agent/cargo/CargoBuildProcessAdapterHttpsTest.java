@@ -49,8 +49,8 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
   @Override
   public void setUp() throws Exception {
 
-    final File extractDir = myTempFiles.createTempDir();
-    final File cfgDir = myTempFiles.createTempDir();
+    final File extractDir = createTempDir();
+    final File cfgDir = createTempDir();
 
     final String fileName = "apache-tomcat-7.0.54.zip";
     final File zipDistribution = getTestResource(fileName);
@@ -82,7 +82,7 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
     myContext = mockeryCtx.mock(BuildRunnerContext.class);
     final AgentRunningBuild build = mockeryCtx.mock(AgentRunningBuild.class);
     final BuildProgressLogger logger = new NullBuildProgressLogger();
-    workingDir = myTempFiles.createTempDir();
+    workingDir = createTempDir();
 
     mockeryCtx.checking(new Expectations() {{
       allowing(myContext).getWorkingDirectory();
@@ -108,6 +108,7 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
 
   @Test
   public void testSimpleDeploy() throws Exception {
+    enableDebug();
     deployTestResourceAsArtifact("simple.war", "simple.war");
     assertUrlReturns(new URL("https://localhost:" + testPort + "/simple"), "Hello!  The time is now");
   }
@@ -115,7 +116,7 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
   private void assertUrlReturns(URL url, String expected2) throws IOException {
     final InputStream stream2 = url.openStream();
     final String text2 = StreamUtil.readText(stream2);
-    assertThat(text2).contains(expected2);
+    assertTrue(text2.contains(expected2));
   }
 
 
