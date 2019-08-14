@@ -1,8 +1,6 @@
 package jetbrains.buildServer.deployer.agent;
 
 import jetbrains.buildServer.BaseTestCase;
-import jetbrains.buildServer.TempFiles;
-import jetbrains.buildServer.TestLogger;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 
 import java.io.File;
