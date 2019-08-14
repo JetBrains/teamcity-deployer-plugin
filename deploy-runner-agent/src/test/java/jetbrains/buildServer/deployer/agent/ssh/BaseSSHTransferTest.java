@@ -1,5 +1,6 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
+import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.agent.BuildProcess;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 import org.testng.annotations.Test;
@@ -16,7 +17,7 @@ public abstract class BaseSSHTransferTest extends BaseSSHTest {
 
   @Test
   public void testSimpleTransfer() throws Exception {
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));
     final BuildProcess process = getProcess(HOST_ADDR);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
@@ -25,7 +26,7 @@ public abstract class BaseSSHTransferTest extends BaseSSHTest {
   @Test
   public void testTransferToRelativePath() throws Exception {
     final String subPath = "test_path/subdir";
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));
     final BuildProcess process = getProcess(HOST_ADDR + ":" + subPath);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
@@ -34,7 +35,7 @@ public abstract class BaseSSHTransferTest extends BaseSSHTest {
   @Test
   public void testTransferToRelativeTargetAndEmptyPath() throws Exception {
     final String subPath = "test_path/subdir";
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, ""));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), ""));
     final BuildProcess process = getProcess(HOST_ADDR + ":" + subPath);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
@@ -42,9 +43,9 @@ public abstract class BaseSSHTransferTest extends BaseSSHTest {
 
   @Test
   public void testTransferAbsoluteBasePath() throws Exception {
-    final File absDestination = new File(myTempFiles.createTempDir(), "sub/path");
+    final File absDestination = new File(createTempDir(), "sub/path");
     final String absPath = absDestination.getCanonicalPath();
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));
     final BuildProcess process = getProcess(HOST_ADDR + ":" + absPath);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(absDestination, myArtifactsCollections);
@@ -61,7 +62,7 @@ public abstract class BaseSSHTransferTest extends BaseSSHTest {
     final File existingDestination = new File(existingPath, artifactDestination);
     assertTrue(existingDestination.mkdirs() || existingDestination.exists());
 
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, artifactDestination, "dest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), artifactDestination, "dest2"));
     final BuildProcess process = getProcess(HOST_ADDR + ":" + uploadDestination);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(existingPath, myArtifactsCollections);

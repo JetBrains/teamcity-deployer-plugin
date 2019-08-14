@@ -58,7 +58,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 
     myRunnerParameters.put(FTPRunnerConstants.PARAM_FTP_MODE, "PASSIVE");
     myArtifactsCollections = new ArrayList<ArtifactsCollection>();
-    myRemoteDir = myTempFiles.createTempDir();
+    myRemoteDir = createTempDir();
     final FtpServerFactory serverFactory = new FtpServerFactory();
 
     final ListenerFactory factory = new ListenerFactory();
@@ -78,7 +78,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
     myServer = serverFactory.createServer();
 
     final PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
-    userManagerFactory.setFile(myTempFiles.createTempFile());
+    userManagerFactory.setFile(createTempFile());
     userManagerFactory.setPasswordEncryptor(new ClearTextPasswordEncryptor());
 
     // init user manager
@@ -111,7 +111,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
         myResultingLog.add(message);
       }
     };
-    final File workingDir = myTempFiles.createTempDir();
+    final File workingDir = createTempDir();
 
     mockeryCtx.checking(new Expectations() {{
       allowing(myContext).getWorkingDirectory();
@@ -136,7 +136,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 
   @Test
   public void testSimpleTransfer() throws Exception {
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles,
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(),
         "dest1",
         "dest2",
         "dest3",
@@ -162,13 +162,13 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
 
-    assertThat(myResultingLog).contains("< and continued >");
+    assertTrue(myResultingLog.contains("< and continued >"));
   }
 
   @Test
   public void testTransferInActiveMode() throws Exception {
     myRunnerParameters.put(FTPRunnerConstants.PARAM_FTP_MODE, "ACTIVE");
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));
     final BuildProcess process = getProcess("127.0.0.1:" + testPort);
     process.start();
     new WaitFor(5000) {
@@ -177,14 +177,14 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
         return process.isFinished();
       }
     };
-    assertThat(process.isFinished()).describedAs("Failed to finish test in time").isTrue();
-    assertThat(process.waitFor()).isEqualTo(BuildFinishedStatus.FINISHED_FAILED);
+    assertTrue("Failed to finish test in time", process.isFinished());
+    assertEquals(BuildFinishedStatus.FINISHED_FAILED, process.waitFor());
   }
 
   @Test
   public void testTransferToRelativePath() throws Exception {
     final String subPath = "test_path/subdir";
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));
     final BuildProcess process = getProcess("127.0.0.1:" + testPort + "/" + subPath);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
@@ -194,7 +194,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
   @Test
   public void testTransferToRelativeSubPath() throws Exception {
     final String subPath = "test_path/subdir";
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1/subdest1", "dest2/subdest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1/subdest1", "dest2/subdest2"));
     final BuildProcess process = getProcess("127.0.0.1:" + testPort + "/" + subPath);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
@@ -202,7 +202,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 
   @Test
   public void testTransferToEmptyPath() throws Exception {
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, ""));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), ""));
     final BuildProcess process = getProcess("127.0.0.1:" + testPort);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
@@ -210,7 +210,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 
   @Test
   public void testTransferToDot() throws Exception {
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "."));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "."));
     final BuildProcess process = getProcess("127.0.0.1:" + testPort);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
@@ -227,7 +227,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
     final File existingDestination = new File(existingPath, artifactDestination);
     assertTrue(existingDestination.mkdirs());
 
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, artifactDestination, "dest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), artifactDestination, "dest2"));
     final BuildProcess process = getProcess("127.0.0.1:" + testPort + "/" + uploadDestination);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(existingPath, myArtifactsCollections);
@@ -261,7 +261,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 //        System.setProperty("javax.net.ssl.trustStorePassword", "password");
 
     myRunnerParameters.put(FTPRunnerConstants.PARAM_SSL_MODE, "2");
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));
     final BuildProcess process = getProcess("localhost:" + testPort);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
@@ -269,7 +269,7 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
 
   @Test
   public void testNotAuthorized() throws Exception {
-    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(myTempFiles, "dest1", "dest2"));
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));
     final BuildProcess process = new FtpBuildProcessAdapter(myContext, "127.0.0.1:" + testPort, myUsername, "wrongpassword", myArtifactsCollections);
 
     process.start();
@@ -279,8 +279,8 @@ public class FtpBuildProcessAdapterTest extends BaseDeployerTest {
         return process.isFinished();
       }
     };
-    assertThat(process.isFinished()).describedAs("Failed to finish test in time").isTrue();
-    assertThat(process.waitFor()).isEqualTo(BuildFinishedStatus.FINISHED_FAILED);
+    assertTrue("Failed to finish test in time", process.isFinished());
+    assertEquals(process.waitFor(), BuildFinishedStatus.FINISHED_FAILED);
     assertEquals(FileUtil.listFiles(myRemoteDir).length, 0);
   }
 

@@ -36,7 +36,7 @@ public class DeployTestUtils {
     assertThat(process.waitFor()).isEqualTo(BuildFinishedStatus.FINISHED_SUCCESS);
   }
 
-  public static ArtifactsCollection buildArtifactsCollection(final TempFiles tempFiles, String... destinationDirs) throws IOException {
+  public static ArtifactsCollection buildArtifactsCollection(final TempFilesFactory tempFiles, String... destinationDirs) throws IOException {
 
     final Map<File, String> filePathMap = new HashMap<File, String>();
     String dirTo = "dirTo";
@@ -65,5 +65,9 @@ public class DeployTestUtils {
         assertEquals(FileUtil.readText(target), FileUtil.readText(source), "wrong content");
       }
     }
+  }
+
+  public interface TempFilesFactory {
+    File createTempFile(int size) throws IOException;
   }
 }
