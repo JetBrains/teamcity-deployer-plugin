@@ -24,9 +24,13 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +48,7 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
   private final Map<String, String> myRunnerParameters = new HashMap<String, String>();
   private InstalledLocalContainer myTomcat;
   private File workingDir;
+  private HostnameVerifier myDefaultHostnameVerifier;
 
   @BeforeMethod
   @Override
@@ -70,6 +75,15 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
     configuration.setProperty(TomcatPropertySet.CONNECTOR_KEY_ALIAS, "localhost");
     configuration.setProperty(TomcatPropertySet.HTTP_SECURE, "true");
     configuration.setProperty(GeneralPropertySet.PROTOCOL, "https");
+
+    myDefaultHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
+
+    HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+      @Override
+      public boolean verify(String s, SSLSession sslSession) {
+        return true; // new versions of Java do not allow to connect to localhost by SSL, here we suppress this behavior
+      }
+    });
 
     myTomcat = (InstalledLocalContainer) new DefaultContainerFactory().createContainer(
         "tomcat7x", ContainerType.INSTALLED, configuration);
@@ -103,6 +117,7 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
   @Override
   public void tearDown() throws Exception {
     myTomcat.stop();
+    HttpsURLConnection.setDefaultHostnameVerifier(myDefaultHostnameVerifier);
     super.tearDown();
   }
 
@@ -122,7 +137,10 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
 
   private void deployTestResourceAsArtifact(String testResourceName, String artifactName) throws IOException, RunBuildException {
     FileUtil.copy(getTestResource(testResourceName), new File(workingDir, artifactName));
-    final BuildProcess process = getProcess("localhost:" + testPort, artifactName);
+    InetAddress addr = NetworkUtil.getSelfAddresses(null)[0];
+    String hostname = addr.getHostName();
+
+    final BuildProcess process = getProcess(hostname + ":" + testPort, artifactName);
     DeployTestUtils.runProcess(process, 5000);
   }
 
