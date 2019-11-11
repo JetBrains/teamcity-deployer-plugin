@@ -50,7 +50,9 @@
         <dependency>
             <groupId>com.hierynomus</groupId>
             <artifactId>smbj</artifactId>
-            <version>0.9.1</version>
+            <version>0.9.2-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/libs/smbj-0.9.2-SNAPSHOT.jar</systemPath>
         </dependency>
 
         <!-- Test -->
