@@ -238,12 +238,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     LOG.info("Uses custom value for " + timeoutName + ": '" + timeoutToParse + "'");
 
     try {
-      int timeoutAsInteger = Integer.parseInt(timeoutToParse);
-      if (timeoutAsInteger > 0) {
-        return timeoutAsInteger;
-      } else {
-        return defaultValue;
-      }
+      return Integer.parseInt(timeoutToParse);
     } catch (NumberFormatException err) {
       LOG.warn("Incorrect format of " + timeoutName + ": '" + timeoutToParse + "'. " +
                        "Expecting single integer value. " +
