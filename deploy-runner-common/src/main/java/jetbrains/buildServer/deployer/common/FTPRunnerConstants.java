@@ -32,5 +32,5 @@ public class FTPRunnerConstants {
   public static final String DATA_CHANNEL_PROTECTION = "jetbrains.buildServer.deployer.ftp.dataChannelProtection";
   public static final String PARAM_FTP_MODE = "jetbrains.buildServer.deployer.ftp.ftpMode";
   public static final String PARAM_FTP_CONNECT_TIMEOUT = "jetbrains.deployer.ftp.connectTimeout";
-  public static final String PARAM_FTP_CONTROL_KEEP_ALIVE_TIMEOUT = "jetbrains.deployer.ftp.controlKeepAliveTimeout";
+  public static final String PARAM_FTP_CONTROL_KEEP_ALIVE_TIMEOUT = "jetbrains.deployer.ftp.controlKeepAliveTimeout.seconds";
 }
