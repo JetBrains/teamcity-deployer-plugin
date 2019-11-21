@@ -16,4 +16,5 @@ public class FTPRunnerConstants {
   public static final String PARAM_FTP_MODE = "jetbrains.buildServer.deployer.ftp.ftpMode";
   public static final String PARAM_FTP_CONNECT_TIMEOUT = "jetbrains.deployer.ftp.connectTimeout";
   public static final String PARAM_FTP_CONTROL_KEEP_ALIVE_TIMEOUT = "jetbrains.deployer.ftp.controlKeepAliveTimeout.seconds";
+  public static final String PARAM_FTP_SOCKET_TIMEOUT = "jetbrains.deployer.ftp.socketTimeout.mills";
 }
