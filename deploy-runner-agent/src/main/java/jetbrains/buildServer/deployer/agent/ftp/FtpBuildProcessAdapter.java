@@ -33,6 +33,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private static final int STREAM_BUFFER_SIZE = 5 * 1024 * 1024; // 5 Mb
   private static final int SOCKET_BUFFER_SIZE = 1024 * 1024; // 1 Mb
   private static final int DEFAULT_FTP_CONNECT_TIMEOUT = 30 * 1000 * 60; // 30 Min
+  private static final int DEFAULT_FTP_CONTROL_KEEP_ALIVE_TIMEOUT = 60; // 60 sec
 
   private final String myTarget;
   private final String myUsername;
@@ -42,6 +43,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private final String mySecureMode;
   private final boolean myIsActive;
   private FtpConnectTimeout myFtpConnectTimeout;
+  private int myControlKeepAliveTimeout;
 
   public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                 @NotNull final String target,
@@ -57,6 +59,24 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     myTransferMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_TRANSFER_MODE);
     mySecureMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_SSL_MODE);
     myFtpConnectTimeout = getConnectTimeout(context);
+    myControlKeepAliveTimeout = getControlKeepAliveTimeout(context);
+  }
+
+  private int getControlKeepAliveTimeout(BuildRunnerContext context) {
+    String timeout = context.getBuild().getSharedConfigParameters()
+            .get(FTPRunnerConstants.PARAM_FTP_CONTROL_KEEP_ALIVE_TIMEOUT);
+    if (timeout == null || timeout.isEmpty()) {
+      return DEFAULT_FTP_CONTROL_KEEP_ALIVE_TIMEOUT;
+    }
+
+    try {
+      return Integer.parseInt(timeout);
+    } catch (NumberFormatException err) {
+      LOG.warn("Incorrect format of controlKeepAliveTimeout '" + timeout + "'. " +
+                       "Expecting single integer value. " +
+                       "Default value " + DEFAULT_FTP_CONTROL_KEEP_ALIVE_TIMEOUT  + "sec was used");
+      return DEFAULT_FTP_CONTROL_KEEP_ALIVE_TIMEOUT;
+    }
   }
 
   private FtpConnectTimeout getConnectTimeout(BuildRunnerContext context) {
@@ -139,7 +159,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         isAutoType = true;
       }
 
-      client.setControlKeepAliveTimeout(60); // seconds
+      client.setControlKeepAliveTimeout(myControlKeepAliveTimeout); // seconds
       AtomicReference<BuildFinishedStatus> processResult = new AtomicReference<BuildFinishedStatus>(BuildFinishedStatus.FINISHED_SUCCESS);
       final Runnable interruptibleBody = new InterruptibleUploadProcess(client, myLogger, myArtifacts, isAutoType, path, processResult) {
         public boolean checkIsInterrupted() {
