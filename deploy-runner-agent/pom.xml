@@ -205,12 +205,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <fork>true</fork>
                     <source>1.8</source>
                     <target>1.8</target>
                     <testSource>1.8</testSource>
                     <testTarget>1.8</testTarget>
-                    <compilerVersion>1.8</compilerVersion>
                 </configuration>
             </plugin>
         </plugins>
