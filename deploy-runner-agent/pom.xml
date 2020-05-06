@@ -206,8 +206,8 @@
                 <version>3.3</version>
                 <configuration>
                     <fork>true</fork>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <testSource>1.8</testSource>
                     <testTarget>1.8</testTarget>
                     <compilerVersion>1.8</compilerVersion>
