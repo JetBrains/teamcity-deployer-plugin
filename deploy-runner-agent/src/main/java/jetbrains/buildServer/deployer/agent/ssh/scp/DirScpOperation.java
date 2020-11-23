@@ -16,6 +16,7 @@
 
 package jetbrains.buildServer.deployer.agent.ssh.scp;
 
+import jetbrains.buildServer.Used;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -81,5 +82,15 @@ class DirScpOperation implements ScpOperation {
     out.write(endDir.getBytes());
     out.flush();
     ScpExecUtil.checkScpAck(in);
+  }
+
+  @Used("test")
+  public String getName() {
+    return myDirName;
+  }
+
+  @Used("test")
+  public List<ScpOperation> getChildOperations() {
+    return myOps;
   }
 }

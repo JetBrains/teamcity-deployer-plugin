@@ -61,27 +61,25 @@ public class ScpOperationBuilder {
   }
 
 
-  private static ScpOperation doCreatePathOperation(@NotNull final String remotePath,
+  static ScpOperation doCreatePathOperation(@NotNull final String remotePath,
                                                     @Nullable final ScpOperation chainTailOperation) {
-    final String normalisedPath = remotePath.replaceAll("\\\\", "/");
-    File remoteDir = new File(normalisedPath);
-    DirScpOperation childOperation = new DirScpOperation(remoteDir.getName());
-    if (null != chainTailOperation) {
-      childOperation.add(chainTailOperation);
-    }
-    remoteDir = remoteDir.getParentFile();
-    String name = remoteDir != null ? remoteDir.getName() : "";
-    while (remoteDir != null && !StringUtil.isEmpty(name)) {
-
-      final DirScpOperation directoryOperation = new DirScpOperation(name);
-      directoryOperation.add(childOperation);
-
-      childOperation = directoryOperation;
-      remoteDir = remoteDir.getParentFile();
-      if (remoteDir != null) {
-        name = remoteDir.getName();
+    String parts[] = remotePath.replace('\\', '/').split("\\/");
+    ScpOperation rootOperation = null;
+    DirScpOperation currentOperation = null;
+    for (String part : parts) {
+      if (!StringUtil.isEmpty(part)) {
+        if (currentOperation == null) {
+          currentOperation = new DirScpOperation(part);
+          rootOperation = currentOperation;
+        } else {
+          DirScpOperation operation = new DirScpOperation(part);
+          currentOperation.add(operation);
+          currentOperation = operation;
+        }
       }
     }
-    return childOperation;
+    if (chainTailOperation != null)
+      currentOperation.add(chainTailOperation);
+    return rootOperation;
   }
 }
