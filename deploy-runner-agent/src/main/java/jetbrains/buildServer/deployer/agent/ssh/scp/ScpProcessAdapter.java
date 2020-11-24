@@ -33,6 +33,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -131,8 +133,8 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       return;
     }
 
-    // exec 'scp -rt <remoteBase>' remotely
-    final String command = "scp -rt " + (StringUtil.isEmptyOrSpaces(escapedRemoteBase) ? "." : escapedRemoteBase);
+    // exec 'scp -prt <remoteBase>' remotely
+    final String command = "scp -prt " + (StringUtil.isEmptyOrSpaces(escapedRemoteBase) ? "." : escapedRemoteBase);
     final ChannelExec execChannel = (ChannelExec) session.openChannel("exec");
     execChannel.setCommand(command);
 
