@@ -78,8 +78,10 @@ public class ScpOperationBuilder {
         }
       }
     }
-    if (chainTailOperation != null)
+    if (chainTailOperation != null && currentOperation != null)
       currentOperation.add(chainTailOperation);
+    if (rootOperation == null)
+      rootOperation = chainTailOperation;
     return rootOperation;
   }
 }

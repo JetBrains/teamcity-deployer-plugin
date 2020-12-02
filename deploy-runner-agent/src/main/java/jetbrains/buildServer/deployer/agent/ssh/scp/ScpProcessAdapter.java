@@ -35,10 +35,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.logBuildProblem;
 
@@ -75,23 +74,37 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       myLogger.message("Starting upload via SCP to " + mySessionProvider.getSessionString());
 
 
-      final List<ArtifactsCollection> relativeDestinations = new LinkedList<ArtifactsCollection>();
-      final List<ArtifactsCollection> absDestinations = new LinkedList<ArtifactsCollection>();
+      final List<ArtifactsCollection> relativeDestinations = new LinkedList<>();
+      final List<ArtifactsCollection> absDestinations = new LinkedList<>();
       boolean isRemoteBaseAbsolute = escapedRemotePath.startsWith("/");
 
+      String escapedRemotePathFromDrive = escapedRemotePath;
+      List<String> filePath = Stream.of(escapedRemotePath.replace('\\', '/').split("\\/"))
+              .filter(it -> !it.isEmpty()).collect(Collectors.toList());
+      String escapedRemoteBase = isRemoteBaseAbsolute ? "/" : ".";
+      if (filePath.size() > 0 && filePath.get(0).matches("\\w\\:")) {
+        // cases to of specific windows drive, like C:
+        escapedRemoteBase = filePath.get(0);
+        isRemoteBaseAbsolute = true;
+        if (filePath.size() > 1) {
+          List<String> remotePathNoDrive = filePath.subList(1, filePath.size());
+          escapedRemotePathFromDrive = String.join("/", remotePathNoDrive);
+        } else
+          escapedRemotePathFromDrive = ".";
+      }
 
       for (ArtifactsCollection artifactsCollection : myArtifacts) {
         if (artifactsCollection.getTargetPath().startsWith("/")) {
           absDestinations.add(new ArtifactsCollection(
               artifactsCollection.getSourcePath(),
               artifactsCollection.getTargetPath(),
-              new HashMap<File, String>(artifactsCollection.getFilePathMap())
+              new HashMap<>(artifactsCollection.getFilePathMap())
           ));
         } else {
-          final Map<File, String> newPathMap = new HashMap<File, String>();
+          final Map<File, String> newPathMap = new HashMap<>();
           for (Map.Entry<File, String> fileTargetEntry : artifactsCollection.getFilePathMap().entrySet()) {
             final String oldTarget = fileTargetEntry.getValue();
-            newPathMap.put(fileTargetEntry.getKey(), escapedRemotePath + "/" + oldTarget);
+            newPathMap.put(fileTargetEntry.getKey(), escapedRemotePathFromDrive + "/" + oldTarget);
           }
           final ArtifactsCollection newCollection = new ArtifactsCollection(artifactsCollection.getSourcePath(), artifactsCollection.getTargetPath(), newPathMap);
           if (isRemoteBaseAbsolute) {
@@ -104,7 +117,7 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       }
 
       upload(session, ".", relativeDestinations);
-      upload(session, "/", absDestinations);
+      upload(session, escapedRemoteBase, absDestinations);
 
       return BuildFinishedStatus.FINISHED_SUCCESS;
     } catch (JSchException e) {

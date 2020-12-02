@@ -63,6 +63,7 @@ class FileScpOperation implements ScpOperation {
     try {
       permission = Files.getPosixFilePermissions(file.toPath(), LinkOption.NOFOLLOW_LINKS);
     } catch (UnsupportedOperationException e) {
+      logger.error("Filesystem doesn't support POSIX file attributes, rolling back to generics.");
       permission = new HashSet<>();
       if (Files.isExecutable(file.toPath())) {
         permission.add(OWNER_EXECUTE);
