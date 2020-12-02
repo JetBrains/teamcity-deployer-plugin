@@ -26,6 +26,10 @@ import java.nio.file.LinkOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.nio.file.attribute.PosixFilePermission.*;
 
 /**
  * Created by Kit
@@ -52,7 +56,12 @@ class FileScpOperation implements ScpOperation {
   }
 
   int getPermissionsFromFile(File file) throws IOException {
-    Set<PosixFilePermission> permission = Files.getPosixFilePermissions(file.toPath(), LinkOption.NOFOLLOW_LINKS);
+    Set<PosixFilePermission> permission;
+    try {
+      permission = Files.getPosixFilePermissions(file.toPath(), LinkOption.NOFOLLOW_LINKS);
+    } catch (UnsupportedOperationException e) {
+      permission = Stream.of(OWNER_READ, OWNER_WRITE, GROUP_READ, OTHERS_READ).collect(Collectors.toSet());
+    }
     AtomicInteger permissionInt = new AtomicInteger(0);
     permission.forEach(p -> {
       switch (p) {
