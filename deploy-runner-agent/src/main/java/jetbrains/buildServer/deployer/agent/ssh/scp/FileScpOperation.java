@@ -18,12 +18,15 @@ package jetbrains.buildServer.deployer.agent.ssh.scp;
 
 import com.intellij.openapi.diagnostic.Logger;
 import jetbrains.buildServer.util.FileUtil;
+import jetbrains.buildServer.util.Hash;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -60,7 +63,22 @@ class FileScpOperation implements ScpOperation {
     try {
       permission = Files.getPosixFilePermissions(file.toPath(), LinkOption.NOFOLLOW_LINKS);
     } catch (UnsupportedOperationException e) {
-      permission = Stream.of(OWNER_READ, OWNER_WRITE, GROUP_READ, OTHERS_READ).collect(Collectors.toSet());
+      permission = new HashSet<>();
+      if (Files.isExecutable(file.toPath())) {
+        permission.add(OWNER_EXECUTE);
+        permission.add(GROUP_EXECUTE);
+        permission.add(OTHERS_EXECUTE);
+      }
+      if (Files.isReadable(file.toPath())) {
+        permission.add(OWNER_READ);
+        permission.add(GROUP_READ);
+        permission.add(OTHERS_READ);
+      }
+      if (Files.isWritable(file.toPath())) {
+        permission.add(OWNER_WRITE);
+        permission.add(GROUP_WRITE);
+        permission.add(OTHERS_WRITE);
+      }
     }
     AtomicInteger permissionInt = new AtomicInteger(0);
     permission.forEach(p -> {
