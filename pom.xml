@@ -170,6 +170,7 @@
                     <version>0.2</version>
                     <configuration>
                         <teamcityDir>${teamcityDir}</teamcityDir> <!-- optional -->
+                        <teamcitySourceURL>https://download-cf.jetbrains.com/teamcity</teamcitySourceURL>
                     </configuration>
                 </plugin>
             </plugins>
