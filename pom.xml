@@ -15,44 +15,139 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>jetbrains.buildServer.deployer</groupId>
     <artifactId>deploy-runner</artifactId>
     <version>0.7-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
-      <teamcity-version>9.1.6</teamcity-version>
+        <teamcity-version>9.1.6</teamcity-version>
         <teamcityDir>../teamcity</teamcityDir>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
     </properties>
-    <repositories>
-        <repository>
-            <id>JetBrains</id>
-            <url>https://download.jetbrains.com/teamcity-repository</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>JetBrains</id>
-            <url>https://download.jetbrains.com/teamcity-repository</url>
-        </pluginRepository>
-    </pluginRepositories>
-    <scm>
-        <connection>scm:git:ssh://git@github.com/nskvortsov/deployer.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/nskvortsov/deployer.git</developerConnection>
-        <url>https://@github.com/nskvortsov/deployer</url>
-        <tag>HEAD</tag>
-    </scm>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>jetbrains.buildServer.deployer</groupId>
+                <artifactId>deploy-runner-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jetbrains.buildServer.deployer</groupId>
+                <artifactId>deploy-runner-agent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jetbrains.buildServer.deployer</groupId>
+                <artifactId>deploy-runner-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.teamcity</groupId>
+                <artifactId>server-api</artifactId>
+                <version>${teamcity-version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.teamcity</groupId>
+                <artifactId>server-web-api</artifactId>
+                <version>${teamcity-version}</version>
+                <type>war</type>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.teamcity</groupId>
+                <artifactId>tests-support</artifactId>
+                <version>${teamcity-version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.teamcity</groupId>
+                <artifactId>agent-api</artifactId>
+                <version>${teamcity-version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.teamcity.internal</groupId>
+                <artifactId>agent</artifactId>
+                <version>${teamcity-version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- third-party deps -->
+            <dependency>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-core-uberjar</artifactId>
+                <version>1.5.0</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>xercesImpl</artifactId>
+                        <groupId>xerces</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>xml-apis</artifactId>
+                        <groupId>xml-apis</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.12</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>6.8</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jmock</groupId>
+                <artifactId>jmock</artifactId>
+                <version>2.5.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.6.4</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>1.6.1</version>
+                <scope>test</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <modules>
+        <module>deploy-runner-server</module>
+        <module>deploy-runner-agent-smb</module>
+        <module>deploy-runner-agent-smb2</module>
+        <module>deploy-runner-agent</module>
+        <module>deploy-runner-common</module>
+        <module>build</module>
+    </modules>
+
     <build>
         <pluginManagement>
             <plugins>
-              <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                  <testFailureIgnore>true</testFailureIgnore>
-                </configuration>
-              </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <testFailureIgnore>true</testFailureIgnore>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
@@ -65,8 +160,8 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
-                      <source>${serverJava}</source>
-                      <target>${serverJava}</target>
+                        <source>${serverJava}</source>
+                        <target>${serverJava}</target>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -80,29 +175,43 @@
             </plugins>
         </pluginManagement>
     </build>
-    <modules>
-        <module>deploy-runner-server</module>
-        <module>deploy-runner-agent-smb</module>
-        <module>deploy-runner-agent-smb2</module>
-        <module>deploy-runner-agent</module>
-        <module>deploy-runner-common</module>
-        <module>build</module>
-    </modules>
-  <profiles>
-    <profile>
-      <id>java_16</id>
-      <properties>
-        <serverJava>1.6</serverJava>
-      </properties>
-    </profile>
-    <profile>
-      <id>java_18</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <serverJava>1.8</serverJava>
-      </properties>
-    </profile>
-  </profiles>
+
+
+    <profiles>
+        <profile>
+            <id>java_16</id>
+            <properties>
+                <serverJava>1.6</serverJava>
+            </properties>
+        </profile>
+        <profile>
+            <id>java_18</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <serverJava>1.8</serverJava>
+            </properties>
+        </profile>
+    </profiles>
+
+    <repositories>
+        <repository>
+            <id>JetBrains</id>
+            <url>https://download.jetbrains.com/teamcity-repository</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>JetBrains</id>
+            <url>https://download.jetbrains.com/teamcity-repository</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <scm>
+        <connection>scm:git:ssh://git@github.com/JetBrains/teamcity-deployer-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/JetBrains/teamcity-deployer-plugin.git</developerConnection>
+        <url>https://github.com/JetBrains/teamcity-deployer-plugin</url>
+        <tag>HEAD</tag>
+    </scm>
 </project>

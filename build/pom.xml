@@ -18,8 +18,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>deploy-runner</artifactId>
         <groupId>jetbrains.buildServer.deployer</groupId>
+        <artifactId>deploy-runner</artifactId>
         <version>0.7-SNAPSHOT</version>
     </parent>
     <artifactId>build</artifactId>
@@ -32,17 +32,14 @@
         <dependency>
             <groupId>jetbrains.buildServer.deployer</groupId>
             <artifactId>deploy-runner-agent</artifactId>
-            <version>0.7-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>jetbrains.buildServer.deployer</groupId>
             <artifactId>deploy-runner-common</artifactId>
-            <version>0.7-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>jetbrains.buildServer.deployer</groupId>
             <artifactId>deploy-runner-server</artifactId>
-            <version>0.7-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>
