@@ -102,7 +102,7 @@ public class SSHSessionProvider {
       final File config = new File(configPath);
       if (config.exists()) {
         myLog.debug("Found config at [" + config.getAbsolutePath() + "], reading.");
-        return initSessionSSHConfig(jsch, config);
+        return initSessionSSHConfig(username, jsch, config);
       } else {
         final String keyPath = holder.getInternalProperty(TEAMCITY_DEPLOYER_SSH_DEFAULT_KEY, myDefaultKeyPath);
         //noinspection ConstantConditions
@@ -140,12 +140,12 @@ public class SSHSessionProvider {
     }
   }
 
-  private Session initSessionSSHConfig(JSch jsch, File config) throws JSchException {
+  private Session initSessionSSHConfig(String username, JSch jsch, File config) throws JSchException {
     final String configPath = config.getAbsolutePath();
     try {
       final OpenSSHConfig sshConfig = OpenSSHConfig.parseFile(configPath);
       jsch.setConfigRepository(sshConfig);
-      final Session session = jsch.getSession(myHost);
+      final Session session = jsch.getSession(username, myHost, myPort);
       session.setConfig("PreferredAuthentications", "publickey");
       return session;
     } catch (IOException e) {
