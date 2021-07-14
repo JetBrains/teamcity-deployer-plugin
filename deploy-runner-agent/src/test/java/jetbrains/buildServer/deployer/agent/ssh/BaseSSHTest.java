@@ -18,6 +18,7 @@ package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
+import com.jcraft.jsch.JSch;
 import jetbrains.buildServer.NetworkUtil;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
@@ -153,6 +154,33 @@ public class BaseSSHTest extends BaseDeployerTest {
 
     myRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, HOST_ADDR);
     myRunnerParams.put(SSHRunnerConstants.PARAM_PORT, String.valueOf(testPort));
+
+    // newer version of JSch has disabled some of the deprecated algorithms
+    // but our SSH server in this test requires them, this is why we have to change JSch config so the JSch client could connect to the server
+    String kex = JSch.getConfig("kex");
+    JSch.setConfig("kex", kex + ",diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1,diffie-hellman-group1-sha1");
+
+    for (String k: Arrays.asList("cipher.s2c","cipher.c2s")) {
+      String val = JSch.getConfig(k);
+      JSch.setConfig(k, val + ",aes128-cbc,aes192-cbc,aes256-cbc,3des-ctr,3des-cbc,blowfish-cbc");
+    }
+
+    String pubKeyVal = JSch.getConfig("PubkeyAcceptedKeyTypes");
+    JSch.setConfig("PubkeyAcceptedKeyTypes", "ssh-rsa,rsa-sha2-256,rsa-sha2-512," + pubKeyVal);
+
+    /* Uncomment to enable JSch debug logging
+    JSch.setLogger(new Logger() {
+      @Override
+      public boolean isEnabled(int level) {
+        return true;
+      }
+
+      @Override
+      public void log(int level, String message) {
+        System.out.println(message);
+      }
+    });
+    */
   }
 
   @AfterMethod

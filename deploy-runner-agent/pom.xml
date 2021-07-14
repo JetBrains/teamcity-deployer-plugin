@@ -52,27 +52,45 @@
         </dependency>
 
         <dependency>
-            <groupId>com.jcraft</groupId>
+            <groupId>com.github.mwiede</groupId>
             <artifactId>jsch</artifactId>
-            <version>0.1.55</version>
+            <version>0.1.63</version>
         </dependency>
 
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch.agentproxy.jsch</artifactId>
             <version>0.0.9</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jcraft</groupId>
+                    <artifactId>jsch</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch.agentproxy.sshagent</artifactId>
             <version>0.0.9</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jcraft</groupId>
+                    <artifactId>jsch</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch.agentproxy.connector-factory</artifactId>
             <version>0.0.9</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jcraft</groupId>
+                    <artifactId>jsch</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
