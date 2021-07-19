@@ -36,6 +36,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 
 public class SSHSessionProvider {
@@ -61,6 +63,8 @@ public class SSHSessionProvider {
                             @NotNull final AgentRunningBuildSshKeyManager sshKeyManager) {
     mySshKeyManager = sshKeyManager;
 
+    initJSchConfig();
+
     final String target = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_TARGET_URL);
     final String portStr = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_PORT);
     try {
@@ -85,6 +89,20 @@ public class SSHSessionProvider {
 
     myContext = context;
     myHolder = holder;
+  }
+
+  private void initJSchConfig() {
+    try {
+      Class initializer = Class.forName("jetbrains.buildServer.util.jsch.JSchConfigInitializer");
+      Method initMethod = initializer.getMethod("initJSchConfig", Class.class);
+      initMethod.invoke(null, JSch.class);
+    } catch (ClassNotFoundException e) {
+      myLog.warn("Could not find 'jetbrains.buildServer.util.jsch.JSchConfigInitializer' class in the classpath, skip JSch config initialization");
+    } catch (NoSuchMethodException e) {
+      myLog.warn("Could not find initJSchConfig method in 'jetbrains.buildServer.util.jsch.JSchConfigInitializer' class, skip JSch config initialization, error: " + e.toString());
+    } catch (Throwable e) {
+      myLog.warn("Failed to perform JSch config initialization, error: " + e.toString());
+    }
   }
 
   private Session createSession(@NotNull BuildRunnerContext context, @NotNull InternalPropertiesHolder holder) throws JSchException {
