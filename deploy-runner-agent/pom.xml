@@ -60,13 +60,15 @@
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch.agentproxy.jsch</artifactId>
-            <version>0.0.9</version>
+            <version>0.0.10-SNAPSHOT</version>
+<!--
             <exclusions>
                 <exclusion>
                     <groupId>com.jcraft</groupId>
                     <artifactId>jsch</artifactId>
                 </exclusion>
             </exclusions>
+-->
         </dependency>
 
         <dependency>
