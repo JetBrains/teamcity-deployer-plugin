@@ -44,11 +44,14 @@ import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.logBuildPr
 
 class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private static final String FTP_PROTOCOL = "ftp://";
+  private static final String FTPS_PROTOCOL = "ftps://";
+  private static final String FTPS_SECURITY_MODE_DEFAULT = "1";
 
   private static final Logger LOG = Logger.getInstance(FtpBuildProcessAdapter.class.getName());
   private static final int STREAM_BUFFER_SIZE = 5 * 1024 * 1024; // 5 Mb
   private static final int SOCKET_BUFFER_SIZE = 1024 * 1024; // 1 Mb
   private static final int DEFAULT_FTP_CONNECT_TIMEOUT = 30 * 1000 * 60; // 30 Min
+  private static final String PROT_P = "P";
 
   private final String myTarget;
   private final String myUsername;
@@ -66,13 +69,25 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                                 @NotNull final List<ArtifactsCollection> artifactsCollections) {
     super(context.getBuild().getBuildLogger());
     myIsActive = "ACTIVE".equals(context.getRunnerParameters().get(FTPRunnerConstants.PARAM_FTP_MODE));
-    myTarget = target.toLowerCase().startsWith(FTP_PROTOCOL) ? target : FTP_PROTOCOL + target;
+    myTarget = formatTarget(target, context);
     myUsername = username;
     myPassword = password;
     myArtifacts = artifactsCollections;
     myTransferMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_TRANSFER_MODE);
     mySecureMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_SSL_MODE);
     myFtpConnectTimeout = getConnectTimeout(context);
+  }
+
+  private String formatTarget(String target, BuildRunnerContext context) {
+    // strip protocols
+    if (target.toLowerCase().startsWith(FTP_PROTOCOL))
+      target = target.substring(FTP_PROTOCOL.length());
+    // ftps protocol doesn't exist but for user's convenience
+    if (target.toLowerCase().startsWith(FTPS_PROTOCOL)) {
+      context.getRunnerParameters().putIfAbsent(FTPRunnerConstants.PARAM_SSL_MODE, FTPS_SECURITY_MODE_DEFAULT);
+      target = target.substring(FTPS_PROTOCOL.length());
+    }
+    return FTP_PROTOCOL + target;
   }
 
   private FtpConnectTimeout getConnectTimeout(BuildRunnerContext context) {
@@ -138,6 +153,9 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         client.enterLocalActiveMode();
       } else {
         client.enterLocalPassiveMode();
+        if (!isNone(mySecureMode)) {
+          ((FTPSClient) client).execPROT(PROT_P);
+        }
       }
 
       final boolean loginSuccessful = client.login(myUsername, myPassword);
