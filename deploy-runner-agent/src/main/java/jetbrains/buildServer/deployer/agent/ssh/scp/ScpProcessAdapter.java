@@ -84,7 +84,7 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       String escapedRemoteBase = isRemoteBaseAbsolute ? "/" : ".";
       if (filePath.size() > 0 && filePath.get(0).matches("\\w\\:")) {
         // cases to of specific windows drive, like C:
-        escapedRemoteBase = filePath.get(0);
+        escapedRemoteBase = "/" + filePath.get(0);
         isRemoteBaseAbsolute = true;
         if (filePath.size() > 1) {
           List<String> remotePathNoDrive = filePath.subList(1, filePath.size());
