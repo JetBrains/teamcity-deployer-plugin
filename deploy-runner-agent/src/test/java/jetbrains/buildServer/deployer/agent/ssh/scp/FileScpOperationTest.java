@@ -8,9 +8,8 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributeView;
-import java.nio.file.attribute.FileAttributeView;
-import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.Path;
+import java.nio.file.attribute.*;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,13 +39,13 @@ public class FileScpOperationTest {
 
     @Test(dataProvider = "permissions")
     public void test_if_file_permissions_saved(Set<PosixFilePermission> permissions, String expected) throws IOException {
-        try {
             File tmpFile = File.createTempFile("someprefix", "");
-            Files.setPosixFilePermissions(tmpFile.toPath(), permissions);
-            String actual = new FileScpOperation(tmpFile).getPermission();
-            Assert.assertThat(actual, Matchers.is(expected));
+            PosixFileAttributeView view = Files.getFileAttributeView(tmpFile.toPath(), PosixFileAttributeView.class);
+            if (view != null) { // only for posix-compatible file systems
+                view.setPermissions(permissions);
+                String actual = new FileScpOperation(tmpFile).getPermission();
+                Assert.assertThat(actual, Matchers.is(expected));
+            }
             Files.delete(tmpFile.toPath());
-        } catch (UnsupportedOperationException e) {
-        }
     }
 }
