@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2000-2021 JetBrains s.r.o.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+
+<dsl-extension kind="buildStep" type="cargo-deploy-runner" generateDslJar="true">
+    <class name="ContainerDeployer">
+        <description>
+            A Container Deployer build step.
+        </description>
+    </class>
+    <function name="containerDeployer">
+        <description>
+            Adds a Container Deployer build step.
+            @see ContainerDeployer
+        </description>
+    </function>
+    <params>
+        <param name="jetbrains.buildServer.deployer.targetUrl" dslName="targetUrl" mandatory="true">
+            <description>
+                Target container info. Use format: {hostname|IP}[:port].
+            </description>
+        </param>
+
+        <param name="jetbrains.buildServer.deployer.container.type" dslName="containerType" type="ContainerType" mandatory="true">
+            <description>
+                Default "Manager" web app must be deployed to target Tomcat.
+                User must have role "manager-script".
+            </description>
+        </param>
+
+        <param name="jetbrains.buildServer.deployer.cargo.https" dslName="useHTTPS" type="boolean" trueValue="true" falseValue="">
+            <description>
+                Use HTTPS protocol.
+            </description>
+        </param>
+
+        <param name="jetbrains.buildServer.deployer.username" dslName="username" mandatory="true">
+            Username. The user must have "manager-script" role assigned.
+        </param>
+
+        <param name="secure:jetbrains.buildServer.deployer.password" dslName="password" mandatory="true"/>
+
+        <param name="jetbrains.buildServer.deployer.sourcePath" dslName="sourcePath" mandatory="true">
+            <description>
+                Path to WAR archive to deploy.
+            </description>
+        </param>
+    </params>
+    <types>
+        <enum name="ContainerType">
+            <option name="TOMCAT_8_X" value="tomcat8x"/>
+            <option name="TOMCAT_7_X" value="tomcat7x"/>
+            <option name="TOMCAT_6_X" value="tomcat6x"/>
+            <option name="TOMCAT_5_X" value="tomcat5x"/>
+        </enum>
+    </types>
+</dsl-extension>
