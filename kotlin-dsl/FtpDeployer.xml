@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2000-2021 JetBrains s.r.o.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+
+<dsl-extension kind="buildStep" type="ftp-deploy-runner" generateDslJar="true">
+    <class name="FTPUpload">
+        <description>
+            An FTP Upload build step.
+        </description>
+    </class>
+    <function name="ftpUpload">
+        <description>
+            Adds an FTP Upload build step.
+            @see FTPUpload
+        </description>
+    </function>
+    <params>
+        <param name="jetbrains.buildServer.deployer.targetUrl" dslName="targetUrl">
+            <description>
+                An FTP server (use a hostname or IP address) and a remote directory (relative to the FTP user's home).
+            </description>
+        </param>
+        <param name="jetbrains.buildServer.deployer.ftp.securityMode" dslName="securityMode" type="SecurityMode">
+            <description>
+                Choose between an insecure and a secure connection (FTPS, FTPES).
+            </description>
+        </param>
+        <param name="jetbrains.buildServer.deployer.ftp.authMethod" dslName="authMethod" type="compound">
+            <description>
+                Authentication method.
+            </description>
+            <option name="anonymous" value="ANONYMOUS"/>
+            <option name="usernameAndPassword" value="USER_PWD">
+                <param name="jetbrains.buildServer.deployer.username" dslName="username"/>
+                <param name="secure:jetbrains.buildServer.deployer.password" dslName="password"/>
+            </option>
+        </param>
+        <param name="jetbrains.buildServer.deployer.ftp.ftpMode" dslName="ftpMode" type="FTPMode">
+            <description>
+                FTP Mode.
+            </description>
+        </param>
+        <param name="jetbrains.buildServer.deployer.ftp.transferMethod" dslName="transferMode" type="TransferMode">
+            <description>
+                Optional. An FTP transfer mode to force.
+            </description>
+        </param>
+        <param name="jetbrains.buildServer.deployer.sourcePath" dslName="sourcePath">
+            <description>
+                Newline- or comma-separated paths to files/directories to be deployed.
+                Ant-style wildcards like dir/**/*.zip and target directories like
+                *.zip => winFiles,unix/distro.tgz => linuxFiles,
+                where winFiles and linuxFiles are target directories, are supported.
+            </description>
+        </param>
+    </params>
+    <types>
+        <enum name="SecurityMode">
+            <option name="NONE" value="0"/>
+            <option name="FTPS" value="1"/>
+            <option name="FTPES" value="2"/>
+        </enum>
+        <enum name="FTPMode">
+            <option name="ACTIVE" value="ACTIVE"/>
+            <option name="PASSIVE" value="PASSIVE"/>
+        </enum>
+        <enum name="TransferMode">
+            <option name="AUTO" value="AUTO"/>
+            <option name="BINARY" value="BINARY"/>
+            <option name="ASCII" value="ASCII"/>
+        </enum>
+    </types>
+</dsl-extension>
