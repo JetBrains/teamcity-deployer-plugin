@@ -30,7 +30,7 @@
         </description>
     </function>
     <params>
-        <param name="jetbrains.buildServer.deployer.targetUrl" dslName="targetUrl">
+        <param name="jetbrains.buildServer.deployer.targetUrl" dslName="targetUrl" mandatory="true">
             <description>
                 An FTP server (use a hostname or IP address) and a remote directory (relative to the FTP user's home).
             </description>
@@ -60,7 +60,7 @@
                 Optional. An FTP transfer mode to force.
             </description>
         </param>
-        <param name="jetbrains.buildServer.deployer.sourcePath" dslName="sourcePath">
+        <param name="jetbrains.buildServer.deployer.sourcePath" dslName="sourcePath" mandatory="true">
             <description>
                 Newline- or comma-separated paths to files/directories to be deployed.
                 Ant-style wildcards like dir/**/*.zip and target directories like
