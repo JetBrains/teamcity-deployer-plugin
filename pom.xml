@@ -185,20 +185,6 @@
                                 <goal>install-file</goal>
                             </goals>
                             <configuration>
-                                <file>${session.executionRootDirectory}/lib/jsch-0.1.64-SNAPSHOT.jar</file>
-                                <groupId>com.github.mwiede</groupId>
-                                <artifactId>jsch</artifactId>
-                                <version>0.1.64-SNAPSHOT</version>
-                                <packaging>jar</packaging>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>install2</id>
-                            <phase>initialize</phase>
-                            <goals>
-                                <goal>install-file</goal>
-                            </goals>
-                            <configuration>
                                 <file>${session.executionRootDirectory}/lib/jsch.agentproxy.jsch-0.0.10-SNAPSHOT.jar</file>
                                 <groupId>com.jcraft</groupId>
                                 <artifactId>jsch.agentproxy.jsch</artifactId>
