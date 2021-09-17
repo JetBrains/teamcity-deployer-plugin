@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2000-2021 JetBrains s.r.o.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+
+<dsl-add-on kind="buildStep">
+    <extends>
+        <dsl type="ssh-exec-runner" />
+        <dsl type="ssh-deploy-runner" />
+    </extends>
+    <params>
+        <param name="jetbrains.buildServer.deployer.targetUrl" dslName="targetUrl" mandatory="true">
+            <description>
+                Target url in form {hostname|ip_address}[:path/to/target/folder].
+            </description>
+        </param>
+
+        <param name="jetbrains.buildServer.sshexec.port" dslName="port" type="int">
+            <description>
+                Optional. Default value: 22.
+            </description>
+        </param>
+
+        <param name="jetbrains.buildServer.sshexec.authMethod" dslName="authMethod" type="compound" mandatory="true">
+            <description>
+                An SSH authentication method.
+            </description>
+
+            <option name="uploadedKey" value="UPLOADED_KEY">
+                <description>
+                    Uses the key(s) uploaded to the project.
+                </description>
+                <param name="jetbrains.buildServer.deployer.username" dslName="username" mandatory="true"/>
+                <param name="secure:jetbrains.buildServer.deployer.password" dslName="passphrase"/>
+                <param name="teamcitySshKey" dslName="key" mandatory="true">
+                    <description>
+                        The name of the key uploaded to the project.
+                    </description>
+                </param>
+            </option>
+
+            <option name="defaultPrivateKey" value="DEFAULT_KEY">
+                <description>
+                    Will try to perform private key authentication using the ~/.ssh/config settings.
+                    If no settings file exists, will try to use the ~/.ssh/rsa_pub public key file.
+                </description>
+                <param name="jetbrains.buildServer.deployer.username" dslName="username">
+                    <description>
+                        Username (optional, used with "id_rsa" key).
+                    </description>
+                </param>
+                <param name="secure:jetbrains.buildServer.deployer.password" dslName="passphrase"/>
+            </option>
+
+            <option name="customPrivateKey" value="CUSTOM_KEY">
+                <description>
+                    Will try to perform private key authentication
+                    using the given public key file with given passphrase.
+                </description>
+                <param name="jetbrains.buildServer.sshexec.keyFile" dslName="keyFile">
+                    <description>
+                        Path to key file (optional).
+                    </description>
+                </param>
+                <param name="jetbrains.buildServer.deployer.username" dslName="username" mandatory="true"/>
+                <param name="secure:jetbrains.buildServer.deployer.password" dslName="passphrase"/>
+            </option>
+
+            <option name="password" value="PWD">
+                <description>
+                    Simple password authentication.
+                </description>
+                <param name="jetbrains.buildServer.deployer.username" dslName="username" mandatory="true"/>
+                <param name="secure:jetbrains.buildServer.deployer.password" dslName="password"/>
+            </option>
+
+            <option name="sshAgent" value="SSH_AGENT">
+                <description>
+                    Use ssh-agent for authentication, the SSH-Agent build feature must be enabled.
+                </description>
+                <param name="jetbrains.buildServer.deployer.username" dslName="username" mandatory="true"/>
+            </option>
+        </param>
+    </params>
+</dsl-add-on>
