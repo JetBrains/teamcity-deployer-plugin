@@ -56,7 +56,7 @@ public class SSHSessionProvider {
   private int myPort;
   private String myRemotePath;
   private final String myDefaultKeyPath = System.getProperty("user.home") + "/.ssh/id_rsa";
-
+  private static volatile boolean ourJschConfigInitialized = false;
 
   public SSHSessionProvider(@NotNull final BuildRunnerContext context,
                             @NotNull final InternalPropertiesHolder holder,
@@ -92,7 +92,12 @@ public class SSHSessionProvider {
   }
 
   private void initJSchConfig() {
+    if (ourJschConfigInitialized) {
+      return;
+    }
+
     try {
+      ourJschConfigInitialized = true;
       Class initializer = Class.forName("jetbrains.buildServer.util.jsch.JSchConfigInitializer");
       Method initMethod = initializer.getMethod("initJSchConfig", Class.class);
       initMethod.invoke(null, JSch.class);
@@ -111,6 +116,17 @@ public class SSHSessionProvider {
     final String authMethod = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METHOD);
 
     JSch jsch = new JSch();
+    JSch.setLogger(new com.jcraft.jsch.Logger() {
+      @Override
+      public boolean isEnabled(int i) {
+        return true;
+      }
+
+      @Override
+      public void log(int i, String s) {
+        System.out.println(i + ": " + s);
+      }
+    });
     JSch.setConfig("StrictHostKeyChecking", "no");
 
     myLog.debug("Initializing ssh session.");
