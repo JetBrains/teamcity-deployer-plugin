@@ -116,17 +116,6 @@ public class SSHSessionProvider {
     final String authMethod = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METHOD);
 
     JSch jsch = new JSch();
-    JSch.setLogger(new com.jcraft.jsch.Logger() {
-      @Override
-      public boolean isEnabled(int i) {
-        return true;
-      }
-
-      @Override
-      public void log(int i, String s) {
-        System.out.println(i + ": " + s);
-      }
-    });
     JSch.setConfig("StrictHostKeyChecking", "no");
 
     myLog.debug("Initializing ssh session.");
