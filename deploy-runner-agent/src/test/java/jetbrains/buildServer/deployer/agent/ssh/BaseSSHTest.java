@@ -26,7 +26,7 @@ import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.ssh.TeamCitySshKey;
-import org.apache.sshd.common.file.nativefs.NativeFileSystemFactory;
+import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.common.keyprovider.AbstractFileKeyPairProvider;
 import org.apache.sshd.common.util.SecurityUtils;
 import org.apache.sshd.server.SshServer;
@@ -62,7 +62,6 @@ public class BaseSSHTest extends BaseDeployerTest {
   File myPassphraselessKey;
   File myPrivateKey;
   File myRemoteDir = null;
-  private String oldUserDir = null;
   private SshServer myServer;
   int testPort;
 
@@ -91,7 +90,7 @@ public class BaseSSHTest extends BaseDeployerTest {
     fileKeyPairProvider.setFiles(Collections.singletonList(keyFile.getCanonicalFile()));
     myServer.setKeyPairProvider(fileKeyPairProvider);
 
-    myServer.setFileSystemFactory(new NativeFileSystemFactory());
+    myServer.setFileSystemFactory(new VirtualFileSystemFactory(myRemoteDir.toPath()));
     myServer.setSubsystemFactories(Collections.singletonList(new SftpSubsystemFactory()));
 
     myServer.start();
@@ -119,10 +118,6 @@ public class BaseSSHTest extends BaseDeployerTest {
       allowing(mySshKeyManager).getKey("key_id_value");
       will(returnValue(sshKey));
     }});
-
-    // need to change user.dir, so that NativeFileSystemFactory works inside temp directory
-    oldUserDir = System.getProperty("user.dir");
-    System.setProperty("user.dir", myRemoteDir.getAbsolutePath());
 
     myArtifactsCollections = new ArrayList<>();
 
@@ -153,7 +148,6 @@ public class BaseSSHTest extends BaseDeployerTest {
   @Override
   public void tearDown() throws Exception {
     myServer.stop(true);
-    System.setProperty("user.dir", oldUserDir);
     super.tearDown();
   }
 }

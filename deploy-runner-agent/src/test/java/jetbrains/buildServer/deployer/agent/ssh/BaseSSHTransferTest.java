@@ -59,7 +59,7 @@ public abstract class BaseSSHTransferTest extends BaseSSHTest {
 
   @Test
   public void testTransferAbsoluteBasePath() throws Exception {
-    final File absDestination = new File(createTempDir(), "sub/path");
+    final File absDestination = new File(myRemoteDir, "sub/path");
     final String absPath = absDestination.getCanonicalPath();
     myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));
     final BuildProcess process = getProcess(HOST_ADDR + ":" + absPath);
