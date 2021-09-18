@@ -18,9 +18,12 @@ package jetbrains.buildServer.deployer.agent.ssh;
 
 import jetbrains.buildServer.agent.BuildProcess;
 import jetbrains.buildServer.deployer.agent.ssh.sftp.SftpBuildProcessAdapter;
+import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.io.File;
 
 @Test
 public class SftpProcessAdapterTest extends BaseSSHTransferTest {
@@ -37,5 +40,15 @@ public class SftpProcessAdapterTest extends BaseSSHTransferTest {
 
     final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder, mySshKeyManager);
     return new SftpBuildProcessAdapter(myContext, myArtifactsCollections, provider);
+  }
+
+  @Test
+  public void testTransferAbsoluteBasePath() throws Exception {
+    final File absDestination = new File(myRemoteDir, "sub/path");
+    final String absPath = absDestination.getCanonicalPath();
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));
+    final BuildProcess process = getProcess(HOST_ADDR + ":" + absPath);
+    DeployTestUtils.runProcess(process, 5000);
+    DeployTestUtils.assertCollectionsTransferred(absDestination, myArtifactsCollections);
   }
 }
