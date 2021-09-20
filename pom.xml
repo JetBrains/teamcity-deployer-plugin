@@ -23,7 +23,7 @@
     <version>0.7-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
-        <teamcity-version>9.1.6</teamcity-version>
+        <teamcity-version>2021.2-SNAPSHOT</teamcity-version>
         <teamcityDir>../teamcity</teamcityDir>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
