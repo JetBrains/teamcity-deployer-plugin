@@ -20,6 +20,7 @@ import jetbrains.buildServer.agent.BuildProcess;
 import jetbrains.buildServer.deployer.agent.ssh.sftp.SftpBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
+import org.apache.sshd.common.file.nativefs.NativeFileSystemFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -44,6 +45,8 @@ public class SftpProcessAdapterTest extends BaseSSHTransferTest {
 
   @Test
   public void testTransferAbsoluteBasePath() throws Exception {
+    myServer.setFileSystemFactory(new NativeFileSystemFactory());
+
     final File absDestination = new File(myRemoteDir, "sub/path");
     final String absPath = absDestination.getCanonicalPath();
     myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));

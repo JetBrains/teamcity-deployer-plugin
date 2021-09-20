@@ -62,7 +62,7 @@ public class BaseSSHTest extends BaseDeployerTest {
   File myPassphraselessKey;
   File myPrivateKey;
   File myRemoteDir = null;
-  private SshServer myServer;
+  protected SshServer myServer;
   int testPort;
 
   AgentRunningBuildSshKeyManager mySshKeyManager;
