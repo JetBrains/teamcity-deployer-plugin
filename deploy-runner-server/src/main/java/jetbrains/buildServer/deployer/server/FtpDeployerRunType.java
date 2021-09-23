@@ -55,7 +55,7 @@ public class FtpDeployerRunType extends RunType {
 
   @Override
   public PropertiesProcessor getRunnerPropertiesProcessor() {
-    return new DeployerPropertiesProcessor();
+    return new FtpDeployerPropertiesProcessor();
   }
 
   @Override
