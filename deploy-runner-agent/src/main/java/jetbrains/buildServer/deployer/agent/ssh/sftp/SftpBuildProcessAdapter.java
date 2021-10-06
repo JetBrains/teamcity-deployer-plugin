@@ -18,16 +18,14 @@ package jetbrains.buildServer.deployer.agent.ssh.sftp;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
+import com.jcraft.jsch.*;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.DeployerAgentUtils;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
+import jetbrains.buildServer.deployer.agent.ssh.JSchBuildLogger;
 import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,6 +52,8 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
   public BuildFinishedStatus runProcess() {
     final String escapedRemotePath;
     Session session = null;
+
+    JSch.setLogger(new JSchBuildLogger(myLogger));
 
     try {
       escapedRemotePath = mySessionProvider.getRemotePath();
@@ -103,6 +103,8 @@ public class SftpBuildProcessAdapter extends SyncBuildProcessAdapter {
       if (session != null) {
         session.disconnect();
       }
+
+      JSch.setLogger(null);
     }
   }
 

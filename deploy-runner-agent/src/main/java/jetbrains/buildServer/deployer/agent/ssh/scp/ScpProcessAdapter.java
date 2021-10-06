@@ -18,12 +18,14 @@ package jetbrains.buildServer.deployer.agent.ssh.scp;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
+import jetbrains.buildServer.deployer.agent.ssh.JSchBuildLogger;
 import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
@@ -63,6 +65,8 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
   public BuildFinishedStatus runProcess() {
     String escapedRemotePath;
     Session session = null;
+
+    JSch.setLogger(new JSchBuildLogger(myLogger));
 
     try {
 
@@ -132,6 +136,8 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       if (session != null) {
         session.disconnect();
       }
+
+      JSch.setLogger(null);
     }
   }
 
