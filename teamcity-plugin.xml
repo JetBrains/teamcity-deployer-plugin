@@ -24,7 +24,7 @@
         <description>Set of Runners for basic deployment tasks</description>
         <vendor>
             <name>JetBrains</name>
-            <url>http://www.jetbrains.com</url>
+            <url>https://www.jetbrains.com</url>
         </vendor>
     </info>
     <deployment use-separate-classloader="true" node-responsibilities-aware="true"/>
