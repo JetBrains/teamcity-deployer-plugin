@@ -78,6 +78,8 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
       if (session != null) {
         session.disconnect();
       }
+
+      JSch.setLogger(null);
     }
   }
 
