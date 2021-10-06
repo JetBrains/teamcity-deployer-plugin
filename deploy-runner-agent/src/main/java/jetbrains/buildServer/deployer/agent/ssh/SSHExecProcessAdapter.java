@@ -31,6 +31,7 @@ import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -52,7 +53,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
 
   public SSHExecProcessAdapter(@NotNull final SSHSessionProvider provider,
                                @NotNull final String commands,
-                               @NotNull final String pty,
+                               @Nullable final String pty,
                                @NotNull final BuildProgressLogger buildLogger,
                                @NotNull final SSHProcessAdapterOptions options) {
     super(buildLogger);

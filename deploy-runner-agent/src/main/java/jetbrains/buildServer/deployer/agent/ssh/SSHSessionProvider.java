@@ -17,10 +17,6 @@
 package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.jcraft.jsch.*;
-import com.jcraft.jsch.agentproxy.AgentProxyException;
-import com.jcraft.jsch.agentproxy.Connector;
-import com.jcraft.jsch.agentproxy.ConnectorFactory;
-import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.InternalPropertiesHolder;
 import jetbrains.buildServer.agent.ssh.AgentRunningBuildSshKeyManager;
@@ -36,7 +32,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 
@@ -204,13 +199,11 @@ public class SSHSessionProvider {
     session.setConfig("PreferredAuthentications", "publickey");
 
     try {
-      ConnectorFactory cf = ConnectorFactory.getDefault();
-      cf.setUSocketPath(socketPath);
-      Connector con = cf.createConnector();
-      IdentityRepository irepo = new RemoteIdentityRepository(con);
+      final SSHAgentConnector connector = new SSHAgentConnector(new File(socketPath).toPath());
+      IdentityRepository irepo = new AgentIdentityRepository(connector);
       jsch.setIdentityRepository(irepo);
       return session;
-    } catch (AgentProxyException e) {
+    } catch (com.jcraft.jsch.AgentProxyException e) {
       throw new JSchException("Failed to connect to ssh agent.", e);
     }
   }
