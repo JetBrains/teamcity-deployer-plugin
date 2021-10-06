@@ -140,6 +140,6 @@ public class SSHExecProcessAdapterTest {
 
   private SSHExecProcessAdapter newAdapter(BuildProgressLogger logger) {
     SSHProcessAdapterOptions options = new SSHProcessAdapterOptions(true, false);
-    return new SSHExecProcessAdapter(mySessionProvider, DEFAULT_COMMAND, null, logger, options);
+    return new SSHExecProcessAdapter(mySessionProvider, DEFAULT_COMMAND, "", logger, options);
   }
 }
