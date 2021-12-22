@@ -51,7 +51,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private static final int STREAM_BUFFER_SIZE = 5 * 1024 * 1024; // 5 Mb
   private static final int SOCKET_BUFFER_SIZE = 1024 * 1024; // 1 Mb
   private static final int DEFAULT_FTP_CONNECT_TIMEOUT = 30 * 1000 * 60; // 30 Min
-  private static final String PROT_P = "P";
+  private static final long PBSZ = 16384;
 
   private final String myTarget;
   private final String myUsername;
@@ -60,6 +60,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private final String myTransferMode;
   private final String mySecureMode;
   private final boolean myIsActive;
+  private final String myDataChannelProtection;
   private FtpConnectTimeout myFtpConnectTimeout;
 
   public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
@@ -75,6 +76,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     myArtifacts = artifactsCollections;
     myTransferMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_TRANSFER_MODE);
     mySecureMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_SSL_MODE);
+    myDataChannelProtection = context.getRunnerParameters().get(FTPRunnerConstants.DATA_CHANNEL_PROTECTION);
     myFtpConnectTimeout = getConnectTimeout(context);
   }
 
@@ -85,6 +87,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     // ftps protocol doesn't exist but for user's convenience
     if (target.toLowerCase().startsWith(FTPS_PROTOCOL)) {
       context.getRunnerParameters().putIfAbsent(FTPRunnerConstants.PARAM_SSL_MODE, FTPS_SECURITY_MODE_DEFAULT);
+      context.getRunnerParameters().putIfAbsent(FTPRunnerConstants.DATA_CHANNEL_PROTECTION, DataChannelProtection.DISABLE.getCodeAsString());
       target = target.substring(FTPS_PROTOCOL.length());
     }
     return FTP_PROTOCOL + target;
@@ -153,15 +156,20 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         client.enterLocalActiveMode();
       } else {
         client.enterLocalPassiveMode();
-        if (!isNone(mySecureMode)) {
-          ((FTPSClient) client).execPROT(PROT_P);
-        }
       }
 
       final boolean loginSuccessful = client.login(myUsername, myPassword);
       if (!loginSuccessful) {
         logBuildProblem(myLogger, "Failed to login. Reply was: " + client.getReplyString());
         return BuildFinishedStatus.FINISHED_FAILED;
+      }
+      if (!myIsActive && isSecure(mySecureMode)) {
+        FTPSClient ftpsClient = (FTPSClient)client;
+        if (!DataChannelProtection.getByCode(myDataChannelProtection).isDisabled()) {
+          long bufferSize = ftpsClient.parsePBSZ(PBSZ);
+          ftpsClient.execPROT(myDataChannelProtection);
+          myLogger.message("Negotiated " + bufferSize + " PBSZ buffer size");
+        }
       }
 
       boolean isAutoType = false;
@@ -271,6 +279,10 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
   private boolean isNone(String secureMode) {
     return StringUtil.isEmpty(secureMode) || "0".equals(secureMode);
+  }
+
+  private boolean isSecure(String secureMode) {
+    return !isNone(secureMode);
   }
 
   private static class FtpConnectTimeout {

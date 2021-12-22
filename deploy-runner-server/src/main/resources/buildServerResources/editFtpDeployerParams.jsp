@@ -40,6 +40,17 @@
         </props:selectProperty>
         </td>
     </tr>
+    <tr class="advancedSetting">
+        <th><label for="jetbrains.buildServer.deployer.ftp.dataChannelProtection">Data channel protection:</label></th>
+        <td><props:selectProperty name="<%=FTPRunnerConstants.DATA_CHANNEL_PROTECTION%>">
+            <props:option value="D">Disable</props:option>
+            <props:option value="C">Clear (none)</props:option>
+            <props:option value="S">Safe</props:option>
+            <props:option value="E">Confidential</props:option>
+            <props:option value="P">Private</props:option>
+        </props:selectProperty>
+        </td>
+    </tr>
 </l:settingsGroup>
 
 <l:settingsGroup title="Deployment Credentials" className="advancedSetting">
