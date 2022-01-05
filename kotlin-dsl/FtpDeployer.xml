@@ -40,6 +40,11 @@
                 Choose between an insecure and a secure connection (FTPS, FTPES).
             </description>
         </param>
+        <param name="jetbrains.buildServer.deployer.ftp.dataChannelProtection" dslName="dataChannelProtection" type="DataChannelProtectionMode">
+            <description>
+                Choose a data protection scheme if FTPS or FTPES is used.
+            </description>
+        </param>
         <param name="jetbrains.buildServer.deployer.ftp.authMethod" dslName="authMethod" type="compound">
             <description>
                 Authentication method.
@@ -70,6 +75,13 @@
         </param>
     </params>
     <types>
+        <enum name="DataChannelProtectionMode">
+            <option name="DISABLE" value="D"/>
+            <option name="CLEAR" value="C"/>
+            <option name="SAFE" value="S"/>
+            <option name="CONFIDENTIAL" value="E"/>
+            <option name="PRIVATE" value="P"/>
+        </enum>
         <enum name="SecurityMode">
             <option name="NONE" value="0"/>
             <option name="FTPS" value="1"/>
