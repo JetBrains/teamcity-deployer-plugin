@@ -50,9 +50,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private static final Logger LOG = Logger.getInstance(FtpBuildProcessAdapter.class.getName());
   private static final int STREAM_BUFFER_SIZE = 5 * 1024 * 1024; // 5 Mb
   private static final int SOCKET_BUFFER_SIZE = 1024 * 1024; // 1 Mb
-  private static final int DEFAULT_FTP_CONNECT_TIMEOUT = 30 * 1000 * 60; // 30 Min
   private static final long PBSZ = 16384;
-  private static final int DEFAULT_FTP_CONTROL_KEEP_ALIVE_TIMEOUT = 60; // 60 sec
 
   private final String myTarget;
   private final String myUsername;
@@ -62,8 +60,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private final String mySecureMode;
   private final boolean myIsActive;
   private final String myDataChannelProtection;
-  private FtpConnectTimeout myFtpConnectTimeout;
-  private int myControlKeepAliveTimeout;
+  private final FtpTimeout myTimeout;
 
   public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
                                 @NotNull final String target,
@@ -79,25 +76,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
     myTransferMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_TRANSFER_MODE);
     mySecureMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_SSL_MODE);
     myDataChannelProtection = context.getRunnerParameters().get(FTPRunnerConstants.DATA_CHANNEL_PROTECTION);
-    myFtpConnectTimeout = getConnectTimeout(context);
-    myControlKeepAliveTimeout = getControlKeepAliveTimeout(context);
-  }
-
-  private int getControlKeepAliveTimeout(BuildRunnerContext context) {
-    String timeout = context.getBuild().getSharedConfigParameters()
-            .get(FTPRunnerConstants.PARAM_FTP_CONTROL_KEEP_ALIVE_TIMEOUT);
-    if (timeout == null || timeout.isEmpty()) {
-      return DEFAULT_FTP_CONTROL_KEEP_ALIVE_TIMEOUT;
-    }
-
-    try {
-      return Integer.parseInt(timeout);
-    } catch (NumberFormatException err) {
-      LOG.warn("Incorrect format of controlKeepAliveTimeout '" + timeout + "'. " +
-                       "Expecting single integer value. " +
-                       "Default value " + DEFAULT_FTP_CONTROL_KEEP_ALIVE_TIMEOUT  + "sec was used");
-      return DEFAULT_FTP_CONTROL_KEEP_ALIVE_TIMEOUT;
-    }
+    myTimeout = FtpTimeout.parseTimeout(context);
   }
 
   private String formatTarget(String target, BuildRunnerContext context) {
@@ -111,37 +90,6 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       target = target.substring(FTPS_PROTOCOL.length());
     }
     return FTP_PROTOCOL + target;
-  }
-
-  private FtpConnectTimeout getConnectTimeout(BuildRunnerContext context) {
-    String timeout = context.getBuild().getSharedConfigParameters().get(FTPRunnerConstants.PARAM_FTP_CONNECT_TIMEOUT);
-    if (timeout == null || timeout.isEmpty()) {
-      return new FtpConnectTimeout();
-    }
-
-    String[] timeouts = timeout.split(" ");
-    try {
-      if (timeouts.length == 1) {
-        return new FtpConnectTimeout(getTimeoutFromString(timeout));
-      } else if (timeouts.length == 3) {
-        return new FtpConnectTimeout(getTimeoutFromString(timeouts[0]),
-                                     getTimeoutFromString(timeouts[1]),
-                                     getTimeoutFromString(timeouts[2]));
-      }
-    } catch (NumberFormatException err) {
-      //
-    }
-
-    LOG.warn("Incorrect format of ftp connect timeout '" + timeout + "'. " +
-                     "Expecting either single value integer either three integers for " +
-                     "1. socketTimeout  2. connectTimeout  3. dataTimeout. " +
-                     "Default value " + DEFAULT_FTP_CONNECT_TIMEOUT  + "ms was used for 2. and 3.");
-    return new FtpConnectTimeout();
-  }
-
-  private int getTimeoutFromString(String timeout) {
-    int timeoutAsInteger = Integer.parseInt(timeout);
-    return (timeoutAsInteger > 0) ? timeoutAsInteger : DEFAULT_FTP_CONNECT_TIMEOUT;
   }
 
   @Override
@@ -201,7 +149,6 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         isAutoType = true;
       }
 
-      client.setControlKeepAliveTimeout(myControlKeepAliveTimeout); // seconds
       AtomicReference<BuildFinishedStatus> processResult = new AtomicReference<BuildFinishedStatus>(BuildFinishedStatus.FINISHED_SUCCESS);
       final Runnable interruptibleBody = new InterruptibleUploadProcess(client, myLogger, myArtifacts, isAutoType, path, processResult) {
         public boolean checkIsInterrupted() {
@@ -285,11 +232,15 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
     client.setBufferSize(FtpBuildProcessAdapter.STREAM_BUFFER_SIZE);
     client.setSendBufferSize(FtpBuildProcessAdapter.SOCKET_BUFFER_SIZE);
-    client.setConnectTimeout(myFtpConnectTimeout.connectTimeout);
-    client.setDataTimeout(myFtpConnectTimeout.dataTimeout);
-    if (myFtpConnectTimeout.socketTimeout > 0) {
-      client.setDefaultTimeout(myFtpConnectTimeout.socketTimeout);
-    }
+    if (myTimeout.controlKeepAliveTimeoutEnabled())
+      client.setControlKeepAliveTimeout(myTimeout.getControlKeepAliveTimeoutInSecs());
+    if (myTimeout.connectTimeoutEnabled())
+      client.setConnectTimeout(myTimeout.getConnectTimeout());
+    if (myTimeout.dataTimeoutEnabled())
+      client.setDataTimeout(myTimeout.getDataTimeout());
+    if (myTimeout.socketTimeoutEnabled())
+      client.setDefaultTimeout(myTimeout.getSocketTimeout());
+
     return client;
   }
 
@@ -303,31 +254,5 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
 
   private boolean isSecure(String secureMode) {
     return !isNone(secureMode);
-  }
-
-  private static class FtpConnectTimeout {
-    final int connectTimeout;
-    final int dataTimeout;
-    final int socketTimeout;
-
-    private FtpConnectTimeout() {
-      socketTimeout = -1;
-      connectTimeout = DEFAULT_FTP_CONNECT_TIMEOUT;
-      dataTimeout = DEFAULT_FTP_CONNECT_TIMEOUT;
-    }
-
-    private FtpConnectTimeout(int timeout) {
-      socketTimeout = timeout;
-      connectTimeout = timeout;
-      dataTimeout = timeout;
-    }
-
-    private FtpConnectTimeout(int socketTimeout,
-                              int connectTimeout,
-                              int dataTimeout) {
-      this.socketTimeout = socketTimeout;
-      this.connectTimeout = connectTimeout;
-      this.dataTimeout = dataTimeout;
-    }
   }
 }
