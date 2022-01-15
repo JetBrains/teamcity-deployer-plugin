@@ -50,10 +50,10 @@ abstract class InterruptibleUploadProcess implements Runnable {
   private static final int BY_FILE_LOGGING_THRESHOLD = 20;
 
   private final FTPClient myClient;
-  private BuildProgressLogger myLogger;
-  private List<ArtifactsCollection> myArtifacts;
-  private boolean myIsAutoType;
-  private String myPath;
+  private final BuildProgressLogger myLogger;
+  private final List<ArtifactsCollection> myArtifacts;
+  private final boolean myIsAutoType;
+  private final String myPath;
   @NotNull
   private final AtomicReference<BuildFinishedStatus> myFinishStatus;
 
@@ -104,7 +104,8 @@ abstract class InterruptibleUploadProcess implements Runnable {
             checkResult(myClient.changeWorkingDirectory(destinationDir));
           }
           LOG.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationDir + "] under [" + remoteRoot + "]");
-          checkIsInterrupted();
+          if (!checkIsInterrupted())
+            throw new FailureDetectedException("Process has been interrupted.");
           InputStream inputStream = null;
           try {
             if (myIsAutoType) {
@@ -118,7 +119,6 @@ abstract class InterruptibleUploadProcess implements Runnable {
             }
           }
           checkResult(myClient.changeWorkingDirectory(remoteRoot));
-          checkIsInterrupted();
           LOG.debug("done transferring [" + source.getAbsolutePath() + "]");
           count++;
           if (count < BY_FILE_LOGGING_THRESHOLD) {
@@ -126,15 +126,13 @@ abstract class InterruptibleUploadProcess implements Runnable {
           } else if (count == BY_FILE_LOGGING_THRESHOLD) {
             myLogger.message("< and continued >");
           }
+          if (!checkIsInterrupted())
+            throw new FailureDetectedException("Process has been interrupted.");
         }
         myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
       }
       myFinishStatus.set(BuildFinishedStatus.FINISHED_SUCCESS);
-    } catch (FailureDetectedException t) {
-      logBuildProblem(myLogger, t.getMessage());
-      LOG.debug(t.getMessage(), t);
-      myFinishStatus.set(BuildFinishedStatus.FINISHED_FAILED);
-    } catch (IOException t) {
+    } catch (FailureDetectedException | IOException t) {
       logBuildProblem(myLogger, t.getMessage());
       LOG.debug(t.getMessage(), t);
       myFinishStatus.set(BuildFinishedStatus.FINISHED_FAILED);
@@ -209,7 +207,7 @@ abstract class InterruptibleUploadProcess implements Runnable {
 
   abstract boolean checkIsInterrupted();
 
-  private class FailureDetectedException extends Exception {
+  private static class FailureDetectedException extends Exception {
     FailureDetectedException(@NotNull final String message) {
       super(message);
     }
