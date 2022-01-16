@@ -104,7 +104,7 @@ abstract class InterruptibleUploadProcess implements Runnable {
             checkResult(myClient.changeWorkingDirectory(destinationDir));
           }
           LOG.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationDir + "] under [" + remoteRoot + "]");
-          if (!checkIsInterrupted())
+          if (checkIsInterrupted())
             throw new FailureDetectedException("Process has been interrupted.");
           InputStream inputStream = null;
           try {
@@ -126,7 +126,7 @@ abstract class InterruptibleUploadProcess implements Runnable {
           } else if (count == BY_FILE_LOGGING_THRESHOLD) {
             myLogger.message("< and continued >");
           }
-          if (!checkIsInterrupted())
+          if (checkIsInterrupted())
             throw new FailureDetectedException("Process has been interrupted.");
         }
         myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");

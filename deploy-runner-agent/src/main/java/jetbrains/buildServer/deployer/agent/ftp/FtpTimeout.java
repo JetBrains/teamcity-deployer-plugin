@@ -34,7 +34,7 @@ public class FtpTimeout {
             }
         }
         String keepAliveTimeout = context.getBuild().getSharedConfigParameters().get(FTPRunnerConstants.PARAM_FTP_CONTROL_KEEP_ALIVE_TIMEOUT);
-        if (keepAliveTimeout == null || keepAliveTimeout.isEmpty()) {
+        if (keepAliveTimeout != null && !keepAliveTimeout.isEmpty()) {
             try {
                 fct.setControlKeepAliveTimeout(getTimeoutFromString(keepAliveTimeout, -1));
             } catch (NumberFormatException e) {
