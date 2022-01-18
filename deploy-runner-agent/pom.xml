@@ -101,6 +101,11 @@
             <version>1.0.6</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>1.16.2</version>
+        </dependency>
 
         <dependency>
             <groupId>org.testng</groupId>
