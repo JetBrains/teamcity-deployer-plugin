@@ -131,13 +131,8 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         logBuildProblem(myLogger, "Failed to login. Reply was: " + client.getReplyString());
         return BuildFinishedStatus.FINISHED_FAILED;
       }
-      if (!myIsActive && isSecure(mySecureMode)) {
-        FTPSClient ftpsClient = (FTPSClient)client;
-        if (!DataChannelProtection.getByCode(myDataChannelProtection).isDisabled()) {
-          long bufferSize = ftpsClient.parsePBSZ(PBSZ);
-          ftpsClient.execPROT(myDataChannelProtection);
-          myLogger.message("Negotiated " + bufferSize + " PBSZ buffer size");
-        }
+      if (!myIsActive && isSecure(mySecureMode) && !DataChannelProtection.getByCode(myDataChannelProtection).isDisabled()) {
+        enableDataChannelProtection(client, DataChannelProtection.getByCode(myDataChannelProtection));
       }
 
       boolean isAutoType = false;
@@ -155,7 +150,22 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
           return FtpBuildProcessAdapter.this.isInterrupted();
         }
       };
-      final Thread uploadThread = new Thread(interruptibleBody);
+      AtomicReference<IOException> exceptionAtomicReference = new AtomicReference<>();
+      final Thread uploadThread = new Thread(() -> {
+        try {
+          interruptibleBody.run();
+        } catch (RetryWithPrivateSettingsException e) {
+          try {
+            enableDataChannelProtection(client, DataChannelProtection.PRIVATE);
+            interruptibleBody.run();
+          } catch (IOException e1) {
+            exceptionAtomicReference.set(e1);
+          }
+        }
+      });
+
+      if (exceptionAtomicReference.get() != null)
+        throw exceptionAtomicReference.get();
 
       myLogger.message("Starting upload via " + (isNone(mySecureMode) ? "FTP" :
           (isImplicit(mySecureMode) ? "FTPS" : "FTPES")) + " to " + myTarget);
@@ -213,6 +223,15 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       } catch (Exception e) {
         LOG.error(e.getMessage(), e);
       }
+    }
+  }
+
+  private void enableDataChannelProtection(FTPClient client, DataChannelProtection dcp) throws IOException {
+    FTPSClient ftpsClient = (client instanceof FTPSClient) ? (FTPSClient) client : null;
+    if (ftpsClient != null) {
+      long bufferSize = ftpsClient.parsePBSZ(PBSZ);
+      ftpsClient.execPROT(dcp.getCodeAsString());
+      myLogger.message("Negotiated " + bufferSize + " PBSZ buffer size" + ftpsClient.getReplyString());
     }
   }
 

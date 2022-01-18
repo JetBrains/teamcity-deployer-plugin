@@ -45,6 +45,7 @@ import static jetbrains.buildServer.util.FileUtil.getExtension;
  * date: 06.11.2015.
  */
 abstract class InterruptibleUploadProcess implements Runnable {
+  private static final int FTP_REPLY_CODE_DATA_CONNECTION_MUST_BE_ENCRYPTED = 522;
 
   private static final Logger LOG = Logger.getInstance(InterruptibleUploadProcess.class.getName());
   private static final int BY_FILE_LOGGING_THRESHOLD = 20;
@@ -58,6 +59,7 @@ abstract class InterruptibleUploadProcess implements Runnable {
   private final AtomicReference<BuildFinishedStatus> myFinishStatus;
 
   private final static Set<String> ourKnownAsciiExts = new HashSet<String>();
+  private int myRetryCount = 0;
 
   static {
     ourKnownAsciiExts.addAll(Arrays.asList("abc", "acgi", "aip", "asm", "asp", "c", "cc", "com", "conf",
@@ -85,6 +87,7 @@ abstract class InterruptibleUploadProcess implements Runnable {
   }
 
   public void run() {
+    myRetryCount++;
     try {
       if (!StringUtil.isEmpty(myPath)) {
         createPath(myPath);
@@ -133,6 +136,9 @@ abstract class InterruptibleUploadProcess implements Runnable {
       }
       myFinishStatus.set(BuildFinishedStatus.FINISHED_SUCCESS);
     } catch (FailureDetectedException | IOException t) {
+      if (myRetryCount == 1 && myClient.getReplyCode() == FTP_REPLY_CODE_DATA_CONNECTION_MUST_BE_ENCRYPTED) {
+        throw new RetryWithPrivateSettingsException();
+      }
       logBuildProblem(myLogger, t.getMessage());
       LOG.debug(t.getMessage(), t);
       myFinishStatus.set(BuildFinishedStatus.FINISHED_FAILED);
@@ -206,6 +212,8 @@ abstract class InterruptibleUploadProcess implements Runnable {
   }
 
   abstract boolean checkIsInterrupted();
+
+
 
   private static class FailureDetectedException extends Exception {
     FailureDetectedException(@NotNull final String message) {
