@@ -39,11 +39,10 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import static org.testcontainers.utility.DockerImageName.*;
@@ -76,6 +75,15 @@ public class DockerFtpBuildProcessAdapterTest extends BaseDeployerTest {
           .withFixedExposedPort(21110, 21110)
           ;
 
+  @BeforeClass
+  public void setupClass() throws IOException {
+    myRemoteDir = createTempDir();
+    ftp.addFileSystemBind(myRemoteDir.getAbsolutePath(), "/home/guest", BindMode.READ_WRITE);
+    ftp.setCommand("ftps");
+    ftp.withExposedPorts(21);
+    ftp.start();
+  }
+
   @BeforeMethod
   @Override
   public void setUp() throws Exception {
@@ -84,12 +92,6 @@ public class DockerFtpBuildProcessAdapterTest extends BaseDeployerTest {
     myResultingLog = new LinkedList<String>();
     myRunnerParameters.put(FTPRunnerConstants.PARAM_FTP_MODE, "PASSIVE");
     myArtifactsCollections = new ArrayList<ArtifactsCollection>();
-    myRemoteDir = createTempDir();
-
-    final ListenerFactory factory = new ListenerFactory();
-    ftp.addFileSystemBind(myRemoteDir.getAbsolutePath(), "/home/guest", BindMode.READ_WRITE);
-    ftp.setCommand("ftps");
-    ftp.start();
     testPort = 2021;
 
     Mockery mockeryCtx = new Mockery();
@@ -117,10 +119,14 @@ public class DockerFtpBuildProcessAdapterTest extends BaseDeployerTest {
     }});
   }
 
+  @AfterClass
+  public void tearDownClass() {
+    ftp.stop();
+  }
+
   @AfterMethod
   @Override
   public void tearDown() throws Exception {
-    ftp.stop();
     super.tearDown();
   }
 
