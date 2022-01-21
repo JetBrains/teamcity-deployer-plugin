@@ -16,25 +16,11 @@
 
 package jetbrains.buildServer.deployer.agent.ftp;
 
-import jetbrains.buildServer.NetworkUtil;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
-import jetbrains.buildServer.util.WaitFor;
-import org.apache.ftpserver.DataConnectionConfigurationFactory;
-import org.apache.ftpserver.FtpServer;
-import org.apache.ftpserver.FtpServerFactory;
-import org.apache.ftpserver.ftplet.Authority;
-import org.apache.ftpserver.ftplet.UserManager;
-import org.apache.ftpserver.listener.ListenerFactory;
-import org.apache.ftpserver.ssl.SslConfigurationFactory;
-import org.apache.ftpserver.usermanager.ClearTextPasswordEncryptor;
-import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
-import org.apache.ftpserver.usermanager.impl.BaseUser;
-import org.apache.ftpserver.usermanager.impl.WritePermission;
-import org.aspectj.util.FileUtil;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testcontainers.containers.BindMode;
@@ -44,8 +30,6 @@ import org.testng.annotations.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-import static org.testcontainers.utility.DockerImageName.*;
 
 public class DockerFtpBuildProcessAdapterTest extends BaseDeployerTest {
 
@@ -156,7 +140,7 @@ public class DockerFtpBuildProcessAdapterTest extends BaseDeployerTest {
         "dest20",
         "dest21"));
     final BuildProcess process = getProcess("127.0.0.1:" + testPort);
-    DeployTestUtils.runProcess(process, 5000);
+    DeployTestUtils.runProcess(process, 50000);
     DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
 
     assertTrue(myResultingLog.contains("< and continued >"));
