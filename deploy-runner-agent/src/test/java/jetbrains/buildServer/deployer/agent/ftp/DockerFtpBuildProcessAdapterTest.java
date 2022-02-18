@@ -21,15 +21,22 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
 import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.io.IOUtils;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testng.annotations.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class DockerFtpBuildProcessAdapterTest extends BaseDeployerTest {
 
@@ -62,7 +69,6 @@ public class DockerFtpBuildProcessAdapterTest extends BaseDeployerTest {
   @BeforeClass
   public void setupClass() throws IOException {
     myRemoteDir = createTempDir();
-    ftp.addFileSystemBind(myRemoteDir.getAbsolutePath(), "/home/guest", BindMode.READ_WRITE);
     ftp.setCommand("ftps");
     ftp.withExposedPorts(21);
     ftp.start();
@@ -73,9 +79,9 @@ public class DockerFtpBuildProcessAdapterTest extends BaseDeployerTest {
   public void setUp() throws Exception {
     super.setUp();
 
-    myResultingLog = new LinkedList<String>();
+    myResultingLog = new LinkedList<>();
     myRunnerParameters.put(FTPRunnerConstants.PARAM_FTP_MODE, "PASSIVE");
-    myArtifactsCollections = new ArrayList<ArtifactsCollection>();
+    myArtifactsCollections = new ArrayList<>();
     testPort = 2021;
 
     Mockery mockeryCtx = new Mockery();
@@ -141,9 +147,53 @@ public class DockerFtpBuildProcessAdapterTest extends BaseDeployerTest {
         "dest21"));
     final BuildProcess process = getProcess("127.0.0.1:" + testPort);
     DeployTestUtils.runProcess(process, 50000);
+    moveDirFromContainer(ftp, "/home/guest", myRemoteDir);
     DeployTestUtils.assertCollectionsTransferred(myRemoteDir, myArtifactsCollections);
-
     assertTrue(myResultingLog.contains("< and continued >"));
+  }
+
+  private void moveDirFromContainer(GenericContainer container, String sourcePath, File targetDir) throws IOException, InterruptedException {
+    String tmpArchiveName = "testResults.tgz";
+    String tmpArchive = "/tmp/" + tmpArchiveName;
+    container.execInContainer("tar",  "-czvf", tmpArchive, "-C", sourcePath, ".");
+    container.copyFileFromContainer(tmpArchive, targetDir.getPath() + "/" + tmpArchiveName);
+    File gzipArchive = new File(targetDir, tmpArchiveName);
+    unTarFile(gzipArchive.getPath(), targetDir);
+  }
+
+  private static void unTarFile(String tarFile, File destFile) {
+    TarArchiveInputStream tis = null;
+    try {
+      FileInputStream fis = new FileInputStream(tarFile);
+      // .gz
+      GZIPInputStream gzipInputStream = new GZIPInputStream(new BufferedInputStream(fis));
+      //.tar.gz
+      tis = new TarArchiveInputStream(gzipInputStream);
+      TarArchiveEntry tarEntry = null;
+      while ((tarEntry = tis.getNextTarEntry()) != null) {
+        System.out.println(" tar entry- " + tarEntry.getName());
+        if(tarEntry.isDirectory()){
+          continue;
+        }else {
+          // In case entry is for file ensure parent directory is in place
+          // and write file content to Output Stream
+          File outputFile = new File(destFile, tarEntry.getName());
+          outputFile.getParentFile().mkdirs();
+          IOUtils.copy(tis, new FileOutputStream(outputFile));
+        }
+      }
+    }catch(IOException ex) {
+      System.out.println("Error while untarring a file- " + ex.getMessage());
+    }finally {
+      if(tis != null) {
+        try {
+          tis.close();
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }
+    }
   }
 
   private BuildProcess getProcess(String target) {
