@@ -24,8 +24,7 @@ import jetbrains.buildServer.serverSide.RunTypeRegistry;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class FtpDeployerRunType extends RunType {
 
@@ -81,5 +80,10 @@ public class FtpDeployerRunType extends RunType {
     StringBuilder sb = new StringBuilder();
     sb.append("Target FTP server: ").append(parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL));
     return sb.toString();
+  }
+
+  @NotNull
+  public Set<String> getTags() {
+    return new HashSet<>(Arrays.asList("FTP", "upload"));
   }
 }

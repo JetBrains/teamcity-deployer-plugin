@@ -25,9 +25,7 @@ import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class SmbDeployerRunType extends RunType {
@@ -104,5 +102,10 @@ public class SmbDeployerRunType extends RunType {
   @Override
   public String describeParameters(@NotNull Map<String, String> parameters) {
     return "Target SMB share: " + parameters.get(DeployerRunnerConstants.PARAM_TARGET_URL);
+  }
+
+  @NotNull
+  public Set<String> getTags() {
+    return new HashSet<>(Arrays.asList("SMB", "upload"));
   }
 }

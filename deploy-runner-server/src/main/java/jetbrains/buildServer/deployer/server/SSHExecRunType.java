@@ -116,4 +116,10 @@ public class SSHExecRunType extends RunType {
     }
     return sb.append("No commands defined").toString();
   }
+
+  @NotNull
+  public Set<String> getTags() {
+    return Collections.singleton("SSH");
+  }
+
 }

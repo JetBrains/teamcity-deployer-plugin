@@ -25,8 +25,7 @@ import jetbrains.buildServer.serverSide.RunTypeRegistry;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class SSHDeployerRunType extends RunType {
 
@@ -86,6 +85,11 @@ public class SSHDeployerRunType extends RunType {
     final Map<String, String> transportTypeValues = new SSHRunnerConstants().getTransportTypeValues();
     sb.append('\n').append("Protocol: ").append(transportTypeValues.get(parameters.get(SSHRunnerConstants.PARAM_TRANSPORT)));
     return sb.toString();
+  }
+
+  @NotNull
+  public Set<String> getTags() {
+    return new HashSet<>(Arrays.asList("SSH", "upload"));
   }
 
 }
