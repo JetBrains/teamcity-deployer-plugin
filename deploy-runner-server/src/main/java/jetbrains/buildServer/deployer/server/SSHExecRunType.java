@@ -101,6 +101,10 @@ public class SSHExecRunType extends RunType {
     if (StringUtil.isNotEmpty(port)) {
       sb.append('\n').append(" Port: ").append(port);
     }
+    final String timeout = parameters.get(SSHRunnerConstants.PARAM_TIMEOUT);
+    if (StringUtil.isNotEmpty(timeout)) {
+      sb.append('\n').append(" Timeout: ").append(timeout);
+    }
     sb.append('\n');
     final String commands = parameters.get(SSHRunnerConstants.PARAM_COMMAND);
     if (commands != null) {

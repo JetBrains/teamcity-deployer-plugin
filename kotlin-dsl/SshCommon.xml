@@ -35,6 +35,12 @@
             </description>
         </param>
 
+        <param name="jetbrains.buildServer.sshexec.timeout" dslName="timeout" type="int">
+            <description>
+                Optional. Default value (seconds): 0 (disabled).
+            </description>
+        </param>
+
         <param name="jetbrains.buildServer.sshexec.authMethod" dslName="authMethod" type="compound" mandatory="true">
             <description>
                 An SSH authentication method.

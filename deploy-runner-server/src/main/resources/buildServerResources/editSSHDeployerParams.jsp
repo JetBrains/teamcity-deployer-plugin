@@ -50,6 +50,12 @@
             <span class="smallNote">Optional. Default value: 22</span>
         </td>
     </tr>
+    <tr class="advancedSetting">
+        <th><label for="jetbrains.buildServer.sshexec.timeout">Timeout: </label></th>
+        <td><props:textProperty name="<%=SSHRunnerConstants.PARAM_TIMEOUT%>" className="longField" maxlength="256"/>
+            <span class="smallNote">Optional. Default value in seconds: 0 (disabled)</span>
+        </td>
+    </tr>
 </l:settingsGroup>
 
 <%@include file="sshCredentials.jspf" %>

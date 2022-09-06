@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 
 public class SSHSessionProvider {
@@ -49,6 +50,7 @@ public class SSHSessionProvider {
   private Session mySession;
   private String myHost;
   private int myPort;
+  private int myTimeout = 0;
   private String myRemotePath;
   private final String myDefaultKeyPath = System.getProperty("user.home") + "/.ssh/id_rsa";
   private static volatile boolean ourJschConfigInitialized = false;
@@ -66,6 +68,11 @@ public class SSHSessionProvider {
       myPort = Integer.parseInt(portStr);
     } catch (NumberFormatException e) {
       myPort = 22;
+    }
+    final String timeoutStr = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_TIMEOUT);
+    try {
+      myTimeout = Integer.parseInt(timeoutStr);
+    } catch (NumberFormatException e) {
     }
 
     final int delimiterIndex = target.indexOf(':');
@@ -231,7 +238,11 @@ public class SSHSessionProvider {
   public Session getSession() throws JSchException {
     if (mySession == null) {
       mySession = createSession(myContext, myHolder);
-      mySession.connect();
+      if (myTimeout > 0) {
+        mySession.setTimeout((int) TimeUnit.SECONDS.toMillis(myTimeout));
+        mySession.connect((int) TimeUnit.SECONDS.toMillis(myTimeout));
+      } else
+        mySession.connect();
     }
     return mySession;
   }
