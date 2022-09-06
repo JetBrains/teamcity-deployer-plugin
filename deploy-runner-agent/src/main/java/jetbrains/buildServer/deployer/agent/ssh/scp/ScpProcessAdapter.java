@@ -152,8 +152,8 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       return;
     }
 
-    // exec 'scp -prt <remoteBase>' remotely
-    final String command = "scp -prt " + (StringUtil.isEmptyOrSpaces(escapedRemoteBase) ? "." : escapedRemoteBase);
+    // exec 'scp -rt <remoteBase>' remotely
+    final String command = "scp -rt " + (StringUtil.isEmptyOrSpaces(escapedRemoteBase) ? "." : escapedRemoteBase);
     final ChannelExec execChannel = (ChannelExec) session.openChannel("exec");
     execChannel.setCommand(command);
 
