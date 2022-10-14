@@ -35,9 +35,9 @@
             </description>
         </param>
 
-        <param name="jetbrains.buildServer.sshexec.timeout" dslName="timeout" type="int">
+        <param name="jetbrains.buildServer.sshexec.timeout.seconds" dslName="timeout" type="int">
             <description>
-                Optional. Default value (seconds): 0 (disabled).
+                Optional. Default value (seconds): 60 (0 - disable timeout).
             </description>
         </param>
 

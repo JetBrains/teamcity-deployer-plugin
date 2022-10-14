@@ -50,7 +50,7 @@ public class SSHSessionProvider {
   private Session mySession;
   private String myHost;
   private int myPort;
-  private int myTimeout = 0;
+  private int myTimeout = 60;
   private String myRemotePath;
   private final String myDefaultKeyPath = System.getProperty("user.home") + "/.ssh/id_rsa";
   private static volatile boolean ourJschConfigInitialized = false;
