@@ -30,7 +30,7 @@ public class SSHRunnerConstants {
   @Deprecated
   public static final String PARAM_HOST = "jetbrains.buildServer.sshexec.host";
   public static final String PARAM_PORT = "jetbrains.buildServer.sshexec.port";
-  public static final String PARAM_TIMEOUT = "jetbrains.buildServer.sshexec.timeout";
+  public static final String PARAM_TIMEOUT = "jetbrains.buildServer.sshexec.timeout.seconds";
   @Deprecated
   public static final String PARAM_USERNAME = "jetbrains.buildServer.sshexec.username";
   @Deprecated
