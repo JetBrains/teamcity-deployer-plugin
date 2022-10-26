@@ -69,4 +69,23 @@
             <option name="TOMCAT_5_X" value="tomcat5x"/>
         </enum>
     </types>
+
+    <examples>
+        <example>
+            <description>
+                Adds a Container Deployer with HTTPS enabled.
+            </description>
+            <code>
+                containerDeployer {
+                    name = "My Container Deployer build step"
+                    targetUrl = "{hostname|IP}[:port]"
+                    containerType = ContainerDeployer.ContainerType.TOMCAT_8_X
+                    useHTTPS = true
+                    username = "username"
+                    password = "credentialsJSON:******"
+                    sourcePath = "path/to/war"
+                }
+            </code>
+        </example>
+    </examples>
 </dsl-extension>
