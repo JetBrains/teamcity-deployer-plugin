@@ -97,4 +97,36 @@
             <option name="ASCII" value="ASCII"/>
         </enum>
     </types>
+
+    <examples>
+        <example>
+            <description>
+                Adds an FTP Upload build step with
+                FTPS security connection mode,
+                private protection mode,
+                authentification via username and password,
+                binary transfer mode and active FTP mode.
+                See options in [documentation](https://www.jetbrains.com/help/teamcity/?FTP+Upload).
+            </description>
+            <code>
+                ftpUpload {
+                    name = "My FTP Upload step"
+                    targetUrl = "8.8.8.8"
+                    securityMode = FTPUpload.SecurityMode.FTPS
+                    dataChannelProtection = FTPUpload.DataChannelProtectionMode.PRIVATE
+                    authMethod = usernameAndPassword {
+                        username = "username"
+                        password = "credentialsJSON:******"
+                    }
+                    ftpMode = FTPUpload.FTPMode.ACTIVE
+                    transferMode = FTPUpload.TransferMode.BINARY
+                    sourcePath = """
+                        dir/**/*.zip
+                        *.zip => winFiles
+                        unix/distro.tgz => linuxFile
+                    """.trimIndent()
+                }
+            </code>
+        </example>
+    </examples>
 </dsl-extension>
