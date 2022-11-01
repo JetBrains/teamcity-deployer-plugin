@@ -58,4 +58,27 @@
             </description>
         </param>
     </params>
+
+    <examples>
+        <example>
+            <description>
+                Adds an SMB Upload build step with
+                DNS only name resolution option enabled.
+            </description>
+            <code>
+                smbUpload {
+                    name = "My SMB Upload build step"
+                    targetUrl = """\\host\share[\subdir]"""
+                    dnsOnly = true
+                    username = """domain\username"""
+                    password = "credentialsJSON:******"
+                    sourcePath = """
+                        dir/**/*.zip
+                        *.zip => winFiles
+                        unix/distro.tgz => linuxFiles
+                    """.trimIndent()
+                }
+            </code>
+        </example>
+    </examples>
 </dsl-extension>

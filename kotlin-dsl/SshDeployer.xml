@@ -52,4 +52,134 @@
             <option name="SCP" value="jetbrains.buildServer.deployer.ssh.transport.scp"/>
         </enum>
     </types>
+
+    <examples>
+        <example>
+            <description>
+                Adds an SSH Upload build step with
+                SCP transport protocol
+                and custom timeout.
+                [Uploaded key authentication method](https://www.jetbrains.com/help/teamcity/?SSH+Upload) is used.
+            </description>
+            <code>
+                sshUpload {
+                    name = "My SSH Upload build step"
+                    transportProtocol = SSHUpload.TransportProtocol.SCP
+                    sourcePath = """
+                        dir/**/*.zip
+                        *.zip => winFiles
+                        unix/distro.tgz => linuxFiles
+                    """.trimIndent()
+                    targetUrl = "hostname:path/to/target/folder"
+                    timeout = 30
+                    authMethod = uploadedKey {
+                        username = "username"
+                        passphrase = "credentialsJSON:******"
+                        key = "id_rsa"
+                    }
+                }
+            </code>
+        </example>
+        <example>
+            <description>
+                Adds an SSH Upload build step with
+                SFTP transport protocol, custom port and disabled timeout.
+                [Default private key authentication method](https://www.jetbrains.com/help/teamcity/?SSH+Upload) is used.
+            </description>
+            <code>
+                sshUpload {
+                    name = "My SSH Upload build step"
+                    transportProtocol = SSHUpload.TransportProtocol.SFTP
+                    sourcePath = """
+                        dir/**/*.zip
+                        *.zip => winFiles
+                        unix/distro.tgz => linuxFiles
+                    """.trimIndent()
+                    targetUrl = "hostname:path/to/target/folder"
+                    port = 2222
+                    timeout = 0
+                    authMethod = defaultPrivateKey {
+                        username = "username"
+                        passphrase = "credentialsJSON:******"
+                    }
+                }
+            </code>
+        </example>
+        <example>
+            <description>
+                Adds an SSH Upload build step with
+                SFTP transport protocol.
+                [Custom private key authentication method](https://www.jetbrains.com/help/teamcity/?SSH+Upload) is used.
+            </description>
+            <code>
+                sshUpload {
+                    name = "My SSH Upload build step"
+                    transportProtocol = SSHUpload.TransportProtocol.SFTP
+                    sourcePath = """
+                        dir/**/*.zip
+                        *.zip => winFiles
+                        unix/distro.tgz => linuxFiles
+                    """.trimIndent()
+                    targetUrl = "hostname:path/to/target/folder"
+                    authMethod = customPrivateKey {
+                        keyFile = "path/to/key/file"
+                        username = "username"
+                        passphrase = "credentialsJSON:******"
+                    }
+                }
+            </code>
+        </example>
+        <example>
+            <description>
+                Adds an SSH Upload build step with
+                SCP transport protocol.
+                [Password authentication method](https://www.jetbrains.com/help/teamcity/?SSH+Upload) is used.
+            </description>
+            <code>
+                sshUpload {
+                    name = "My SSH Upload build step"
+                    transportProtocol = SSHUpload.TransportProtocol.SCP
+                    sourcePath = """
+                        dir/**/*.zip
+                        *.zip => winFiles
+                        unix/distro.tgz => linuxFiles
+                    """.trimIndent()
+                    targetUrl = "hostname:path/to/target/folder"
+                    authMethod = password {
+                        username = "username"
+                        password = "credentialsJSON:******"
+                    }
+                }
+            </code>
+        </example>
+        <example>
+            <description>
+                Adds an SSH Upload build step with
+                SCP transport protocol.
+                [SSH-Agent authentication method](https://www.jetbrains.com/help/teamcity/?SSH+Upload) is used.
+                This build step will run even if some previous build steps are failed and additional condition is met.
+            </description>
+            <code>
+                sshUpload {
+                    name = "My SSH Upload build step"
+
+                    executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
+                    conditions {
+                        equals("teamcity.build.branch", "release")
+                    }
+
+                    transportProtocol = SSHUpload.TransportProtocol.SCP
+                    sourcePath = """
+                        dir/**/*.zip
+                        *.zip => winFiles
+                        unix/distro.tgz => linuxFiles
+                    """.trimIndent()
+                    targetUrl = "hostname:path/to/target/folder"
+                    authMethod = sshAgent {
+                        username = "username"
+                    }
+                }
+            </code>
+        </example>
+    </examples>
 </dsl-extension>

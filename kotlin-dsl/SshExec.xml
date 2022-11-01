@@ -45,4 +45,112 @@
             </description>
         </param>
     </params>
+
+    <examples>
+        <example>
+            <description>
+                Adds an SSH Exec build step with custom port
+                and [Uploaded key authentication method](https://www.jetbrains.com/help/teamcity/?SSH+Exec).
+            </description>
+            <code>
+                sshExec {
+                    name = "My SSH Exec build step"
+                    commands = """
+                        command1
+                        command2
+                    """.trimIndent()
+                    targetUrl = "8.8.8.8"
+                    port = 2222
+                    authMethod = uploadedKey {
+                        username = "username"
+                        passphrase = "credentialsJSON:******"
+                        key = "id_rsa"
+                    }
+                }
+            </code>
+        </example>
+        <example>
+            <description>
+                Adds an SSH Exec build step with
+                [Default private key authentication method](https://www.jetbrains.com/help/teamcity/?SSH+Exec).
+            </description>
+            <code>
+                sshExec {
+                    name = "My SSH Exec build step"
+                    commands = """
+                        command1
+                        command2
+                    """.trimIndent()
+                    targetUrl = "8.8.8.8"
+                    authMethod = defaultPrivateKey {
+                        username = "username"
+                        passphrase = "credentialsJSON:******"
+                    }
+                }
+            </code>
+        </example>
+        <example>
+            <description>
+                Adds an SSH Exec build step with pty enabled
+                and [Custom private key authentication method](https://www.jetbrains.com/help/teamcity/?SSH+Exec).
+            </description>
+            <code>
+                sshExec {
+                    name = "My SSH Exec build step"
+                    pty = "vt100"
+                    commands = """
+                        command1
+                        command2
+                    """.trimIndent()
+                    targetUrl = "8.8.8.8"
+                    authMethod = customPrivateKey {
+                        keyFile = "path/to/key/file"
+                        username = "username"
+                        passphrase = "credentialsJSON:******"
+                    }
+                }
+            </code>
+        </example>
+        <example>
+            <description>
+                Adds an SSH Exec build step with
+                [Password authentication method](https://www.jetbrains.com/help/teamcity/?SSH+Exec).
+            </description>
+            <code>
+                sshExec {
+                    name = "My SSH Exec build step"
+                    commands = """
+                        command1
+                        command2
+                    """.trimIndent()
+                    targetUrl = "8.8.8.8"
+                    authMethod = password {
+                        username = "username"
+                        password = "credentialsJSON:******"
+                    }
+                }
+            </code>
+        </example>
+        <example>
+            <description>
+                Adds an SSH Exec build step with
+                [SSH-Agent authentication method](https://www.jetbrains.com/help/teamcity/?SSH+Exec).
+                This build step will run even if some previous build steps are failed.
+            </description>
+            <code>
+                sshExec {
+                    name = "My SSH Exec build step"
+                    executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
+                    commands = """
+                        command1
+                        command2
+                    """.trimIndent()
+                    targetUrl = "8.8.8.8"
+                    authMethod = sshAgent {
+                        username = "username"
+                    }
+                }
+            </code>
+        </example>
+    </examples>
 </dsl-extension>
