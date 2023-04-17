@@ -19,6 +19,7 @@ package jetbrains.buildServer.deployer.agent.ssh;
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.agent.BuildProcess;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
+import org.apache.sshd.common.file.nativefs.NativeFileSystemFactory;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -55,6 +56,18 @@ public abstract class BaseSSHTransferTest extends BaseSSHTest {
     final BuildProcess process = getProcess(HOST_ADDR + ":" + subPath);
     DeployTestUtils.runProcess(process, 5000);
     DeployTestUtils.assertCollectionsTransferred(new File(myRemoteDir, subPath), myArtifactsCollections);
+  }
+
+  @Test
+  public void testTransferAbsoluteBasePath() throws Exception {
+    myServer.setFileSystemFactory(new NativeFileSystemFactory());
+
+    final File absDestination = new File(myRemoteDir, "sub/path");
+    final String absPath = absDestination.getCanonicalPath();
+    myArtifactsCollections.add(DeployTestUtils.buildArtifactsCollection(createTempFilesFactory(), "dest1", "dest2"));
+    final BuildProcess process = getProcess(HOST_ADDR + ":" + absPath);
+    DeployTestUtils.runProcess(process, 5000);
+    DeployTestUtils.assertCollectionsTransferred(absDestination, myArtifactsCollections);
   }
 
   @Test
