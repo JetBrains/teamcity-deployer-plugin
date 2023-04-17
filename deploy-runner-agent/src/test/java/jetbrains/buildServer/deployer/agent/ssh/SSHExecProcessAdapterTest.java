@@ -57,8 +57,8 @@ public class SSHExecProcessAdapterTest {
   @Test
   public void stdoutAndStderrShouldBeLogged() throws Exception {
     myContext.checking(new Expectations() {{
-      allowing(myChannel).setAgentForwarding(with(any(Boolean.class)));
       allowing(myChannel).connect(with(any(Integer.class)));
+
       oneOf(myChannel).getInputStream();
       will(returnValue(new ByteArrayInputStream("standard output\n".getBytes())));
 
@@ -84,7 +84,7 @@ public class SSHExecProcessAdapterTest {
   @Test
   public void stderrShouldBeLoggedIfStdOutIsEmpty() throws Exception {
     myContext.checking(new Expectations() {{
-      allowing(myChannel).setAgentForwarding(with(any(Boolean.class)));
+
       allowing(myChannel).connect(with(any(Integer.class)));
 
       oneOf(myChannel).getInputStream();
