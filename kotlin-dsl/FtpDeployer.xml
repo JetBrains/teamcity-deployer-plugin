@@ -104,7 +104,7 @@
                 Adds an FTP Upload build step with
                 FTPS security connection mode,
                 private protection mode,
-                authentification via username and password,
+                authentication via username and password,
                 binary transfer mode and active FTP mode.
                 See options in [documentation](https://www.jetbrains.com/help/teamcity/?FTP+Upload).
             </description>
