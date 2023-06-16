@@ -20,6 +20,7 @@ import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mssmb.SMB1NotSupportedException;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.protocol.transport.TransportException;
+import com.hierynomus.security.bc.BCSecurityProvider;
 import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.SmbConfig;
 import com.hierynomus.smbj.auth.AuthenticationContext;
@@ -36,6 +37,7 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.log.Loggers;
+import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -110,12 +112,15 @@ public class SMBJBuildProcessAdapter extends SyncBuildProcessAdapter {
     final String pathInShare = StringUtil.join(components, "\\");
 
     try {
-      SmbConfig config = SmbConfig
+      SmbConfig.Builder config = SmbConfig
               .builder()
               .withMultiProtocolNegotiate(true)
-              .withSigningRequired(true).build();
+              .withSigningRequired(true);
 
-      SMBClient client = new SMBClient(config);
+      if (!TeamCityProperties.getBoolean("teamcity.plugin.deployer.use_jce"))
+        config = config.withSecurityProvider(new BCSecurityProvider());
+
+      SMBClient client = new SMBClient(config.build());
 
       Connection connection = client.connect(host);
       Session session = connection.authenticate(new AuthenticationContext(myUsername, myPassword.toCharArray(), myDomain));
