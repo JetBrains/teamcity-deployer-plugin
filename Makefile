@@ -6,4 +6,4 @@ install:
 	cd teamcity_raw; ${MVNW} -f install_pom.xml package
 
 build-all:
-	${MVNW} -Dteamcity-version=${OPENAPI_VERSION} -Dplugin-version=${BUILD_NUMBER} clean package
+	${MVNW} -Dteamcity_version=${OPENAPI_VERSION} -Dplugin-version=${BUILD_NUMBER} clean package

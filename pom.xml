@@ -23,7 +23,7 @@
     <version>0.7-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
-        <teamcity-version>2021.2-SNAPSHOT</teamcity-version>
+        <teamcity_version>2021.2-SNAPSHOT</teamcity_version>
         <teamcityDir>../teamcity</teamcityDir>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -49,32 +49,32 @@
             <dependency>
                 <groupId>org.jetbrains.teamcity</groupId>
                 <artifactId>server-api</artifactId>
-                <version>${teamcity-version}</version>
+                <version>${teamcity_version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.teamcity</groupId>
                 <artifactId>server-web-api</artifactId>
-                <version>${teamcity-version}</version>
+                <version>${teamcity_version}</version>
                 <type>war</type>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.teamcity</groupId>
                 <artifactId>tests-support</artifactId>
-                <version>${teamcity-version}</version>
+                <version>${teamcity_version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.teamcity</groupId>
                 <artifactId>agent-api</artifactId>
-                <version>${teamcity-version}</version>
+                <version>${teamcity_version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.teamcity.internal</groupId>
                 <artifactId>agent</artifactId>
-                <version>${teamcity-version}</version>
+                <version>${teamcity_version}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -194,6 +194,13 @@
         <repository>
             <id>JetBrains</id>
             <url>https://download.jetbrains.com/teamcity-repository</url>
+        </repository>
+        <repository>
+            <id>local-teamcity-artifacts</id>
+            <url>file://${env.LOCAL_REPO_PATH}/local-repo</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
     <pluginRepositories>

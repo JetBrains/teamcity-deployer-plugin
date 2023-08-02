@@ -26,7 +26,7 @@
     <packaging>pom</packaging>
     <properties>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
-        <plugin-version>snapshot-${maven.build.timestamp}</plugin-version>
+        <plugin_version>snapshot-${maven.build.timestamp}</plugin_version>
     </properties>
     <dependencies>
         <dependency>
@@ -62,7 +62,7 @@
                     <replacements>
                         <replacement>
                             <token>@Version@</token>
-                            <value>${plugin-version}</value>
+                            <value>${plugin_version}</value>
                         </replacement>
                     </replacements>
                 </configuration>

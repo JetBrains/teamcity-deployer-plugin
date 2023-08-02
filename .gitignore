@@ -6,3 +6,5 @@
 gradle-runner/
 target
 teamcity_raw
+.DS_Store
+local-repo
