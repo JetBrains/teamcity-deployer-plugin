@@ -27,7 +27,7 @@
         <teamcityDir>../teamcity</teamcityDir>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <local.repo.path>${project.basedir}</local.repo.path>
+        <local.repo.path>local-repo</local.repo.path>
     </properties>
 
     <dependencyManagement>
@@ -198,7 +198,7 @@
         </repository>
         <repository>
             <id>local-teamcity-artifacts</id>
-            <url>file://${local.repo.path}/local-repo</url>
+            <url>file://${local.repo.path}</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
