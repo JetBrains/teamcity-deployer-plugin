@@ -27,7 +27,7 @@
         <teamcityDir>../teamcity</teamcityDir>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <local.repo.path>${env.LOCAL_REPO_PATH}</local.repo.path>
+        <local.repo.path>${project.basedir}</local.repo.path>
     </properties>
 
     <dependencyManagement>
