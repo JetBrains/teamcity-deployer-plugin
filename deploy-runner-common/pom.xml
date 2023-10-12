@@ -24,4 +24,11 @@
     </parent>
     <artifactId>deploy-runner-common</artifactId>
     <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>2.1.4</version>
+        </dependency>
+    </dependencies>
 </project>
