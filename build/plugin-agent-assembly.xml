@@ -15,7 +15,8 @@
   ~ limitations under the License.
   -->
 
-<assembly>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 https://maven.apache.org/xsd/assembly-2.2.0.xsd">
     <id>plugin-agent-assembly</id>
     <includeBaseDirectory>false</includeBaseDirectory>
     <formats>
@@ -32,7 +33,6 @@
             <useAllReactorProjects>true</useAllReactorProjects>
             <includes>
                 <include>jetbrains.buildServer.deployer:deploy-runner-agent</include>
-                <include>jetbrains.buildServer.deployer:deploy-runner-common</include>
             </includes>
             <excludes>
                 <exclude>jetbrains.buildServer.deployer:deploy-runner-agent-smb</exclude>
@@ -48,6 +48,15 @@
                         <excludes>
                             <exclude>jcifs:jcifs</exclude>
                             <exclude>com.hierynomus:smbj</exclude>
+                            <exclude>*:*:*:sources</exclude>
+                            <exclude>org.codehaus.cargo:cargo-core-api-container</exclude>
+                            <exclude>org.codehaus.cargo:cargo-core-api-generic</exclude>
+                            <exclude>org.codehaus.cargo:cargo-core-api-module</exclude>
+                            <exclude>org.codehaus.cargo:cargo-core-api-util</exclude>
+                            <!--                            <exclude>org.codehaus.cargo:*</exclude>-->
+                            <exclude>net.java.dev.jna:*</exclude>
+                            <exclude>org.jboss.spec.javax.rmi:*</exclude>
+                            <exclude>org.apache.geronimo.specs:geronimo-j2ee-deployment_1.1_spec</exclude>
                         </excludes>
                     </dependencySet>
                 </dependencySets>

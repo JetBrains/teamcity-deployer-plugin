@@ -23,7 +23,7 @@
     <version>0.7-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
-        <teamcity_version>2023.09-SNAPSHOT</teamcity_version>
+        <teamcity_version>LOCAL-SNAPSHOT</teamcity_version>
         <teamcityDir>../teamcity</teamcityDir>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -81,27 +81,14 @@
 
             <!-- third-party deps -->
             <dependency>
-                <groupId>org.codehaus.cargo</groupId>
-                <artifactId>cargo-core-uberjar</artifactId>
-                <version>1.5.0</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>xercesImpl</artifactId>
-                        <groupId>xerces</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>xml-apis</artifactId>
-                        <groupId>xml-apis</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jdom</groupId>
-                        <artifactId>jdom</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>dom4j</groupId>
-                        <artifactId>dom4j</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>org.apache.ant</groupId>
+                <artifactId>ant</artifactId>
+                <version>1.10.13</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ant</groupId>
+                <artifactId>ant-launcher</artifactId>
+                <version>1.10.13</version>
             </dependency>
             <dependency>
                 <groupId>org.dom4j</groupId>
@@ -208,10 +195,6 @@
     </profiles>
 
     <repositories>
-        <repository>
-            <id>JetBrains</id>
-            <url>https://download.jetbrains.com/teamcity-repository</url>
-        </repository>
         <repository>
             <id>local-teamcity-artifacts</id>
             <url>file://${local.repo.path}</url>
