@@ -1,0 +1,17 @@
+{
+    "version": "1.0",
+  	"retry-policy": {
+        "num-retries": 2,
+        "reuse-merge": false
+    },
+    "builds": [
+        {
+            "teamcity": {
+                "configuration": "TC_Trunk_DistParts_PluginDeployer",
+                "url": "https://buildserver.labs.intellij.net",
+                "token": "${safe-push-buildserver-token}",
+                "ssl-keystore": "BuildServer client"
+            }
+        }
+    ]
+}
