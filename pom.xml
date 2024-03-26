@@ -130,6 +130,9 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                         <testFailureIgnore>true</testFailureIgnore>
+                        <systemPropertyVariables>
+                            <teamcity.logging.alwaysShowExceptionDetails>true</teamcity.logging.alwaysShowExceptionDetails>
+                        </systemPropertyVariables>
                     </configuration>
                 </plugin>
                 <plugin>
