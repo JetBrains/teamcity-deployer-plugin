@@ -16,6 +16,7 @@ import org.jmock.Mockery;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
+import org.testng.SkipException;
 import org.testng.annotations.*;
 
 import java.io.*;
@@ -57,7 +58,11 @@ public class DockerFtpBuildProcessAdapterTest extends BaseDeployerTest {
     myRemoteDir = createTempDir();
     ftp.setCommand("ftps");
     ftp.withExposedPorts(21);
-    ftp.start();
+    try {
+      ftp.start();
+    } catch (IllegalStateException e) {
+      throw new SkipException(e.getMessage());
+    }
   }
 
   @BeforeMethod
