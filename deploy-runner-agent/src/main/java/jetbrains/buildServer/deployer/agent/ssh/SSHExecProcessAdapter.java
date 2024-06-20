@@ -140,7 +140,7 @@ class SSHExecProcessAdapter extends SyncBuildProcessAdapter {
       if (channel != null) {
         channel.disconnect();
         int exitCode = channel.getExitStatus();
-        if (exitCode > 0) {
+        if (exitCode != 0) {
           if (myOptions.shouldFailBuildOnExitCode()) {
             logExitCodeBuildProblem(exitCode);
             result = BuildFinishedStatus.FINISHED_WITH_PROBLEMS;
