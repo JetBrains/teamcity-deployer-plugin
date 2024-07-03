@@ -2,7 +2,10 @@
 
 package jetbrains.buildServer.deployer.agent.ssh;
 
+import com.intellij.openapi.util.TCSystemInfo;
 import com.jcraft.jsch.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.InternalPropertiesHolder;
 import jetbrains.buildServer.agent.ssh.AgentRunningBuildSshKeyManager;
@@ -20,6 +23,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
+
+import static jetbrains.buildServer.deployer.agent.ssh.RFAUSocketFactory.PIPE_OPENSSH_SSH_AGENT;
 
 
 public class SSHSessionProvider {
@@ -102,6 +107,7 @@ public class SSHSessionProvider {
     final String username = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_USERNAME);
     final String password = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
     final String authMethod = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METHOD);
+    final String isNativeOpenSSHOnWin = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METHOD);
 
     JSch jsch = new JSch();
     JSch.setConfig("StrictHostKeyChecking", "no");
@@ -192,13 +198,24 @@ public class SSHSessionProvider {
     session.setConfig("PreferredAuthentications", "publickey");
 
     try {
-      final SSHAgentConnector connector = new SSHAgentConnector(new File(socketPath).toPath());
+      final SSHAgentConnector connector = buildSshAgentConnector(socketPath);
       IdentityRepository irepo = new AgentIdentityRepository(connector);
       jsch.setIdentityRepository(irepo);
       return session;
     } catch (com.jcraft.jsch.AgentProxyException e) {
       throw new JSchException("Failed to connect to ssh agent.", e);
     }
+  }
+
+  @NotNull
+  private static SSHAgentConnector buildSshAgentConnector(String socketPath) throws AgentProxyException {
+    final SSHAgentConnector connector;
+    if ((socketPath == null || socketPath.equalsIgnoreCase(PIPE_OPENSSH_SSH_AGENT)) && TCSystemInfo.isWindows) {
+      connector = new SSHAgentConnector(new RFAUSocketFactory(), Paths.get(socketPath));
+    } else {
+      connector = new SSHAgentConnector(new File(socketPath).toPath());
+    }
+    return connector;
   }
 
   private Session initSessionUploadedKey(String username, String password, String keyId, JSch jsch) throws JSchException {
