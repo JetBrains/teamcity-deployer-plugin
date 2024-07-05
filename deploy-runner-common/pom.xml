@@ -75,10 +75,6 @@
                     <artifactId>jackson-dataformat-yaml</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.jdom</groupId>
-                    <artifactId>jdom2</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>xom</groupId>
                     <artifactId>xom</artifactId>
                 </exclusion>
