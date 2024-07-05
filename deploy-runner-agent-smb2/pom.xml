@@ -9,14 +9,6 @@
         <relativePath>../</relativePath>
     </parent>
     <artifactId>deploy-runner-agent-smb2</artifactId>
-    <packaging>jar</packaging>
-
-    <repositories>
-        <repository>
-            <id>my</id>
-            <url>file://${basedir}/lib</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
