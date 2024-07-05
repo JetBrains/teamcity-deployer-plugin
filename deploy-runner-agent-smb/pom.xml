@@ -11,13 +11,6 @@
     <artifactId>deploy-runner-agent-smb</artifactId>
     <packaging>jar</packaging>
 
-    <repositories>
-        <repository>
-            <id>my</id>
-            <url>file://${basedir}/lib</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>jetbrains.buildServer.deployer</groupId>
