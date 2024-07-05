@@ -42,6 +42,9 @@
                             <!--                            <exclude>org.codehaus.cargo:*</exclude>-->
                             <exclude>net.java.dev.jna:*</exclude>
                             <exclude>org.jboss.spec.javax.rmi:*</exclude>
+                            <exclude>jaxen:jaxen</exclude>
+                            <exclude>jdom:jdom</exclude>
+                            <exclude>org.jdom:jdom2</exclude>
                             <exclude>org.apache.geronimo.specs:geronimo-j2ee-deployment_1.1_spec</exclude>
                         </excludes>
                     </dependencySet>
