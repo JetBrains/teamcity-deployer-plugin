@@ -5,10 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>jetbrains.buildServer.deployer</groupId>
     <artifactId>deploy-runner</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <properties>
+        <revision>0.7-SNAPSHOT</revision>
         <teamcity_version>${teamcity.version}</teamcity_version>
         <teamcity.version>2024.07-SNAPSHOT</teamcity.version>
         <teamcityDir>../teamcity</teamcityDir>
