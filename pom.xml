@@ -9,7 +9,8 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>0.7-SNAPSHOT</revision>
+        <revision>${PluginVersion}</revision>
+        <PluginVersion>${teamcity_version}</PluginVersion>
         <teamcity_version>${teamcity.version}</teamcity_version>
         <teamcity.version>2024.07-SNAPSHOT</teamcity.version>
         <teamcityDir>../teamcity</teamcityDir>
