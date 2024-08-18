@@ -25,8 +25,7 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.teamcity</groupId>
-            <artifactId>server-web-api</artifactId>
-            <type>war</type>
+            <artifactId>web-openapi</artifactId>
             <scope>provided</scope>
         </dependency>
 
