@@ -20,7 +20,7 @@ public class ScpProcessAdapterTest extends BaseSSHTransferTest {
   protected ScpProcessAdapter getProcess(String targetBasePath) {
     myRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, targetBasePath);
 
-    final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder, mySshKeyManager);
+    final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder, mySshKeyManager, myKnownHostsManager);
     return new ScpProcessAdapter(myContext, myArtifactsCollections, provider);
   }
 }

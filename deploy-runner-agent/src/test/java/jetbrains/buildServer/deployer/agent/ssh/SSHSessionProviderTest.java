@@ -4,6 +4,7 @@ package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import jetbrains.buildServer.agent.impl.ssh.AgentSshKnownHostsManagerImpl;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.util.FileUtil;
@@ -84,7 +85,7 @@ public class SSHSessionProviderTest extends BaseSSHTest {
   private void assertSessionIsConnected() throws JSchException {
     Session session = null;
     try {
-      final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder, mySshKeyManager);
+      final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder, mySshKeyManager, new AgentSshKnownHostsManagerImpl());
       session = provider.getSession();
       assertTrue(session.isConnected());
     } finally {

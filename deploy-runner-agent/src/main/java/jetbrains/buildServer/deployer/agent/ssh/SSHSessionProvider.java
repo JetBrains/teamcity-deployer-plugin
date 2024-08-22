@@ -4,7 +4,7 @@ package jetbrains.buildServer.deployer.agent.ssh;
 
 import com.intellij.openapi.util.TCSystemInfo;
 import com.jcraft.jsch.*;
-import java.nio.file.Path;
+import java.io.ByteArrayInputStream;
 import java.nio.file.Paths;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.InternalPropertiesHolder;
@@ -12,6 +12,7 @@ import jetbrains.buildServer.agent.ssh.AgentRunningBuildSshKeyManager;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.parameters.ProcessingResult;
+import jetbrains.buildServer.ssh.SshKnownHostsManager;
 import jetbrains.buildServer.ssh.TeamCitySshKey;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
@@ -37,6 +38,8 @@ public class SSHSessionProvider {
   private final AgentRunningBuildSshKeyManager mySshKeyManager;
   private final BuildRunnerContext myContext;
   private final InternalPropertiesHolder myHolder;
+  @NotNull
+  private final SshKnownHostsManager myKnownHostsManager;
 
   private Session mySession;
   private String myHost;
@@ -48,8 +51,10 @@ public class SSHSessionProvider {
 
   public SSHSessionProvider(@NotNull final BuildRunnerContext context,
                             @NotNull final InternalPropertiesHolder holder,
-                            @NotNull final AgentRunningBuildSshKeyManager sshKeyManager) {
+                            @NotNull final AgentRunningBuildSshKeyManager sshKeyManager,
+                            @NotNull final SshKnownHostsManager sshKnownHostsManager) {
     mySshKeyManager = sshKeyManager;
+    myKnownHostsManager = sshKnownHostsManager;
 
     initJSchConfig();
 
@@ -103,6 +108,13 @@ public class SSHSessionProvider {
     }
   }
 
+  private Session applyKnownHostsConfig(@NotNull Session session, boolean ignoreKnownHosts) {
+    if (ignoreKnownHosts) {
+      session.setConfig("StrictHostKeyChecking", "no");
+    }
+    return session;
+  }
+
   private Session createSession(@NotNull BuildRunnerContext context, @NotNull InternalPropertiesHolder holder) throws JSchException {
     final String username = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_USERNAME);
     final String password = context.getRunnerParameters().get(DeployerRunnerConstants.PARAM_PASSWORD);
@@ -110,7 +122,11 @@ public class SSHSessionProvider {
     final String isNativeOpenSSHOnWin = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METHOD);
 
     JSch jsch = new JSch();
-    JSch.setConfig("StrictHostKeyChecking", "no");
+    String knownHosts = myKnownHostsManager.getKnownHosts(context.getBuild().getSharedConfigParameters());
+    boolean ignoreKnownHosts = knownHosts == null;
+    if (!ignoreKnownHosts) {
+      jsch.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes()));
+    }
 
     myLog.debug("Initializing ssh session.");
     if (SSHRunnerConstants.AUTH_METHOD_DEFAULT_KEY.equals(authMethod)) {
@@ -119,13 +135,13 @@ public class SSHSessionProvider {
       final File config = new File(configPath);
       if (config.exists()) {
         myLog.debug("Found config at [" + config.getAbsolutePath() + "], reading.");
-        return initSessionSSHConfig(username, jsch, config);
+        return applyKnownHostsConfig(initSessionSSHConfig(username, jsch, config), ignoreKnownHosts);
       } else {
         final String keyPath = holder.getInternalProperty(TEAMCITY_DEPLOYER_SSH_DEFAULT_KEY, myDefaultKeyPath);
         //noinspection ConstantConditions
         final File keyFile = new File(keyPath);
         myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
-        return initSessionKeyFile(username, password, keyFile, jsch);
+        return applyKnownHostsConfig(initSessionKeyFile(username, password, keyFile, jsch), ignoreKnownHosts);
       }
     } else if (SSHRunnerConstants.AUTH_METHOD_CUSTOM_KEY.equals(authMethod)) {
       String keyFilePath = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_KEYFILE);
@@ -134,7 +150,7 @@ public class SSHSessionProvider {
       }
       final File keyFile = FileUtil.resolvePath(context.getBuild().getCheckoutDirectory(), keyFilePath);
       myLog.debug("Using keyfile at [" + keyFile.getAbsolutePath() + "], load.");
-      return initSessionKeyFile(username, password, keyFile, jsch);
+      return applyKnownHostsConfig(initSessionKeyFile(username, password, keyFile, jsch), ignoreKnownHosts);
 
     } else if (SSHRunnerConstants.AUTH_METHOD_SSH_AGENT.equals(authMethod)) {
       final ProcessingResult result = context.getParametersResolver().resolve("%env.SSH_AUTH_SOCK%");
@@ -142,18 +158,18 @@ public class SSHSessionProvider {
       if (result.isFullyResolved()) {
         socketPath = result.getResult();
       }
-      return initSessionSshAgent(username, socketPath, jsch);
+      return applyKnownHostsConfig(initSessionSshAgent(username, socketPath, jsch), ignoreKnownHosts);
     } else if (SSHRunnerConstants.AUTH_METHOD_UPLOADED_KEY.equals(authMethod)) {
 
       final String keyId = context.getRunnerParameters().get("teamcitySshKey");
       if (StringUtil.isEmptyOrSpaces(keyId)) {
         throw new JSchException("SSH key is not specified");
       }
-      return initSessionUploadedKey(username, password, keyId, jsch);
+      return applyKnownHostsConfig(initSessionUploadedKey(username, password, keyId, jsch), ignoreKnownHosts);
 
     } else {
       myLog.debug("Using provided username/password");
-      return initSessionUserPassword(username, password, jsch);
+      return applyKnownHostsConfig(initSessionUserPassword(username, password, jsch), ignoreKnownHosts);
     }
   }
 

@@ -14,6 +14,7 @@ import jetbrains.buildServer.deployer.agent.base.BaseDeployerRunner;
 import jetbrains.buildServer.deployer.agent.ssh.scp.ScpProcessAdapter;
 import jetbrains.buildServer.deployer.agent.ssh.sftp.SftpBuildProcessAdapter;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
+import jetbrains.buildServer.ssh.SshKnownHostsManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -29,13 +30,17 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
   private final InternalPropertiesHolder myInternalProperties;
   @NotNull
   private final AgentRunningBuildSshKeyManager mySshKeyManager;
+  @NotNull
+  private final SshKnownHostsManager myKnownHostsManager;
 
   public SSHDeployerRunner(@NotNull final ExtensionHolder extensionHolder,
                            @NotNull final InternalPropertiesHolder holder,
-                           @NotNull final AgentRunningBuildSshKeyManager sshKeyManager) {
+                           @NotNull final AgentRunningBuildSshKeyManager sshKeyManager,
+                           @NotNull final SshKnownHostsManager sshKnownHostsManager) {
     super(extensionHolder);
     myInternalProperties = holder;
     mySshKeyManager = sshKeyManager;
+    myKnownHostsManager = sshKnownHostsManager;
   }
 
   @Override
@@ -45,7 +50,7 @@ public class SSHDeployerRunner extends BaseDeployerRunner {
                                             @NotNull final String target,
                                             @NotNull final List<ArtifactsCollection> artifactsCollections) throws RunBuildException {
 
-    final SSHSessionProvider provider = new SSHSessionProvider(context, myInternalProperties, mySshKeyManager);
+    final SSHSessionProvider provider = new SSHSessionProvider(context, myInternalProperties, mySshKeyManager, myKnownHostsManager);
     final String transport = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_TRANSPORT);
     if (SSHRunnerConstants.TRANSPORT_SCP.equals(transport)) {
       return new ScpProcessAdapter(context, artifactsCollections, provider);

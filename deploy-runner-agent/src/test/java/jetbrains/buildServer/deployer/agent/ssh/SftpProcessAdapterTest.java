@@ -23,7 +23,7 @@ public class SftpProcessAdapterTest extends BaseSSHTransferTest {
   protected BuildProcess getProcess(String targetBasePath) {
     myRunnerParams.put(DeployerRunnerConstants.PARAM_TARGET_URL, targetBasePath);
 
-    final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder, mySshKeyManager);
+    final SSHSessionProvider provider = new SSHSessionProvider(myContext, myInternalPropertiesHolder, mySshKeyManager, myKnownHostsManager);
     return new SftpBuildProcessAdapter(myContext, myArtifactsCollections, provider);
   }
 }

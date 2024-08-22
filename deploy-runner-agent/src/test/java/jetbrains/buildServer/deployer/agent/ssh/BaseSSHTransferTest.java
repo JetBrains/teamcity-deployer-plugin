@@ -4,7 +4,9 @@ package jetbrains.buildServer.deployer.agent.ssh;
 
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.agent.BuildProcess;
+import jetbrains.buildServer.agent.impl.ssh.AgentSshKnownHostsManagerImpl;
 import jetbrains.buildServer.deployer.agent.util.DeployTestUtils;
+import jetbrains.buildServer.ssh.SshKnownHostsManager;
 import org.apache.sshd.common.file.nativefs.NativeFileSystemFactory;
 import org.testng.annotations.Test;
 
@@ -17,6 +19,8 @@ import static org.testng.Assert.assertTrue;
  * Date: 10/3/12, 3:13 PM
  */
 public abstract class BaseSSHTransferTest extends BaseSSHTest {
+
+  protected SshKnownHostsManager myKnownHostsManager = new AgentSshKnownHostsManagerImpl();
 
   @Test
   public void testSimpleTransfer() throws Exception {
