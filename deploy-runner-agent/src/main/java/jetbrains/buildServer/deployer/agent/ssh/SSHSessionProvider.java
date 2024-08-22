@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.InternalPropertiesHolder;
 import jetbrains.buildServer.agent.ssh.AgentRunningBuildSshKeyManager;
+import jetbrains.buildServer.agent.ssh.AgentSshKnownHostsContext;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.parameters.ProcessingResult;
@@ -122,7 +123,7 @@ public class SSHSessionProvider {
     final String isNativeOpenSSHOnWin = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METHOD);
 
     JSch jsch = new JSch();
-    String knownHosts = myKnownHostsManager.getKnownHosts(context.getBuild().getSharedConfigParameters());
+    String knownHosts = myKnownHostsManager.getKnownHosts(new AgentSshKnownHostsContext(context.getBuild()));
     boolean ignoreKnownHosts = knownHosts == null;
     if (!ignoreKnownHosts) {
       jsch.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes()));
