@@ -101,6 +101,8 @@ public class BaseSSHTest extends BaseDeployerTest {
       will(returnValue(logger));
       allowing(build).getCheckoutDirectory();
       will(returnValue(myWorkingDir));
+      allowing(build).getSharedConfigParameters();
+      will(returnValue(Collections.emptyMap()));
       allowing(mySshKeyManager).getKey("key_id_value");
       will(returnValue(sshKey));
     }});
