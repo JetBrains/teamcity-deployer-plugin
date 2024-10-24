@@ -204,7 +204,7 @@
                     <configuration>
                         <thirdPartyFilename>third-party-libraries.json</thirdPartyFilename>
                         <fileTemplate>${maven.multiModuleProjectDirectory}/license-third-party.ftl</fileTemplate>
-                        <excludedGroups>org.jetbrains.teamcity.*|org.jetbrains.kotlin.*|org.jetbrains.kotlinx.*|org.jetbrains.intellij.*|com.jetbrains.intellij.*|jetbrains.ring.*</excludedGroups>
+                        <excludedGroups>jetbrains.buildServer.*|org.jetbrains.teamcity.*|org.jetbrains.kotlin.*|org.jetbrains.kotlinx.*|org.jetbrains.intellij.*|com.jetbrains.intellij.*|jetbrains.ring.*</excludedGroups>
                         <excludedArtifacts>jcip-annotations</excludedArtifacts>
                         <force>true</force>
                         <includedScopes>compile,runtime</includedScopes>
