@@ -45,7 +45,7 @@
                             <exclude>org.jboss.spec.javax.rmi:*</exclude>
                             <exclude>jaxen:jaxen</exclude>
                             <exclude>jdom:jdom</exclude>
-                            <exclude>org.jdom:jdom2</exclude>
+<!--                            <exclude>org.jdom:jdom2</exclude>--> <!-- Excluded until we upgrade to jdom2 -->
                             <exclude>*:bcprov-jdk15on</exclude>
                             <exclude>org.apache.geronimo.specs:geronimo-j2ee-deployment_1.1_spec</exclude>
                             <exclude>com.kohlschutter.junixsocket:junixsocket-core:pom</exclude> <!-- leads to path traversal issue on unpack -->
