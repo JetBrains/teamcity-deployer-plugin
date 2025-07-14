@@ -2,7 +2,6 @@
 
 package jetbrains.buildServer.deployer.agent.ssh;
 
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import jetbrains.buildServer.NetworkUtil;
 import jetbrains.buildServer.agent.*;
@@ -12,13 +11,15 @@ import jetbrains.buildServer.deployer.agent.BaseDeployerTest;
 import jetbrains.buildServer.deployer.common.DeployerRunnerConstants;
 import jetbrains.buildServer.deployer.common.SSHRunnerConstants;
 import jetbrains.buildServer.ssh.TeamCitySshKey;
+import org.apache.sshd.common.config.keys.KeyUtils;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
-import org.apache.sshd.common.keyprovider.AbstractFileKeyPairProvider;
-import org.apache.sshd.common.util.SecurityUtils;
+import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.server.SshServer;
-import org.apache.sshd.server.scp.ScpCommandFactory;
+import org.apache.sshd.scp.server.ScpCommandFactory;
+import org.apache.sshd.server.keyprovider.AbstractGeneratorHostKeyProvider;
+import org.apache.sshd.server.shell.InteractiveProcessShellFactory;
 import org.apache.sshd.server.shell.ProcessShellFactory;
-import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
+import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
@@ -64,7 +65,7 @@ public class BaseSSHTest extends BaseDeployerTest {
     testPort = NetworkUtil.getFreePort(SSH_DEFAULT_PORT);
     myServer.setPort(testPort);
     myServer.setCommandFactory(new ScpCommandFactory());
-    myServer.setShellFactory(new ProcessShellFactory(SystemInfo.isWindows ? "cmd" : "sh"));
+    myServer.setShellFactory(InteractiveProcessShellFactory.INSTANCE);
     myServer.setPasswordAuthenticator((username, password, session) -> myUsername.equals(username) && myPassword.equals(password));
 
     final File keyFile = getTestResource("hostkey.pem");
@@ -72,8 +73,8 @@ public class BaseSSHTest extends BaseDeployerTest {
     myPassphraselessKey = getTestResource("passphraseless").getAbsoluteFile();
 
     myServer.setPublickeyAuthenticator((username, key, session) -> true);
-    AbstractFileKeyPairProvider fileKeyPairProvider = SecurityUtils.createFileKeyPairProvider();
-    fileKeyPairProvider.setFiles(Collections.singletonList(keyFile.getCanonicalFile()));
+    AbstractGeneratorHostKeyProvider fileKeyPairProvider = SecurityUtils.createGeneratorHostKeyProvider(keyFile.getCanonicalFile().toPath());
+    fileKeyPairProvider.setAlgorithm(KeyUtils.RSA_ALGORITHM);
     myServer.setKeyPairProvider(fileKeyPairProvider);
 
     myServer.setFileSystemFactory(new VirtualFileSystemFactory(myRemoteDir.toPath()));

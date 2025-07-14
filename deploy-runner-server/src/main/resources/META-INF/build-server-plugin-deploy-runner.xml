@@ -11,6 +11,7 @@
     <bean id="ftpDeployerRunType" class="jetbrains.buildServer.deployer.server.FtpDeployerRunType"/>
     <bean id="cargoDeployerRunType" class="jetbrains.buildServer.deployer.server.cargo.CargoDeployerRunType"/>
     <bean id="sshExecRunType" class="jetbrains.buildServer.deployer.server.SSHExecRunType"/>
+    <bean id="deployerKnownHostsPreProcessor" class="jetbrains.buildServer.deployer.server.DeployerKnownHostsPreProcessor"/>
     <bean id="deployerSettingsConverter"
           class="jetbrains.buildServer.deployer.server.converter.DeployerSettingsConverter"/>
 </beans>

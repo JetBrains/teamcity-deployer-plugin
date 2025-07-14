@@ -123,11 +123,13 @@ public class SSHSessionProvider {
     final String isNativeOpenSSHOnWin = context.getRunnerParameters().get(SSHRunnerConstants.PARAM_AUTH_METHOD);
 
     JSch jsch = new JSch();
-    String knownHosts = myKnownHostsManager.getKnownHosts(new AgentSshKnownHostsContext(context.getBuild()));
-    boolean ignoreKnownHosts = knownHosts == null;
+    AgentSshKnownHostsContext sshKnownHostsContext = new AgentSshKnownHostsContext(context.getBuild());
+    boolean ignoreKnownHosts = !myKnownHostsManager.isKnownHostsEnabled(sshKnownHostsContext);
     if (!ignoreKnownHosts) {
+      String knownHosts = myKnownHostsManager.getKnownHosts(sshKnownHostsContext);
       jsch.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes()));
     }
+
 
     myLog.debug("Initializing ssh session.");
     if (SSHRunnerConstants.AUTH_METHOD_DEFAULT_KEY.equals(authMethod)) {
