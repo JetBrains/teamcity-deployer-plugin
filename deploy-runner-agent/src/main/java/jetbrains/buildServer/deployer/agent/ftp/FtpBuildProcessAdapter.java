@@ -9,7 +9,7 @@ import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
 import jetbrains.buildServer.deployer.agent.UploadInterruptedException;
 import jetbrains.buildServer.deployer.common.FTPRunnerConstants;
-import jetbrains.buildServer.util.StringUtil;
+import jetbrains.buildServer.deployer.common.FtpSSLMode;
 import jetbrains.buildServer.util.WaitFor;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.logBuildProblem;
+import static jetbrains.buildServer.deployer.common.FtpSSLMode.FTPES;
 
 
 class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
@@ -43,9 +44,9 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   private final String myPassword;
   private final List<ArtifactsCollection> myArtifacts;
   private final String myTransferMode;
-  private final String mySecureMode;
-  private final boolean myIsActive;
-  private final String myDataChannelProtection;
+  private final FtpSSLMode mySecureMode;
+  private final boolean myIsActive; // FTP Active Mode
+  private final DataChannelProtection myDataChannelProtection;
   private final FtpTimeout myTimeout;
 
   public FtpBuildProcessAdapter(@NotNull final BuildRunnerContext context,
@@ -55,24 +56,27 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
                                 @NotNull final List<ArtifactsCollection> artifactsCollections) {
     super(context.getBuild().getBuildLogger());
     myIsActive = "ACTIVE".equals(context.getRunnerParameters().get(FTPRunnerConstants.PARAM_FTP_MODE));
-    myTarget = formatTarget(target, context);
+    myTarget = formatProtocol(target);
     myUsername = username;
     myPassword = password;
     myArtifacts = artifactsCollections;
     myTransferMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_TRANSFER_MODE);
-    mySecureMode = context.getRunnerParameters().get(FTPRunnerConstants.PARAM_SSL_MODE);
-    myDataChannelProtection = context.getRunnerParameters().get(FTPRunnerConstants.DATA_CHANNEL_PROTECTION);
+    mySecureMode = FtpSSLMode.getByCode(context.getRunnerParameters().get(FTPRunnerConstants.PARAM_SSL_MODE), FTPES);
+    myDataChannelProtection = DataChannelProtection.getByCode(context.getRunnerParameters().get(FTPRunnerConstants.DATA_CHANNEL_PROTECTION), DataChannelProtection.PRIVATE);
     myTimeout = FtpTimeout.parseTimeout(context);
   }
 
-  private String formatTarget(String target, BuildRunnerContext context) {
+  private static boolean startsWithFtpsProtocol(String target) {
+    return target.toLowerCase().startsWith(FTPS_PROTOCOL);
+  }
+
+  private static String formatProtocol(String target) {
+    if (target == null)
+      throw new IllegalArgumentException("Target must not be null");
     // strip protocols
     if (target.toLowerCase().startsWith(FTP_PROTOCOL))
       target = target.substring(FTP_PROTOCOL.length());
-    // ftps protocol doesn't exist but for user's convenience
-    if (target.toLowerCase().startsWith(FTPS_PROTOCOL)) {
-      context.getRunnerParameters().putIfAbsent(FTPRunnerConstants.PARAM_SSL_MODE, FTPS_SECURITY_MODE_DEFAULT);
-      context.getRunnerParameters().putIfAbsent(FTPRunnerConstants.DATA_CHANNEL_PROTECTION, DataChannelProtection.DISABLE.getCodeAsString());
+    if (startsWithFtpsProtocol(target)) {
       target = target.substring(FTPS_PROTOCOL.length());
     }
     return FTP_PROTOCOL + target;
@@ -117,9 +121,6 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
         logBuildProblem(myLogger, "Failed to login. Reply was: " + client.getReplyString());
         return BuildFinishedStatus.FINISHED_FAILED;
       }
-      if (!myIsActive && isSecure(mySecureMode) && !DataChannelProtection.getByCode(myDataChannelProtection).isDisabled()) {
-        enableDataChannelProtection(client, DataChannelProtection.getByCode(myDataChannelProtection));
-      }
 
       boolean isAutoType = false;
       if (FTPRunnerConstants.TRANSFER_MODE_BINARY.equals(myTransferMode)) {
@@ -153,8 +154,7 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       if (exceptionAtomicReference.get() != null)
         throw exceptionAtomicReference.get();
 
-      myLogger.message("Starting upload via " + (isNone(mySecureMode) ? "FTP" :
-          (isImplicit(mySecureMode) ? "FTPS" : "FTPES")) + " to " + myTarget);
+      myLogger.message("Starting upload via " + mySecureMode.name() + " to " + myTarget);
       uploadThread.start();
 
       new WaitFor(Long.MAX_VALUE, 1000) {
@@ -213,25 +213,27 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
   }
 
   private void enableDataChannelProtection(FTPClient client, DataChannelProtection dcp) throws IOException {
-    FTPSClient ftpsClient = (client instanceof FTPSClient) ? (FTPSClient) client : null;
-    if (ftpsClient != null) {
-      long bufferSize = ftpsClient.parsePBSZ(PBSZ);
-      ftpsClient.execPROT(dcp.getCodeAsString());
-      myLogger.message("Negotiated " + bufferSize + " PBSZ buffer size" + ftpsClient.getReplyString());
+    try {
+      FTPSClient ftpsClient = (client instanceof FTPSClient) ? (FTPSClient)client : null;
+      if (ftpsClient != null) {
+        long bufferSize = ftpsClient.parsePBSZ(PBSZ);
+        ftpsClient.execPROT(dcp.getCodeAsString());
+        myLogger.message("Negotiated " + bufferSize + " PBSZ buffer size" + ftpsClient.getReplyString());
+      }
+    } catch (SSLException e) {
+      if (e.getMessage().contains("536 PROT not supported")) {
+        myLogger.warning("Failed to setup data channel protection. Looks like target's FTPS server does not support PROT command.");
+      }
     }
   }
 
   @NotNull
   private FTPClient createClient() throws SocketException {
     final FTPClient client;
-    if (isNone(mySecureMode)) {
+    if (mySecureMode.isNonSecure()) {
       client = new FTPClient();
     } else {
-      if (isImplicit(mySecureMode)) {
-        client = new FTPSClient(true);
-      } else {
-        client = new FTPSClient(false);
-      }
+      client = new FTPSClient(mySecureMode.isImplicit());
       ((FTPSClient) client).setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
     }
 
@@ -247,17 +249,5 @@ class FtpBuildProcessAdapter extends SyncBuildProcessAdapter {
       client.setDefaultTimeout(myTimeout.getSocketTimeout());
 
     return client;
-  }
-
-  private boolean isImplicit(String secureMode) {
-    return "1".equals(secureMode);
-  }
-
-  private boolean isNone(String secureMode) {
-    return StringUtil.isEmpty(secureMode) || "0".equals(secureMode);
-  }
-
-  private boolean isSecure(String secureMode) {
-    return !isNone(secureMode);
   }
 }

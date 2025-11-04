@@ -5,7 +5,7 @@ public enum DataChannelProtection {
 
   private final char code;
 
-  private DataChannelProtection(char code) {
+  DataChannelProtection(char code) {
     this.code = code;
   }
 
@@ -17,17 +17,21 @@ public enum DataChannelProtection {
     return "" + code;
   }
 
-  public static DataChannelProtection getByCode(String code) {
+  public static DataChannelProtection getByCode(String code, DataChannelProtection defaultValue) {
     if (code == null)
-      return DISABLE;
+      return defaultValue;
     for (DataChannelProtection dcp: values()) {
       if (dcp.code == code.charAt(0))
         return dcp;
     }
-    throw new RuntimeException("DataChannelProtection code not found: " + code);
+    return defaultValue;
   }
 
   public boolean isDisabled() {
     return this == DISABLE;
+  }
+
+  public boolean isNotDisabled() {
+    return !isDisabled();
   }
 }
