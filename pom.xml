@@ -265,6 +265,32 @@
                 <serverJava>1.8</serverJava>
             </properties>
         </profile>
+        <profile>
+          <id>javac-release-flag-compat</id>
+          <activation>
+            <jdk>[9,)</jdk>
+          </activation>
+          <properties>
+            <maven.compiler.release>8</maven.compiler.release>
+          </properties>
+          <build>
+            <plugins>
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                  <argLine>
+                    -XX:+IgnoreUnrecognizedVMOptions
+                    --add-opens java.base/java.lang=ALL-UNNAMED
+                    --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+                    --add-opens java.base/java.util=ALL-UNNAMED
+                    --add-opens java.base/java.io=ALL-UNNAMED
+                  </argLine>
+                </configuration>
+              </plugin>
+            </plugins>
+          </build>
+        </profile>
     </profiles>
 
     <repositories>
