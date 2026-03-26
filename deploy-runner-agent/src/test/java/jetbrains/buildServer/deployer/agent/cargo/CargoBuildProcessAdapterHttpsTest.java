@@ -74,8 +74,6 @@ public class CargoBuildProcessAdapterHttpsTest extends BaseDeployerTest {
     configuration.setProperty(TomcatPropertySet.AJP_PORT, String.valueOf(NetworkUtil.getFreePort(8009)));
     configuration.setProperty(TomcatPropertySet.CONNECTOR_KEY_STORE_FILE, getTestResource("ftpserver.jks").getAbsolutePath());
     configuration.setProperty(TomcatPropertySet.CONNECTOR_KEY_STORE_PASSWORD, "password");
-    configuration.setProperty(TomcatPropertySet.CONNECTOR_KEY_ALIAS, "localhost");
-    configuration.setProperty(TomcatPropertySet.HTTP_SECURE, "true");
     configuration.setProperty(GeneralPropertySet.PROTOCOL, "https");
 
     myDefaultHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();

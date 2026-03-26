@@ -10,7 +10,7 @@
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>build</artifactId>
+    <artifactId>deploy-build</artifactId>
 
     <properties>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
@@ -23,7 +23,11 @@
         </dependency>
         <dependency>
             <groupId>jetbrains.buildServer.deployer</groupId>
-            <artifactId>deploy-runner-common</artifactId>
+            <artifactId>deploy-runner-agent-smb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jetbrains.buildServer.deployer</groupId>
+            <artifactId>deploy-runner-agent-smb2</artifactId>
         </dependency>
         <dependency>
             <groupId>jetbrains.buildServer.deployer</groupId>
@@ -57,7 +61,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4</version>
                 <executions>
                     <execution>
                         <id>make-agent-assembly</id>

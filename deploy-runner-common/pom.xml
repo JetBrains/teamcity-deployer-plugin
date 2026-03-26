@@ -13,13 +13,8 @@
     <artifactId>deploy-runner-common</artifactId>
     <dependencies>
         <dependency>
-            <groupId>org.dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-            <version>2.1.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.cargo</groupId>
-            <artifactId>cargo-core-uberjar</artifactId>
+            <groupId>jetbrains.buildServer.deployer</groupId>
+            <artifactId>deploy-runner-cargo</artifactId>
         </dependency>
     </dependencies>
 </project>
