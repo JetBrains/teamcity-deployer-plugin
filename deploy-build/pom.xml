@@ -49,8 +49,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <file>${basedir}/../teamcity-plugin.xml</file>
-                    <outputFile>${basedir}/target/teamcity-plugin.xml</outputFile>
+                    <file>${project.basedir}/../teamcity-plugin.xml</file>
+                    <outputFile>${project.basedir}/target/teamcity-plugin.xml</outputFile>
                     <replacements>
                         <replacement>
                             <token>@Version@</token>
