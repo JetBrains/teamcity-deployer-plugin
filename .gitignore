@@ -9,3 +9,4 @@ teamcity_raw
 .DS_Store
 local-repo
 original
+.worktree
