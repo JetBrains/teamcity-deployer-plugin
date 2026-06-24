@@ -39,7 +39,7 @@ public class FileScpOperationTest {
 
     @Test(dataProvider = "permissions")
     public void test_if_file_permissions_saved(Set<PosixFilePermission> permissions, String expected) throws IOException {
-            File tmpFile = File.createTempFile("someprefix", "");
+            File tmpFile = Files.createTempFile("someprefix", "").toFile();
             PosixFileAttributeView view = Files.getFileAttributeView(tmpFile.toPath(), PosixFileAttributeView.class);
             if (view != null) { // only for posix-compatible file systems
                 view.setPermissions(permissions);
