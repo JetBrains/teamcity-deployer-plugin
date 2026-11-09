@@ -3,6 +3,8 @@
 package jetbrains.buildServer.deployer.agent.ssh.scp;
 
 import jetbrains.buildServer.Used;
+import jetbrains.buildServer.deployer.agent.DeployerAgentUtils;
+import jetbrains.buildServer.deployer.agent.UnsafeRemoteNameException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -54,7 +56,8 @@ class DirScpOperation implements ScpOperation {
 
   @Override
   public void execute(@NotNull final OutputStream out,
-                      @NotNull final InputStream in) throws IOException {
+                      @NotNull final InputStream in) throws IOException, UnsafeRemoteNameException {
+    DeployerAgentUtils.checkHasNoControlCharacters(myDirName, "directory name");
     final String command = "D0755 0 " + myDirName + "\n";
     out.write(command.getBytes());
     out.flush();
