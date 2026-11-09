@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildProgressLogger;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
+import jetbrains.buildServer.deployer.agent.UnsafeRemoteNameException;
 import jetbrains.buildServer.util.StringUtil;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -23,6 +24,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.checkHasNoControlCharacters;
 import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.logBuildProblem;
 import static jetbrains.buildServer.util.FileUtil.getExtension;
 
@@ -86,12 +88,14 @@ abstract class InterruptibleUploadProcess implements Runnable {
         int count = 0;
         for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
           final File source = fileStringEntry.getKey();
-          final String destinationDir = fileStringEntry.getValue();
+          checkHasNoControlCharacters(source.getName(), "file name");
 
+          final String destinationDir = fileStringEntry.getValue();
           if (StringUtil.isNotEmpty(destinationDir)) {
             createPath(destinationDir);
             checkResult(myClient.changeWorkingDirectory(destinationDir));
           }
+
           LOG.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destinationDir + "] under [" + remoteRoot + "]");
           if (checkIsInterrupted())
             throw new FailureDetectedException("Process has been interrupted.");
@@ -121,6 +125,10 @@ abstract class InterruptibleUploadProcess implements Runnable {
         myLogger.message("Uploaded [" + count + "] files for [" + artifactsCollection.getSourcePath() + "] pattern");
       }
       myFinishStatus.set(BuildFinishedStatus.FINISHED_SUCCESS);
+    } catch (UnsafeRemoteNameException t) {
+      logBuildProblem(myLogger, t.getMessage());
+      LOG.debug(t.getMessage(), t);
+      myFinishStatus.set(BuildFinishedStatus.FINISHED_FAILED);
     } catch (FailureDetectedException | IOException t) {
       if (myRetryCount == 1 && myClient.getReplyCode() == FTP_REPLY_CODE_DATA_CONNECTION_MUST_BE_ENCRYPTED) {
         throw new RetryWithPrivateSettingsException();
@@ -131,7 +139,8 @@ abstract class InterruptibleUploadProcess implements Runnable {
     }
   }
 
-  private void createPath(@NotNull final String path) throws IOException, FailureDetectedException {
+  private void createPath(@NotNull final String path) throws IOException, FailureDetectedException, UnsafeRemoteNameException {
+    checkHasNoControlCharacters(path, "target path");
     final String root = myClient.printWorkingDirectory();
     final String normalisedPath = path.trim().replaceAll("\\\\", "/");
     final StringTokenizer pathTokenizer = new StringTokenizer(normalisedPath, "/");

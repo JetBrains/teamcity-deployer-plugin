@@ -3,20 +3,18 @@
 package jetbrains.buildServer.deployer.agent.ssh.scp;
 
 import com.intellij.openapi.diagnostic.Logger;
+import jetbrains.buildServer.deployer.agent.DeployerAgentUtils;
+import jetbrains.buildServer.deployer.agent.UnsafeRemoteNameException;
 import jetbrains.buildServer.util.FileUtil;
-import jetbrains.buildServer.util.Hash;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.nio.file.attribute.PosixFilePermission.*;
 
@@ -115,7 +113,8 @@ class FileScpOperation implements ScpOperation {
 
   @Override
   public void execute(@NotNull final OutputStream out,
-                      @NotNull final InputStream in) throws IOException {
+                      @NotNull final InputStream in) throws IOException, UnsafeRemoteNameException {
+    DeployerAgentUtils.checkHasNoControlCharacters(myFile.getName(), "file name");
     final String command = "C0"+ getPermission() + " " + myFile.length() + " " + myFile.getName() + "\n";
     out.write(command.getBytes());
     out.flush();

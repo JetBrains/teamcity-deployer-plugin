@@ -11,6 +11,7 @@ import jetbrains.buildServer.agent.BuildFinishedStatus;
 import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.deployer.agent.SyncBuildProcessAdapter;
+import jetbrains.buildServer.deployer.agent.UnsafeRemoteNameException;
 import jetbrains.buildServer.deployer.agent.ssh.JSchBuildLogger;
 import jetbrains.buildServer.deployer.agent.ssh.SSHSessionProvider;
 import jetbrains.buildServer.util.FileUtil;
@@ -21,12 +22,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.attribute.PosixFileAttributes;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.checkHasNoControlCharacters;
 import static jetbrains.buildServer.deployer.agent.DeployerAgentUtils.logBuildProblem;
 
 public class ScpProcessAdapter extends SyncBuildProcessAdapter {
@@ -110,6 +110,10 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
       upload(session, escapedRemoteBase, absDestinations);
 
       return BuildFinishedStatus.FINISHED_SUCCESS;
+    } catch (UnsafeRemoteNameException e) {
+      logBuildProblem(myLogger, e.getMessage());
+      LOG.warnAndDebugDetails("Refusing unsafe SCP target name", e);
+      return BuildFinishedStatus.FINISHED_FAILED;
     } catch (JSchException e) {
       logBuildProblem(myLogger, e.getMessage());
       LOG.warnAndDebugDetails("Error executing SCP command", e);
@@ -129,7 +133,7 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
 
   private void upload(final @NotNull Session session,
                       final @NotNull String escapedRemoteBase,
-                      final @NotNull List<ArtifactsCollection> artifacts) throws IOException, JSchException {
+                      final @NotNull List<ArtifactsCollection> artifacts) throws IOException, JSchException, UnsafeRemoteNameException {
 
     assert session.isConnected();
 
@@ -155,7 +159,9 @@ public class ScpProcessAdapter extends SyncBuildProcessAdapter {
         int count = 0;
         for (Map.Entry<File, String> filePathEntry : artifactCollection.getFilePathMap().entrySet()) {
           final File source = filePathEntry.getKey();
+          checkHasNoControlCharacters(source.getName(), "file name");
           final String destination = filePathEntry.getValue();
+          checkHasNoControlCharacters(destination, "target path");
           final ScpOperation operationChain = ScpOperationBuilder.getCopyFileOperation(source, destination);
           myInternalLog.debug("Transferring [" + source.getAbsolutePath() + "] to [" + destination + "]");
           checkIsInterrupted();
